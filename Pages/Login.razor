@@ -1,9 +1,29 @@
 ﻿@page "/log-in"
+@using ThetaFTP.Pages.Components;
+@inject NavigationManager NavigationManager
 
-<div>
 
-</div>
+<PanelComponent>
+    <Component>
+        <TitleSection title="Log In" />
+        <InputSection inputSectionTitle="Email" isPassword="false" />
+        <br/>
+        <InputSection inputSectionTitle="Password" isPassword="true" />
+        <div style="display:flex;flex-direction:column;margin-top:40px;">
+            <button>
+                Sign In
+            </button>
+            <button @onclick=NavigateToRegister>
+                Don't have an account? Click to register.
+            </button>
+        </div>
+    </Component>
+</PanelComponent>
 
 @code {
-
+    private void NavigateToRegister()
+    {
+        Console.WriteLine("register");
+        NavigationManager.NavigateTo("register", false);
+    }
 }

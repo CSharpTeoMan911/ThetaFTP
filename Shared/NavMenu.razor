@@ -1,5 +1,6 @@
 ﻿@inject IJSRuntime JS;
 @inject NavigationManager NavigationManager;
+@using System.Text;
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
@@ -9,13 +10,14 @@
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <li class="nav-item">
-                    <a class="nav-link active menu_label" style="margin-bottom:10px;margin-left:15px;color:#055ca5" aria-current="page" href="#">Files</a>
+                    <a class="nav-link menu_label" style=@(new StringBuilder("margin-left:15px;color:").Append(first_menu_item_state).ToString()) aria-current="page" href="/">Files</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link menu_label" style="margin-top:16px;margin-left:15px;" href="#">@AuthState</a>
+                    <a class="nav-link menu_label" style=@(new StringBuilder("margin-top:16px;margin-left:15px;color:").Append(second_menu_item_state).ToString()) href="#">@AuthState</a>
                 </li>
             </ul>
         </div>
@@ -24,6 +26,14 @@
 
 @code {
     private string AuthState { get; set; } = "Log out";
+
+    //private string active { get; set; } = "#066FC4";
+
+    //private string inactive { get; set; } = "#044275";
+
+    private string first_menu_item_state { get; set; } = "#066FC4";
+
+    private string second_menu_item_state { get; set; } = "#044275";
 
     protected override async void OnAfterRender(bool firstRender)
     {
@@ -34,19 +44,37 @@
         {
             IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
             AuthCache = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+
+            if (firstRender == true)
+            {
+                IJSObjectReference animation_module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/animations.js");
+                await animation_module.InvokeVoidAsync("InitBackgroundGradientFluctuation");
+            }
         }
         catch{}
 
         if (AuthCache == null)
         {
-            AuthState = "Log in";
-            StateHasChanged();
-            if (NavigationManager.ToAbsoluteUri("log-in") != new Uri(NavigationManager.Uri))
+            if (AuthState != "Log in")
+            {
+                AuthState = "Log in";
+                StateHasChanged();
+            }
+
+            if (NavigationManager.ToAbsoluteUri("log-in") != new Uri(NavigationManager.Uri) || NavigationManager.ToAbsoluteUri("register") != new Uri(NavigationManager.Uri))
                 NavigationManager.NavigateTo("log-in", false);
         }
-        else
+
+
+        if (NavigationManager.ToAbsoluteUri("log-in") == new Uri(NavigationManager.Uri))
         {
-            NavigationManager.NavigateTo("log-in", true);
+            first_menu_item_state = "#066FC4";
+            second_menu_item_state = "#044275";
+        }
+        else if (NavigationManager.ToAbsoluteUri("files") == new Uri(NavigationManager.Uri))
+        {
+            second_menu_item_state = "#066FC4";
+            first_menu_item_state = "#044275";
         }
 
     }
