@@ -1,0 +1,26 @@
+﻿<div>
+    <div>
+        <h2 class="input_title">
+            @inputSectionTitle
+        </h2>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-self:center;">
+        @if(isPassword)
+        {
+            <input class="input_style" type="password"/>
+        }
+        else
+        {
+            <input class="input_style" />
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool isPassword { get; set; }
+
+    [Parameter]
+    public string? inputSectionTitle { get; set; }
+}
