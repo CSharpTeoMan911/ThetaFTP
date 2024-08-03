@@ -1,5 +1,6 @@
 ﻿@page "/log-in"
 @using ThetaFTP.Pages.Components;
+@using ThetaFTP.Shared.Classes;
 @inject NavigationManager NavigationManager
 
 
@@ -10,10 +11,10 @@
         <br/>
         <InputSection inputSectionTitle="Password" isPassword="true" />
         <div style="display:flex;flex-direction:column;margin-top:40px;">
-            <button>
+            <button class="auth_action">
                 Sign In
             </button>
-            <button @onclick=NavigateToRegister>
+            <button class="auth_navigation" @onclick=NavigateToRegister>
                 Don't have an account? Click to register.
             </button>
         </div>
@@ -23,6 +24,10 @@
 @code {
     private void NavigateToRegister()
     {
+        HttpClient client = HttpClientGen.Generate(true);
+        client.PostAsync();
+
+
         Console.WriteLine("register");
         NavigationManager.NavigateTo("register", false);
     }
