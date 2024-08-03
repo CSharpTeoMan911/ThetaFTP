@@ -3,3 +3,39 @@
     width: 100%;
     height: 100px;*/
 }
+
+button.auth_action {
+    margin-bottom: 0px;
+    width: fit-content;
+    align-self: center;
+    margin-top: 18px;
+    font-size: calc(15px + 0.5vw);
+    border-radius: 5px;
+    background-color: #0052a1;
+    border-width: 2px;
+    border-color: transparent;
+    color: white;
+}
+
+button.auth_action:hover{
+    background-color: #0875de;
+    color: white;
+}
+
+button.auth_navigation {
+    padding: 0px;
+    margin-bottom: 0px;
+    width: fit-content;
+    align-self: center;
+    margin-top: 30px;
+    font-size: calc(6px + 0.5vw);
+    background-color: transparent;
+    border-color: transparent;
+    color: #0052a1;
+    padding-left: calc(30px + 0.5vw);
+    padding-right: calc(30px + 0.5vw);
+}
+
+button.auth_navigation:hover {
+    color: #0875de;
+}
