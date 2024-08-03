@@ -1,13 +1,11 @@
 ﻿@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
 
 div.background {
-    position:absolute;
     background-image: url('../../images/background.webp');
     background-repeat: no-repeat;
     background-size: cover;
-    width: 100vw;
-    height: 100vh;
-    opacity: 0.4;
+    min-width: 100vw;
+    min-height: 100vh;
 }
 
 a.menu_label {
@@ -24,10 +22,11 @@ div.main_app_container{
 }
 
 div.jumbotron-custom {
-    margin-top: 40px;
+    margin-top: 60px;
     width: fit-content;
     align-self: center;
     align-content: center;
+    padding: 50px;
 }
 
 div.title_div{
@@ -51,10 +50,15 @@ h2.input_title {
     align-self: center;
     color: #03608f;
     font-weight: 400;
-    font-size: calc(13px + 0.5vw);
+    font-size: calc(11px + 0.5vw);
 }
 
 input.input_style {
     font-size: calc(10px + 0.5vw);
     border-radius: 5px;
+    border-width: calc(1px + 0.1vw);
+}
+
+button.control_button{
+    margin-top: 20px;
 }
