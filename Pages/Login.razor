@@ -1,6 +1,10 @@
 ﻿@page "/log-in"
 @using ThetaFTP.Pages.Components;
 @using ThetaFTP.Shared.Classes;
+@using ThetaFTP.Shared.Models;
+@using System.Text;
+
+
 @inject NavigationManager NavigationManager
 
 
@@ -11,7 +15,7 @@
         <br/>
         <InputSection inputSectionTitle="Password" isPassword="true" />
         <div style="display:flex;flex-direction:column;margin-top:40px;">
-            <button class="auth_action">
+            <button class="auth_action" @onclick=SignIn>
                 Sign In
             </button>
             <button class="auth_navigation" @onclick=NavigateToRegister>
@@ -22,13 +26,36 @@
 </PanelComponent>
 
 @code {
+
+    // ADD CALLBACK METHODS FOR THE 'input' SECTIONS
+
     private void NavigateToRegister()
     {
-        HttpClient client = HttpClientGen.Generate(true);
-        //client.PostAsync();
-
-
         Console.WriteLine("register");
         NavigationManager.NavigateTo("register", false);
+    }
+
+
+    private async void SignIn()
+    {
+
+        AuthenticationModel authentication = new AuthenticationModel();
+        authentication.email = "email@gmail.com";
+        authentication.password = "password";
+        authentication.log_in_session_key = "test";
+
+        string query_parameters = await QueryParsing.QueryParser<AuthenticationModel>(authentication);
+
+        StringBuilder builder = new StringBuilder(NavigationManager.BaseUri);
+        builder.Append("authentication/get?");
+        builder.Append(query_parameters);
+
+
+        Console.WriteLine($"\n\n\t{builder.ToString()}\n\n");
+
+        HttpClient client = HttpClientGen.Generate(true);
+        HttpResponseMessage message = await client.GetAsync(builder.ToString());
+        Console.WriteLine(await message.Content.ReadAsStringAsync());
+
     }
 }

@@ -25,6 +25,7 @@ namespace ThetaFTP
                 app.UseHsts();
             }
 
+            app.MapControllers();
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();
