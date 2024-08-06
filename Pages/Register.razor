@@ -5,13 +5,13 @@
 <PanelComponent>
     <Component>
         <TitleSection title="Register" />
-        <InputSection inputSectionTitle="Email" isPassword="false" />
+        <InputSection inputSectionTitle="Email" inputValue="new InputSection.InputValue(OnEmailValue)" isPassword="false" />
         <br/>
-        <InputSection inputSectionTitle="Password" isPassword="true" />
+        <InputSection inputSectionTitle="Password" inputValue="new InputSection.InputValue(OnPasswordValue)" isPassword="true" />
         <br />
         <InputSection inputSectionTitle="Re-Password" isPassword="true" />
         <div style="display:flex;flex-direction:column;margin-top:40px;">
-            <button class="auth_action">
+            <button class="auth_action" @onclick=SignUp>
                 Sign Up
             </button>
             <button class="auth_navigation" @onclick=NavigateToLogIn>
@@ -22,9 +22,28 @@
 </PanelComponent>
 
 @code {
+
+    private string? Email { get; set; }
+    private string? Password { get; set; }
+
     private void NavigateToLogIn()
     {
         Console.WriteLine("register");
         NavigationManager.NavigateTo("log-in", false);
+    }
+
+    private void OnEmailValue(string? value)
+    {
+        Email = value;
+    }
+
+    private void OnPasswordValue(string? value)
+    {
+        Password = value;
+    }
+
+    private void SignUp()
+    {
+        
     }
 }

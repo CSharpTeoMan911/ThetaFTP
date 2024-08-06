@@ -11,9 +11,9 @@
 <PanelComponent>
     <Component>
         <TitleSection title="Log In" />
-        <InputSection inputSectionTitle="Email" isPassword="false" />
+        <InputSection inputSectionTitle="Email" inputValue="new InputSection.InputValue(OnEmailValue)" isPassword="false" />
         <br/>
-        <InputSection inputSectionTitle="Password" isPassword="true" />
+        <InputSection inputSectionTitle="Password" inputValue="new InputSection.InputValue(OnPasswordValue)" isPassword="true" />
         <div style="display:flex;flex-direction:column;margin-top:40px;">
             <button class="auth_action" @onclick=SignIn>
                 Sign In
@@ -27,8 +27,10 @@
 
 @code {
 
-    // ADD CALLBACK METHODS FOR THE 'input' SECTIONS
+    private string? Email { get; set; }
+    private string? Password { get; set; }
 
+    // ADD CALLBACK METHODS FOR THE 'input' SECTIONS
     private void NavigateToRegister()
     {
         Console.WriteLine("register");
@@ -40,9 +42,8 @@
     {
 
         AuthenticationModel authentication = new AuthenticationModel();
-        authentication.email = "email@gmail.com";
-        authentication.password = "password";
-        authentication.log_in_session_key = "test";
+        authentication.email = Email;
+        authentication.password = Password;
 
         string query_parameters = await QueryParsing.QueryParser<AuthenticationModel>(authentication);
 
@@ -57,5 +58,15 @@
         HttpResponseMessage message = await client.GetAsync(builder.ToString());
         Console.WriteLine(await message.Content.ReadAsStringAsync());
 
+    }
+
+    private void OnEmailValue(string? value)
+    {
+        Email = value;
+    }
+
+    private void OnPasswordValue(string? value)
+    {
+        Password = value;
     }
 }
