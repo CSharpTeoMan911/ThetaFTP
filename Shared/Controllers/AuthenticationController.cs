@@ -20,7 +20,8 @@ namespace ThetaFTP.Shared.Controllers
         public async Task<string?> Get([FromQuery] AuthenticationModel? value)
         {
             string? respose = String.Empty;
-
+            Console.WriteLine($"email: {value?.email}\n" +
+                  $"email: {value?.password}");
             return respose;
         }
 
