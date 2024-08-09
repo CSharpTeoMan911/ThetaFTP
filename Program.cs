@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using ThetaFTP.Data;
+using ThetaFTP.Shared;
+using ThetaFTP.Shared.Classes;
 
 namespace ThetaFTP
 {
@@ -8,6 +10,14 @@ namespace ThetaFTP
     {
         public static void Main(string[] args)
         {
+            _= Main_OP(args).Result;
+        }
+
+        private static async Task<bool> Main_OP(string[] args)
+        {
+            Shared.Shared.sql_lite.InitiateSQLiteDatabase();
+            Shared.Shared.config = await ServerConfig.GetServerConfig();
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
@@ -36,6 +46,8 @@ namespace ThetaFTP
             app.MapFallbackToPage("/_Host");
 
             app.Run();
+
+            return true;
         }
     }
 }

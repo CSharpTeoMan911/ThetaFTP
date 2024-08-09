@@ -5,6 +5,8 @@
             return_value = localStorage.getItem(key);
             break;
     }
+
+    return return_value;
 }
 
 export async function Insert_Cache(option, key, value) {

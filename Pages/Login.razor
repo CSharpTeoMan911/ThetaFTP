@@ -5,11 +5,14 @@
 @using System.Text;
 
 
-@inject NavigationManager NavigationManager
-
+@inject NavigationManager NavigationManager;
+@inject IJSRuntime JS;
 
 <PanelComponent>
     <Component>
+        @if(ShowNotification == true){
+            <Notifications NotificationMessage="@NotificationMessage" notificationType="@NotificationType" closeNotification="CloseNotification"/>
+        }
         <TitleSection title="Log In" />
         <InputSection inputSectionTitle="Email" inputValue="new InputSection.InputValue(OnEmailValue)" isPassword="false" />
         <br/>
@@ -30,11 +33,19 @@
     private string? Email { get; set; }
     private string? Password { get; set; }
 
+    private bool ShowNotification { get; set; }
+    private Notifications.NotificationType NotificationType { get; set; }
+    private string? NotificationMessage { get; set; }
+
     // ADD CALLBACK METHODS FOR THE 'input' SECTIONS
     private void NavigateToRegister()
     {
-        Console.WriteLine("register");
         NavigationManager.NavigateTo("register", false);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
     }
 
 
@@ -51,12 +62,27 @@
         builder.Append("authentication/get?");
         builder.Append(query_parameters);
 
-
-        Console.WriteLine($"\n\n\t{builder.ToString()}\n\n");
-
         HttpClient client = HttpClientGen.Generate(true);
         HttpResponseMessage message = await client.GetAsync(builder.ToString());
-        Console.WriteLine(await message.Content.ReadAsStringAsync());
+        string response = await message.Content.ReadAsStringAsync();
+
+        ShowNotification = true;
+
+        if (response.Contains("Invalid") == true || response.Contains("Unsuccessful"))
+        {
+            NotificationType = Notifications.NotificationType.Error;
+            NotificationMessage = response;
+        }
+        else
+        {
+            NotificationType = Notifications.NotificationType.Information;
+            NotificationMessage = "Authentication successful.";
+
+            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+            await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", response);
+        }
+
+        StateHasChanged();
 
     }
 
@@ -68,5 +94,11 @@
     private void OnPasswordValue(string? value)
     {
         Password = value;
+    }
+
+    private void CloseNotification()
+    {
+        ShowNotification = false;
+        StateHasChanged();
     }
 }

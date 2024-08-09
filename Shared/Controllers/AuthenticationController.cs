@@ -11,34 +11,30 @@ namespace ThetaFTP.Shared.Controllers
         [HttpDelete("delete")]
         public async Task<string?> Delete([FromQuery] AuthenticationModel? value)
         {
-            string? respose = String.Empty;
-
-            return respose;
+            string? response = await Shared.database_auth.Get(value);
+            return response;
         }
 
         [HttpGet("get")]
         public async Task<string?> Get([FromQuery] AuthenticationModel? value)
         {
-            string? respose = String.Empty;
-            Console.WriteLine($"email: {value?.email}\n" +
-                  $"email: {value?.password}");
-            return respose;
+            string? response = await Shared.database_auth.Get(value);
+            return response;
         }
 
         [HttpPost("insert")]
         public async Task<string?> Insert([FromQuery] AuthenticationModel? value)
         {
-            string? respose = String.Empty;
-
-            return respose;
+            string? response = await Shared.database_auth.Insert(value);
+            return response;
         }
 
         [HttpPut("update")]
         public async Task<string?> Update([FromQuery] AuthenticationModel? value)
         {
-            string? respose = String.Empty;
+            string? response = String.Empty;
 
-            return respose;
+            return response;
         }
     }
 }
