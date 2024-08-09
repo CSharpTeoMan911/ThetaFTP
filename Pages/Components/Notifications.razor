@@ -1,0 +1,77 @@
+﻿@if (notificationType == NotificationType.Error)
+{
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="position:absolute; z-index:100">
+        <div class="toast-header">
+            <img src="./images/close.webp" class="rounded me-2 notification_image" alt="...">
+            <strong class="me-auto">@notificationType.ToString()</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close" @onclick="CloseNotification_"></button>
+        </div>
+        <div class="toast-body">
+            @NotificationMessage
+        </div>
+    </div>
+}
+else
+{
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="position:absolute; z-index:100">
+        <div class="toast-header">
+            <img src="./images/notification-bell.webp" class="rounded me-2 notification_image" alt="...">
+            <strong class="me-auto">@notificationType.ToString()</strong>
+            <small>11 mins ago</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close" @onclick="CloseNotification_"></button>
+        </div>
+        <div class="toast-body">
+            @NotificationMessage
+        </div>
+    </div>
+}
+
+
+@code {
+    public enum NotificationType
+    {
+        Error,
+        Information
+    }
+
+    private DateTime render_time { get; set; }
+
+    public delegate void CloseNotification();
+
+    [Parameter] public CloseNotification? closeNotification { get; set; }
+    [Parameter] public string? NotificationMessage { get; set; }
+    [Parameter] public NotificationType notificationType { get; set; }
+
+    private System.Timers.Timer timer = new System.Timers.Timer();
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+
+        render_time = DateTime.Now;
+
+        timer.Elapsed += ElapsedTime;
+        timer.Interval = 100;
+        timer.Start();
+
+    }
+
+    public void ElapsedTime(object? sender, System.Timers.ElapsedEventArgs args)
+    {
+        if ((DateTime.Now - render_time).TotalSeconds >= 10)
+        {
+            CloseNotification_();
+        }
+    }
+
+    public async void CloseNotification_()
+    {
+        timer.Stop();
+        timer.Dispose();
+
+        await InvokeAsync(() =>
+        {
+            closeNotification?.Invoke();
+        });
+    }
+}

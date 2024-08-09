@@ -8,12 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="QueryParser" Version="1.0.2" />
+    <PackageReference Include="QueryParser" Version="1.0.4" />
     <PackageReference Include="System.Data.SQLite" Version="1.0.118" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Shared\Formatters\" />
   </ItemGroup>
 
 </Project>

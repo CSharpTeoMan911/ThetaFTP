@@ -361,3 +361,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Server app config file
+server_settings.json
+
+# Database file
+Thetha_FTP.db
