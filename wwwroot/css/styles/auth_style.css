@@ -28,7 +28,7 @@ button.auth_navigation {
     width: fit-content;
     align-self: center;
     margin-top: 30px;
-    font-size: calc(6px + 0.5vw);
+    font-size: calc(10px + 0.3vw);
     background-color: transparent;
     border-color: transparent;
     color: #0052a1;

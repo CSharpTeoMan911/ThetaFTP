@@ -62,3 +62,7 @@ input.input_style {
 button.control_button{
     margin-top: 20px;
 }
+
+img.notification_image{
+    height: 15px;
+}
