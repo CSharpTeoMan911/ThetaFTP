@@ -7,7 +7,8 @@ namespace ThetaFTP.Shared
     public class Shared
     {
         public static ServerConfigModel? config;
-        public static SQLite sql_lite = new SQLite();
+        public static MySql mysql= new MySql();
         public static CRUD_Strategy<AuthenticationModel, AuthenticationModel, AuthenticationModel, AuthenticationModel> database_auth = new CRUD_Strategy<AuthenticationModel, AuthenticationModel, AuthenticationModel, AuthenticationModel>(new DatabaseAuthenticationController());
+        public static DatabaseAuthenticationValidationController database_auth_validation = new DatabaseAuthenticationValidationController();
     }
 }

@@ -15,8 +15,12 @@ namespace ThetaFTP
 
         private static async Task<bool> Main_OP(string[] args)
         {
-            Shared.Shared.sql_lite.InitiateSQLiteDatabase();
             Shared.Shared.config = await ServerConfig.GetServerConfig();
+
+            System.Timers.Timer server_utility_timer = new System.Timers.Timer();
+            server_utility_timer.Elapsed += Server_utility_timer_Elapsed;
+            server_utility_timer.Interval = 100;
+            server_utility_timer.Start();
 
             var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +52,11 @@ namespace ThetaFTP
             app.Run();
 
             return true;
+        }
+
+        private static async void Server_utility_timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+        {
+            await Shared.Shared.database_auth_validation.Delete(null);
         }
     }
 }

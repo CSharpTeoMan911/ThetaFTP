@@ -36,5 +36,21 @@ namespace ThetaFTP.Shared.Controllers
 
             return response;
         }
+
+        [HttpPut("verify-account")]
+        public async Task<string?> VerifyAccount([FromQuery] string code)
+        {
+            string? response = String.Empty;
+
+            return response;
+        }
+
+        [HttpPut("verify-account")]
+        public async Task<string?> VerifyLogin([FromQuery] string code)
+        {
+            string? response = String.Empty;
+
+            return response;
+        }
     }
 }

@@ -7,6 +7,10 @@
 
 <PanelComponent>
     <Component>
+        @if (ShowNotification == true)
+        {
+            <Notifications NotificationMessage="@NotificationMessage" notificationType="@NotificationType" closeNotification="CloseNotification" />
+        }
         <TitleSection title="Register" />
         <InputSection inputSectionTitle="Email" inputValue="new InputSection.InputValue(OnEmailValue)" isPassword="false" />
         <br/>
@@ -28,6 +32,10 @@
 
     private string? Email { get; set; }
     private string? Password { get; set; }
+
+    private bool ShowNotification { get; set; }
+    private Notifications.NotificationType NotificationType { get; set; }
+    private string? NotificationMessage { get; set; }
 
     private void NavigateToLogIn()
     {
@@ -61,6 +69,24 @@
         HttpResponseMessage message = await client.PostAsync(builder.ToString(), null);
         string message_string = await message.Content.ReadAsStringAsync();
 
-        Console.WriteLine($"Register response: {message_string}");
+
+        if (message_string == "Registration successful")
+        {
+            NotificationType = Notifications.NotificationType.Information;
+        }
+        else
+        {
+            NotificationType = Notifications.NotificationType.Error;
+        }
+
+        NotificationMessage = message_string;
+        ShowNotification = true;
+        StateHasChanged();
+    }
+
+    private void CloseNotification()
+    {
+        ShowNotification = false;
+        StateHasChanged();
     }
 }
