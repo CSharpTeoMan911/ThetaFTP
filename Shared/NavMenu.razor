@@ -44,6 +44,7 @@
         {
             IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
             AuthCache = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+
             if (firstRender == true)
             {
                 IJSObjectReference animation_module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/animations.js");
