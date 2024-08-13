@@ -10,7 +10,27 @@ namespace ThetaFTP.Shared.Classes
         private static string json_file = "server_settings.json";
         public static async Task<ServerConfigModel?> GetServerConfig()
         {
-            ServerConfigModel? model = await JsonFormatter.JsonDeserialiser<ServerConfigModel>(json_file);
+            string? serialised_json = null;
+
+            try
+            {
+                FileStream fs = File.OpenRead(json_file);
+                try
+                {
+                    byte[] json_binary = new byte[fs.Length];
+                    await fs.ReadAsync(json_binary, 0, json_binary.Length);
+                    serialised_json = Encoding.UTF8.GetString(json_binary);
+                }
+                finally
+                {
+                    await fs.DisposeAsync();
+                }
+            }
+            catch { }
+
+
+            ServerConfigModel? model = await JsonFormatter.JsonDeserialiser<ServerConfigModel>(serialised_json);
+
             if (model == null)
                 model = await CreateServerConfig(new ServerConfigModel());
             return model;

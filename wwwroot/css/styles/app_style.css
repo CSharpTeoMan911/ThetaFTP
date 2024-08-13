@@ -34,6 +34,20 @@ div.title_div{
     flex-direction: column;
 }
 
+div.focus_panel {
+    left: 50vw;
+    transform: translate(-50%, -50%);
+    top: 50vh;
+    margin: 0px;
+    position: absolute;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    background-color: rgba(80,80,80, 0.7);
+}
+
 h1.title {
     font-family: 'JetBrains Mono', sans-serif;
     width: fit-content;
@@ -66,3 +80,4 @@ button.control_button{
 img.notification_image{
     height: 15px;
 }
+

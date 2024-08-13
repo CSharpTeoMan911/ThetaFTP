@@ -10,6 +10,10 @@
 
 <PanelComponent>
     <Component>
+        @if (ShowAccountsApprovalPanel == true)
+        {
+            <AccountValidationPanel closeAccountValidationPanel="CloseAccountValidation"/>
+        }
         @if(ShowNotification == true){
             <Notifications NotificationMessage="@NotificationMessage" notificationType="@NotificationType" closeNotification="CloseNotification"/>
         }
@@ -37,6 +41,10 @@
     private Notifications.NotificationType NotificationType { get; set; }
     private string? NotificationMessage { get; set; }
 
+    private bool ShowAccountsApprovalPanel { get; set; }
+    private bool ShowLogInSessionValidationPanel { get; set; }
+
+
     // ADD CALLBACK METHODS FOR THE 'input' SECTIONS
     private void NavigateToRegister()
     {
@@ -51,7 +59,6 @@
 
     private async void SignIn()
     {
-
         AuthenticationModel authentication = new AuthenticationModel();
         authentication.email = Email;
         authentication.password = Password;
@@ -66,24 +73,34 @@
         HttpResponseMessage message = await client.GetAsync(builder.ToString());
         string response = await message.Content.ReadAsStringAsync();
 
-        ShowNotification = true;
 
-        if (response.Contains("Invalid") == true || response.Contains("Unsuccessful"))
+        if (response.Contains("Invalid") == true || response == "Internal server error")
         {
             NotificationType = Notifications.NotificationType.Error;
             NotificationMessage = response;
+        }
+        else if (response == "Account not approved")
+        {
+            NotificationType = Notifications.NotificationType.Information;
+            NotificationMessage = response;
+            ShowAccountsApprovalPanel = true;
+        }
+        else if (response == "Check the code sent to your email address to approve your log in session")
+        {
+            NotificationType = Notifications.NotificationType.Information;
+            NotificationMessage = response;
+            ShowLogInSessionValidationPanel = true;
         }
         else
         {
             NotificationType = Notifications.NotificationType.Information;
             NotificationMessage = "Authentication successful.";
-
             IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
             await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", response);
         }
 
+        ShowNotification = true;
         StateHasChanged();
-
     }
 
     private void OnEmailValue(string? value)
@@ -99,6 +116,18 @@
     private void CloseNotification()
     {
         ShowNotification = false;
+        StateHasChanged();
+    }
+
+    private void CloseAccountValidation()
+    {
+        ShowAccountsApprovalPanel = false;
+        StateHasChanged();
+    }
+
+    private void CloseLogInSessionValidation()
+    {
+        ShowLogInSessionValidationPanel = false;
         StateHasChanged();
     }
 }
