@@ -367,3 +367,6 @@ server_settings.json
 
 # Database file
 Theta_FTP.db
+
+# Logs file
+ErrorLogs.txt
