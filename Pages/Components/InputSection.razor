@@ -1,4 +1,4 @@
-﻿<div>
+﻿<div style="@style">
     <div>
         <h2 class="input_title">
             @inputSectionTitle
@@ -8,11 +8,31 @@
     <div style="display:flex;flex-direction:column;align-self:center;">
         @if(isPassword)
         {
-            <input class="input_style" type="password" @oninput=OnInput/>
+            @if (input_with_button == true)
+            {
+                <div style="width:100%; display:flex; flex-direction: row; align-content:center">
+                    <input class="input_style" style="align-self:center" type="password" @oninput=OnInput />
+                    @InputButton
+                </div>
+            }
+            else
+            {
+                <input class="input_style" type="password" @oninput=OnInput />
+            }
         }
         else
         {
-            <input class="input_style" @oninput=OnInput />
+            @if (input_with_button == true)
+            {
+                <div style="width:100%; display:flex; flex-direction: row; align-content:center">
+                    <input class="input_style" style="align-self:center;" @oninput=OnInput />
+                    @InputButton
+                </div>
+            }
+            else
+            {
+                <input class="input_style" @oninput=OnInput />
+            }
         }
     </div>
 </div>
@@ -28,6 +48,15 @@
 
     [Parameter]
     public InputValue? inputValue { get; set; }
+
+    [Parameter]
+    public string? style { get; set; }
+
+    [Parameter]
+    public bool input_with_button { get; set; }
+
+    [Parameter] public RenderFragment? InputButton { get; set; }
+
 
     private void OnInput(ChangeEventArgs args)
     {

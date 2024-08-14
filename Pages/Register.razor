@@ -5,18 +5,18 @@
 @inject NavigationManager NavigationManager;
 @page "/register";
 
-<PanelComponent>
+<PanelComponent style="padding:calc(46px + 0.5vw)">
     <Component>
         @if (ShowNotification == true)
         {
             <Notifications NotificationMessage="@NotificationMessage" notificationType="@NotificationType" closeNotification="CloseNotification" />
         }
         <TitleSection title="Register" />
-        <InputSection inputSectionTitle="Email" inputValue="new InputSection.InputValue(OnEmailValue)" isPassword="false" />
+        <InputSection inputSectionTitle="Email" inputValue="new InputSection.InputValue(OnEmailValue)" isPassword="false" input_with_button="false" />
         <br/>
-        <InputSection inputSectionTitle="Password" inputValue="new InputSection.InputValue(OnPasswordValue)" isPassword="true" />
+        <InputSection inputSectionTitle="Password" inputValue="new InputSection.InputValue(OnPasswordValue)" isPassword="true" input_with_button="false" />
         <br />
-        <InputSection inputSectionTitle="Re-Password" isPassword="true" />
+        <InputSection inputSectionTitle="Re-Password" isPassword="true" input_with_button="false" />
         <div style="display:flex;flex-direction:column;margin-top:40px;">
             <button class="auth_action" @onclick=SignUp>
                 Sign Up
@@ -36,6 +36,8 @@
     private bool ShowNotification { get; set; }
     private Notifications.NotificationType NotificationType { get; set; }
     private string? NotificationMessage { get; set; }
+
+    private bool NavigateToLogInOnPanelClose { get; set; }
 
     private void NavigateToLogIn()
     {
@@ -73,6 +75,7 @@
         if (message_string == "Registration successful")
         {
             NotificationType = Notifications.NotificationType.Information;
+            NavigateToLogInOnPanelClose = true;
         }
         else
         {
@@ -88,5 +91,12 @@
     {
         ShowNotification = false;
         StateHasChanged();
+
+        if (NavigateToLogInOnPanelClose == true)
+        {
+            StringBuilder uri_builder = new StringBuilder(NavigationManager.BaseUri);
+            uri_builder.Append("/log-in");
+            NavigationManager.NavigateTo(uri_builder.ToString(), true);
+        }
     }
 }

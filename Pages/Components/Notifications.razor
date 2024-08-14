@@ -58,7 +58,7 @@ else
 
     public void ElapsedTime(object? sender, System.Timers.ElapsedEventArgs args)
     {
-        if ((DateTime.Now - render_time).TotalSeconds >= 10)
+        if ((DateTime.Now - render_time).TotalSeconds >= 4)
         {
             CloseNotification_();
         }

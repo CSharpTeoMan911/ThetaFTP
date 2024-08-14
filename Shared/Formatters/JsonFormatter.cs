@@ -33,7 +33,7 @@ namespace ThetaFTP.Shared.Formatters
         }
 
 
-        public static Task<string?> JsonSerialiser<ReturnType>(ReturnType? item)
+        public static Task<string?> JsonSerialiser<InsertType>(InsertType? item)
         {
             string? return_item = null;
 
