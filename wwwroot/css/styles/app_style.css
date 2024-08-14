@@ -26,8 +26,9 @@ div.jumbotron-custom {
     width: fit-content;
     align-self: center;
     align-content: center;
-    padding: 50px;
+    padding: 0px;
 }
+
 
 div.title_div{
     display: flex;
@@ -75,6 +76,16 @@ input.input_style {
 
 button.control_button{
     margin-top: 20px;
+}
+
+button.close_button {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    margin: 0px;
+    padding: 0px;
+    border-width: 0px;
+    background-color: transparent;
 }
 
 img.notification_image{

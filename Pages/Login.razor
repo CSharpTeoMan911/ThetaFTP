@@ -1,4 +1,5 @@
 ﻿@page "/log-in"
+@using ThetaFTP.Shared.Formatters;
 @using ThetaFTP.Pages.Components;
 @using ThetaFTP.Shared.Classes;
 @using ThetaFTP.Shared.Models;
@@ -8,19 +9,24 @@
 @inject NavigationManager NavigationManager;
 @inject IJSRuntime JS;
 
-<PanelComponent>
+<PanelComponent style="padding:calc(46px + 0.5vw)">
     <Component>
         @if (ShowAccountsApprovalPanel == true)
         {
-            <AccountValidationPanel closeAccountValidationPanel="CloseAccountValidation"/>
+            <ValidationPanel closeAccountValidationPanel="CloseAccountValidation" initiateValidationProcedure=ValidationProcedure validationType="Shared.ValidationType.AccountAuthorisation"/>
         }
+        else if (ShowLogInSessionValidationPanel)
+        {
+            <ValidationPanel closeAccountValidationPanel="CloseAccountValidation" initiateValidationProcedure=ValidationProcedure validationType="Shared.ValidationType.LogInSessionAuthorisation" />
+        }
+
         @if(ShowNotification == true){
             <Notifications NotificationMessage="@NotificationMessage" notificationType="@NotificationType" closeNotification="CloseNotification"/>
         }
         <TitleSection title="Log In" />
-        <InputSection inputSectionTitle="Email" inputValue="new InputSection.InputValue(OnEmailValue)" isPassword="false" />
+        <InputSection inputSectionTitle="Email" inputValue="new InputSection.InputValue(OnEmailValue)" isPassword="false" input_with_button="false" />
         <br/>
-        <InputSection inputSectionTitle="Password" inputValue="new InputSection.InputValue(OnPasswordValue)" isPassword="true" />
+        <InputSection inputSectionTitle="Password" inputValue="new InputSection.InputValue(OnPasswordValue)" isPassword="true" input_with_button="false" />
         <div style="display:flex;flex-direction:column;margin-top:40px;">
             <button class="auth_action" @onclick=SignIn>
                 Sign In
@@ -44,6 +50,10 @@
     private bool ShowAccountsApprovalPanel { get; set; }
     private bool ShowLogInSessionValidationPanel { get; set; }
 
+    private bool ShowAccountsApprovalPanelOnClose { get; set; }
+    private bool ShowLogInSessionValidationPanelOnClose { get; set; }
+
+    private bool NavigateToMainPageOnClose { get; set; }
 
     // ADD CALLBACK METHODS FOR THE 'input' SECTIONS
     private void NavigateToRegister()
@@ -73,30 +83,48 @@
         HttpResponseMessage message = await client.GetAsync(builder.ToString());
         string response = await message.Content.ReadAsStringAsync();
 
+        ServerPayloadModel? serverPayload = await JsonFormatter.JsonDeserialiser<ServerPayloadModel>(response);
 
-        if (response.Contains("Invalid") == true || response == "Internal server error")
+        if (serverPayload != null)
         {
-            NotificationType = Notifications.NotificationType.Error;
-            NotificationMessage = response;
-        }
-        else if (response == "Account not approved")
-        {
-            NotificationType = Notifications.NotificationType.Information;
-            NotificationMessage = response;
-            ShowAccountsApprovalPanel = true;
-        }
-        else if (response == "Check the code sent to your email address to approve your log in session")
-        {
-            NotificationType = Notifications.NotificationType.Information;
-            NotificationMessage = response;
-            ShowLogInSessionValidationPanel = true;
+            if (serverPayload.response_message == "Account not approved")
+            {
+                NotificationType = Notifications.NotificationType.Information;
+                NotificationMessage = "Authentication successful.";
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
+
+                NotificationType = Notifications.NotificationType.Information;
+                NotificationMessage = "Account not approved. Verify the inbox of your email address used for this account.";
+                ShowAccountsApprovalPanelOnClose = true;
+            }
+            else if (serverPayload.response_message == "Authentication successful")
+            {
+                NotificationType = Notifications.NotificationType.Information;
+                NotificationMessage = serverPayload.response_message;
+            }
+            else if (serverPayload.response_message == "Check the code sent to your email address to approve your log in session")
+            {
+                NotificationType = Notifications.NotificationType.Information;
+                NotificationMessage = "Authentication successful.";
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
+
+                NotificationType = Notifications.NotificationType.Information;
+                NotificationMessage = serverPayload.response_message;
+                ShowLogInSessionValidationPanelOnClose = true;
+            }
+            else if (serverPayload.response_message == "Invalid email" || serverPayload.response_message == "Invalid password" || serverPayload.response_message == "Invalid credentials" || serverPayload.response_message == "Internal server error")
+            {
+                NotificationType = Notifications.NotificationType.Error;
+                NotificationMessage = serverPayload.response_message;
+            }
+
         }
         else
         {
-            NotificationType = Notifications.NotificationType.Information;
-            NotificationMessage = "Authentication successful.";
-            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-            await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", response);
+            NotificationType = Notifications.NotificationType.Error;
+            NotificationMessage = "Internal server error";
         }
 
         ShowNotification = true;
@@ -115,8 +143,14 @@
 
     private void CloseNotification()
     {
+        if (ShowAccountsApprovalPanelOnClose == true)
+            ShowAccountsApprovalPanel = true;
+        ShowAccountsApprovalPanelOnClose = false;
         ShowNotification = false;
         StateHasChanged();
+
+        if (NavigateToMainPageOnClose == true)
+            NavigationManager.NavigateTo(NavigationManager.BaseUri, true);
     }
 
     private void CloseAccountValidation()
@@ -128,6 +162,58 @@
     private void CloseLogInSessionValidation()
     {
         ShowLogInSessionValidationPanel = false;
+        StateHasChanged();
+    }
+
+    private async void ValidationProcedure(string? code, Shared.ValidationType validationType)
+    {
+        ValidationModel model = new ValidationModel()
+        {
+            validationType = validationType,
+            email = Email,
+            code = code
+        };
+
+        string formatted_model = await QueryParsing.QueryParser<ValidationModel>(model);
+
+        StringBuilder validation_builder = new StringBuilder();
+        validation_builder.Append("/validation/validate-code?");
+        validation_builder.Append(formatted_model);
+
+        string validation_query = validation_builder.ToString();
+
+        HttpClient client = HttpClientGen.Generate(true);
+        client.BaseAddress = new Uri(NavigationManager.BaseUri);
+        HttpResponseMessage result = await client.GetAsync(validation_query);
+
+        string result_message = await result.Content.ReadAsStringAsync();
+        ServerPayloadModel? serverPayload = await JsonFormatter.JsonDeserialiser<ServerPayloadModel>(result_message);
+
+        if (serverPayload != null)
+        {
+            if (serverPayload.response_message == "Account authorised")
+            {
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
+
+                NotificationType = Notifications.NotificationType.Information;
+                NotificationMessage = "Authentication successful.";
+                NavigateToMainPageOnClose = true;
+
+            }
+            else if (serverPayload.response_message == "Invalid email" || serverPayload.response_message == "Invalid code" || serverPayload.response_message == "Internal server error")
+            {
+                NotificationType = Notifications.NotificationType.Error;
+                NotificationMessage = serverPayload.response_message;
+            }
+        }
+        else
+        {
+            NotificationType = Notifications.NotificationType.Error;
+            NotificationMessage = "Internal server error";
+        }
+
+        ShowNotification = true;
         StateHasChanged();
     }
 }

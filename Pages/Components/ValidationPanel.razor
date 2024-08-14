@@ -1,0 +1,51 @@
+﻿
+<FocusPanel>
+    <Component>
+        <PanelComponent style="margin-top:200px; border: 1px solid black;">
+            <Component>
+                <div style="width:100%; display:flex; flex-direction: row-reverse;">
+                    <button class="close_button" @onclick=ClosePanel>
+                        <img style="height:calc(22px + 0.5vw); align-self:center; margin: 0px; padding: 0px;" src="./images/close_button.webp" />
+                    </button>
+                </div>
+
+                <InputSection inputSectionTitle="Validation code" isPassword=false inputValue="new InputSection.InputValue(OnInput)" style="padding:calc(8px + 0.5vw) calc(28px + 0.5vw) calc(38px + 0.5vw) calc(48px + 0.5vw)" input_with_button="true">
+                    <InputButton>
+                        <button class="close_button" @onclick=ValidationProcedure>
+                            <img style="height:calc(22px + 0.5vw); align-self:center; margin: 0px 0px 0px 5px; padding: 0px; justify-self:center;" src="./images/next.webp" />
+                        </button>
+                    </InputButton>
+                </InputSection>
+
+            </Component>
+        </PanelComponent>
+    </Component>
+</FocusPanel>
+
+
+@code {
+    public delegate void CloseAccountValidationPanel();
+    [Parameter] public CloseAccountValidationPanel? closeAccountValidationPanel { get; set; }
+
+    public delegate void InitiateValidationProcedure(string? code, Shared.ValidationType validationType);
+    [Parameter] public InitiateValidationProcedure? initiateValidationProcedure { get; set; }
+
+    [Parameter] public Shared.ValidationType validationType { get; set; }
+
+    private string? code;
+
+    private void ClosePanel()
+    {
+        closeAccountValidationPanel?.Invoke();
+    }
+
+    private void ValidationProcedure()
+    {
+        initiateValidationProcedure?.Invoke(code, validationType);
+    }
+
+    private void OnInput(string? value)
+    {
+        code = value;
+    }
+}
