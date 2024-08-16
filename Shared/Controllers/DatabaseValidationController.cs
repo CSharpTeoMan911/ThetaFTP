@@ -20,6 +20,34 @@ namespace ThetaFTP.Shared.Controllers
             ServerPayloadModel serverPayload = new ServerPayloadModel();
             serverPayload.response_message = "Internal server error";
 
+
+            switch (value?.validationType)
+            {
+                case Shared.ValidationType.AccountAuthorisation:
+                    await ValidateAccount(value, serverPayload);
+                    break;
+                case Shared.ValidationType.LogInSessionAuthorisation:
+                    await ValidateLogInSession(value, serverPayload);
+                    break;
+            }
+
+            response = await JsonFormatter.JsonSerialiser(serverPayload);
+            return response;
+        }
+
+        public Task<string?> Insert(string? value)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<string?> Update(string? value)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        private async Task ValidateAccount(ValidationModel? value, ServerPayloadModel serverPayload)
+        {
             if (value?.email != null)
             {
                 if (value?.code != null)
@@ -29,22 +57,14 @@ namespace ThetaFTP.Shared.Controllers
                     if (hashed_key.Item2 != typeof(Exception))
                     {
                         MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+
                         try
                         {
                             MySqlCommand validation_command = connection.CreateCommand();
                             try
                             {
-                                switch (value?.validationType)
-                                {
-                                    case Shared.ValidationType.AccountAuthorisation:
-                                        validation_command.CommandText = "SELECT Email FROM Accounts_Waiting_For_Approval WHERE Account_Validation_Code = @Account_Validation_Code";
-                                        validation_command.Parameters.AddWithValue("Account_Validation_Code", hashed_key.Item1);
-                                        break;
-                                    case Shared.ValidationType.LogInSessionAuthorisation:
-                                        validation_command.CommandText = "SELECT Log_In_Session_Key FROM Log_In_Sessions_Waiting_For_Approval WHERE Log_In_Code = @Log_In_Code";
-                                        validation_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_key.Item1);
-                                        break;
-                                }
+                                validation_command.CommandText = "SELECT Email FROM Accounts_Waiting_For_Approval WHERE Account_Validation_Code = @Account_Validation_Code";
+                                validation_command.Parameters.AddWithValue("Account_Validation_Code", hashed_key.Item1);
 
                                 DbDataReader reader = await validation_command.ExecuteReaderAsync();
                                 try
@@ -54,84 +74,50 @@ namespace ThetaFTP.Shared.Controllers
                                         string? extracted_value = reader.GetString(0);
                                         await reader.CloseAsync();
 
-                                        switch (value?.validationType)
+                                        if (extracted_value == value?.email)
                                         {
-                                            case Shared.ValidationType.AccountAuthorisation:
-                                                if (extracted_value != value?.email)
-                                                {
-                                                    serverPayload.response_message = "Invalid code";
-                                                    goto End;
-                                                }
-                                                break;
-                                            case Shared.ValidationType.LogInSessionAuthorisation:
-                                                if (extracted_value != value?.code)
-                                                {
-                                                    serverPayload.response_message = "Invalid code";
-                                                    goto End;
-                                                }
-                                                break;
-                                        }
-
-
-                                        MySqlCommand approval_command = connection.CreateCommand();
-                                        try
-                                        {
-                                            switch (value?.validationType)
+                                            MySqlCommand approval_command = connection.CreateCommand();
+                                            try
                                             {
-                                                case Shared.ValidationType.AccountAuthorisation:
-                                                    approval_command.CommandText = "DELETE FROM Accounts_Waiting_For_Approval WHERE Account_Validation_Code = @Account_Validation_Code";
-                                                    approval_command.Parameters.AddWithValue("Account_Validation_Code", hashed_key.Item1);
-                                                    break;
-                                                case Shared.ValidationType.LogInSessionAuthorisation:
-                                                    approval_command.CommandText = "DELETE FROM Log_In_Sessions_Waiting_For_Approval WHERE Log_In_Code = @Log_In_Code";
-                                                    approval_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_key.Item1);
-                                                    break;
+                                                approval_command.CommandText = "DELETE FROM Accounts_Waiting_For_Approval WHERE Account_Validation_Code = @Account_Validation_Code";
+                                                approval_command.Parameters.AddWithValue("Account_Validation_Code", hashed_key.Item1);
+                                                await approval_command.ExecuteNonQueryAsync();
+
+                                                string log_in_session_key = await CodeGenerator.GenerateKey(40);
+                                                Tuple<string, Type> hashed_log_in_session_key = await Sha512Hasher.Hash(log_in_session_key);
+
+                                                if (hashed_log_in_session_key.Item2 != typeof(Exception))
+                                                {
+                                                    MySqlCommand insert_log_in_key_command = connection.CreateCommand();
+                                                    try
+                                                    {
+                                                        insert_log_in_key_command.CommandText = "INSERT INTO Log_In_Sessions VALUES(@Log_In_Session_Key, @Email, @Expiration_Date)";
+                                                        insert_log_in_key_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_log_in_session_key.Item1);
+                                                        insert_log_in_key_command.Parameters.AddWithValue("Email", value.email);
+                                                        insert_log_in_key_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddDays(2));
+
+                                                        serverPayload.response_message = "Account authorised";
+                                                        serverPayload.content = log_in_session_key;
+                                                    }
+                                                    finally
+                                                    {
+                                                        await insert_log_in_key_command.DisposeAsync();
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    serverPayload.response_message = "Internal server error";
+                                                }
                                             }
-
-                                            await approval_command.ExecuteNonQueryAsync();
-
-                                            switch (value?.validationType)
+                                            finally
                                             {
-                                                case Shared.ValidationType.AccountAuthorisation:
-
-                                                    string log_in_session_key = await CodeGenerator.GenerateKey(40);
-                                                    Tuple<string, Type> hashed_log_in_session_key = await Sha512Hasher.Hash(log_in_session_key);
-
-                                                    if (hashed_log_in_session_key.Item2 != typeof(Exception))
-                                                    {
-                                                        MySqlCommand insert_log_in_key_command = connection.CreateCommand();
-                                                        try
-                                                        {
-                                                            insert_log_in_key_command.CommandText = "INSERT INTO Log_In_Sessions VALUES(@Log_In_Session_Key, @Email, @Expiration_Date)";
-                                                            insert_log_in_key_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_log_in_session_key.Item1);
-                                                            insert_log_in_key_command.Parameters.AddWithValue("Email", value.email);
-                                                            insert_log_in_key_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddDays(2));
-
-                                                            serverPayload.response_message = "Account authorised";
-                                                            serverPayload.content = log_in_session_key;
-                                                        }
-                                                        finally
-                                                        {
-                                                            await insert_log_in_key_command.DisposeAsync();
-                                                        }
-                                                    }
-                                                    else
-                                                    {
-                                                        serverPayload.response_message = "Internal server error";
-                                                    }
-
-                                                    break;
-                                                case Shared.ValidationType.LogInSessionAuthorisation:
-                                                    serverPayload.response_message = extracted_value;
-                                                    break;
+                                                await approval_command.DisposeAsync();
                                             }
                                         }
-                                        finally
+                                        else
                                         {
-                                            await approval_command.DisposeAsync();
+                                            serverPayload.response_message = "Invalid code";
                                         }
-
-                                    End:;
                                     }
                                     else
                                     {
@@ -167,19 +153,126 @@ namespace ThetaFTP.Shared.Controllers
             {
                 serverPayload.response_message = "Invalid email";
             }
-
-            response = await JsonFormatter.JsonSerialiser(serverPayload);
-            return response;
         }
 
-        public Task<string?> Insert(string? value)
+        private async Task ValidateLogInSession(ValidationModel? value, ServerPayloadModel serverPayload)
         {
-            throw new NotImplementedException();
+            if (value?.email != null)
+            {
+                if (value?.code != null)
+                {
+                    Tuple<string, Type> hashed_key = await Sha512Hasher.Hash(value.code);
+
+                    if (hashed_key.Item2 != typeof(Exception))
+                    {
+                        MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+
+                        try
+                        {
+                            MySqlCommand validation_command = connection.CreateCommand();
+                            try
+                            {
+                                validation_command.CommandText = "SELECT Log_In_Code FROM Log_In_Sessions_Waiting_For_Approval WHERE Log_In_Code = @Log_In_Code";
+                                validation_command.Parameters.AddWithValue("Log_In_Code", hashed_key.Item1);
+
+                                DbDataReader reader = await validation_command.ExecuteReaderAsync();
+                                try
+                                {
+                                    if (await reader.ReadAsync() == true)
+                                    {
+                                        await reader.CloseAsync();
+                                        MySqlCommand approval_command = connection.CreateCommand();
+                                        try
+                                        {
+                                            approval_command.CommandText = "DELETE FROM Log_In_Sessions_Waiting_For_Approval WHERE Log_In_Code = @Log_In_Code";
+                                            approval_command.Parameters.AddWithValue("Log_In_Code", hashed_key.Item1);
+                                            await approval_command.ExecuteNonQueryAsync();
+                                            serverPayload.response_message = "Authentication successful";
+                                        }
+                                        finally
+                                        {
+                                            await approval_command.DisposeAsync();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        serverPayload.response_message = "Invalid code";
+                                    }
+                                }
+                                finally
+                                {
+                                    await reader.DisposeAsync();
+                                }
+                            }
+                            finally
+                            {
+                                await validation_command.DisposeAsync();
+                            }
+                        }
+                        finally
+                        {
+                            await connection.DisposeAsync();
+                        }
+                    }
+                    else
+                    {
+                        serverPayload.response_message = "Internal server error";
+                    }
+                }
+                else
+                {
+                    serverPayload.response_message = "Invalid code";
+                }
+            }
+            else
+            {
+                serverPayload.response_message = "Invalid email";
+            }
         }
 
-        public Task<string?> Update(string? value)
+        private async Task ValidateLogInSessionKey(ValidationModel? value, ServerPayloadModel serverPayload)
         {
-            throw new NotImplementedException();
+            if (value?.email != null)
+            {
+                if (value?.code != null)
+                {
+                    Tuple<string, Type> hashed_key = await Sha512Hasher.Hash(value.code);
+
+                    if (hashed_key.Item2 != typeof(Exception))
+                    {
+                        MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+
+                        try
+                        {
+                            MySqlCommand log_in_session_key_validation = connection.CreateCommand();
+                            try
+                            {
+
+                            }
+                            finally
+                            {
+                                await log_in_session_key_validation.DisposeAsync();
+                            }
+                        }
+                        finally
+                        {
+                            await connection.DisposeAsync();
+                        }
+                    }
+                    else
+                    {
+                        serverPayload.response_message = "Internal server error";
+                    }
+                }
+                else
+                {
+                    serverPayload.response_message = "Invalid code";
+                }
+            }
+            else
+            {
+                serverPayload.response_message = "Invalid email";
+            }
         }
     }
 }
