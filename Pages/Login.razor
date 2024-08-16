@@ -145,7 +145,10 @@
     {
         if (ShowAccountsApprovalPanelOnClose == true)
             ShowAccountsApprovalPanel = true;
+        if (ShowLogInSessionValidationPanelOnClose == true)
+            ShowLogInSessionValidationPanel = true;
         ShowAccountsApprovalPanelOnClose = false;
+        ShowLogInSessionValidationPanelOnClose = false;
         ShowNotification = false;
         StateHasChanged();
 
@@ -200,6 +203,12 @@
                 NotificationMessage = "Authentication successful.";
                 NavigateToMainPageOnClose = true;
 
+            }
+            else if (serverPayload.response_message == "Authentication successful")
+            {
+                NotificationType = Notifications.NotificationType.Information;
+                NotificationMessage = "Authentication successful.";
+                NavigateToMainPageOnClose = true;
             }
             else if (serverPayload.response_message == "Invalid email" || serverPayload.response_message == "Invalid code" || serverPayload.response_message == "Internal server error")
             {

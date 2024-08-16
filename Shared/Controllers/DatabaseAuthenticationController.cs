@@ -42,160 +42,168 @@ namespace ThetaFTP.Shared.Controllers
 
                         MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
 
-                        MySqlCommand check_if_account_exists_command = connection.CreateCommand();
                         try
                         {
-                            check_if_account_exists_command.CommandText = "SELECT Password FROM Credentials WHERE Email = @Email";
-                            check_if_account_exists_command.Parameters.AddWithValue("Email", value.email);
-
-                            DbDataReader check_if_account_exists_reader = await check_if_account_exists_command.ExecuteReaderAsync();
+                            MySqlCommand check_if_account_exists_command = connection.CreateCommand();
                             try
                             {
-                                if (await check_if_account_exists_reader.ReadAsync() == true)
+                                check_if_account_exists_command.CommandText = "SELECT Password FROM Credentials WHERE Email = @Email";
+                                check_if_account_exists_command.Parameters.AddWithValue("Email", value.email);
+
+                                DbDataReader check_if_account_exists_reader = await check_if_account_exists_command.ExecuteReaderAsync();
+                                try
                                 {
-                                    Tuple<string, Type> hashed_password = await Sha512Hasher.Hash(value.password);
-
-                                    if (hashed_password.Item2 != typeof(Exception))
+                                    if (await check_if_account_exists_reader.ReadAsync() == true)
                                     {
-                                        if (check_if_account_exists_reader.GetString(0) == hashed_password.Item1)
-                                        {
-                                            await check_if_account_exists_reader.CloseAsync();
+                                        Tuple<string, Type> hashed_password = await Sha512Hasher.Hash(value.password);
 
-                                            if (Shared.config?.two_step_auth == true)
+                                        if (hashed_password.Item2 != typeof(Exception))
+                                        {
+                                            if (check_if_account_exists_reader.GetString(0) == hashed_password.Item1)
                                             {
-                                                MySqlCommand check_if_account_is_approved_command = connection.CreateCommand();
-                                                try
+                                                await check_if_account_exists_reader.CloseAsync();
+
+                                                if (Shared.config?.two_step_auth == true)
                                                 {
-                                                    check_if_account_is_approved_command.CommandText = "SELECT Account_Validation_Code FROM Accounts_Waiting_For_Approval WHERE Email = @Email";
-                                                    check_if_account_is_approved_command.Parameters.AddWithValue("Email", value.email);
-                                                    DbDataReader check_if_account_is_approved_command_reader = await check_if_account_is_approved_command.ExecuteReaderAsync();
+                                                    MySqlCommand check_if_account_is_approved_command = connection.CreateCommand();
                                                     try
                                                     {
-                                                        if (await check_if_account_is_approved_command_reader.ReadAsync() == true)
+                                                        check_if_account_is_approved_command.CommandText = "SELECT Account_Validation_Code FROM Accounts_Waiting_For_Approval WHERE Email = @Email";
+                                                        check_if_account_is_approved_command.Parameters.AddWithValue("Email", value.email);
+                                                        DbDataReader check_if_account_is_approved_command_reader = await check_if_account_is_approved_command.ExecuteReaderAsync();
+                                                        try
                                                         {
-                                                            serverPayload.response_message = "Account not approved";
-                                                            goto End;
-                                                        }
+                                                            if (await check_if_account_is_approved_command_reader.ReadAsync() == true)
+                                                            {
+                                                                serverPayload.response_message = "Account not approved";
+                                                                goto End;
+                                                            }
 
-                                                        await check_if_account_is_approved_command_reader.CloseAsync();
+                                                            await check_if_account_is_approved_command_reader.CloseAsync();
+                                                        }
+                                                        finally
+                                                        {
+                                                            await check_if_account_is_approved_command_reader.DisposeAsync();
+                                                        }
                                                     }
                                                     finally
                                                     {
-                                                        await check_if_account_is_approved_command_reader.DisposeAsync();
+                                                        await check_if_account_is_approved_command.DisposeAsync();
                                                     }
                                                 }
-                                                finally
+
+
+                                                string log_in_session_key = await CodeGenerator.GenerateKey(40);
+                                                Tuple<string, Type> hashed_log_in_session_key = await Sha512Hasher.Hash(log_in_session_key);
+
+                                                if (hashed_log_in_session_key.Item2 != typeof(Exception))
                                                 {
-                                                    await check_if_account_is_approved_command.DisposeAsync();
-                                                    await connection.DisposeAsync();
-                                                }
-                                            }
-
-
-                                            string log_in_session_key = await CodeGenerator.GenerateKey(40);
-                                            Tuple<string, Type> hashed_log_in_session_key = await Sha512Hasher.Hash(log_in_session_key);
-
-                                            if (hashed_log_in_session_key.Item2 != typeof(Exception))
-                                            {
-                                                MySqlCommand insert_log_in_key_command = connection.CreateCommand();
-                                                try
-                                                {
-                                                    insert_log_in_key_command.CommandText = "INSERT INTO Log_In_Sessions VALUES(@Log_In_Session_Key, @Email, @Expiration_Date)";
-                                                    insert_log_in_key_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_log_in_session_key.Item1);
-                                                    insert_log_in_key_command.Parameters.AddWithValue("Email", value.email);
-                                                    insert_log_in_key_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddDays(2));
-
-                                                    if (Shared.config?.two_step_auth == true)
+                                                    MySqlCommand insert_log_in_key_command = connection.CreateCommand();
+                                                    try
                                                     {
-                                                        string log_in_code = await CodeGenerator.GenerateKey(10);
-                                                        Tuple<string, Type> hashed_log_in_code = await Sha512Hasher.Hash(log_in_code);
+                                                        insert_log_in_key_command.CommandText = "INSERT INTO Log_In_Sessions VALUES(@Log_In_Session_Key, @Email, @Expiration_Date)";
+                                                        insert_log_in_key_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_log_in_session_key.Item1);
+                                                        insert_log_in_key_command.Parameters.AddWithValue("Email", value.email);
+                                                        insert_log_in_key_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddDays(2));
+                                                        await insert_log_in_key_command.ExecuteNonQueryAsync();
 
-                                                        if (hashed_log_in_code.Item2 != typeof(Exception))
+                                                        if (Shared.config?.two_step_auth == true)
                                                         {
-                                                            MySqlCommand insert_log_in_code_command = connection.CreateCommand();
-                                                            try
+                                                            string log_in_code = await CodeGenerator.GenerateKey(10);
+                                                            Tuple<string, Type> hashed_log_in_code = await Sha512Hasher.Hash(log_in_code);
+
+                                                            if (hashed_log_in_code.Item2 != typeof(Exception))
                                                             {
-                                                                bool smtps_operation_result = await SMTPS_Service.SendSMTPS(value?.email, "Log in authorisation", $"Login code: {log_in_code}");
-                                                                insert_log_in_code_command.CommandText = "INSERT INTO Log_In_Sessions_Waiting_For_Approval VALUES(@Log_In_Code, @Log_In_Session_Key, @Expiration_Date)";
-                                                                insert_log_in_code_command.Parameters.AddWithValue("Log_In_Code", hashed_log_in_code.Item1);
-                                                                insert_log_in_code_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_log_in_session_key.Item1);
-                                                                insert_log_in_code_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddDays(2));
-
-                                                                if (smtps_operation_result == true)
+                                                                MySqlCommand insert_log_in_code_command = connection.CreateCommand();
+                                                                try
                                                                 {
-                                                                    serverPayload.content = log_in_session_key;
-                                                                    serverPayload.response_message = "Check the code sent to your email address to approve your log in session";
+                                                                    bool smtps_operation_result = await SMTPS_Service.SendSMTPS(value?.email, "Log in authorisation", $"Login code: {log_in_code}");
+                                                                    insert_log_in_code_command.CommandText = "INSERT INTO Log_In_Sessions_Waiting_For_Approval VALUES(@Log_In_Code, @Log_In_Session_Key, @Expiration_Date)";
+                                                                    insert_log_in_code_command.Parameters.AddWithValue("Log_In_Code", hashed_log_in_code.Item1);
+                                                                    insert_log_in_code_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_log_in_session_key.Item1);
+                                                                    insert_log_in_code_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddDays(2));
+                                                                    await insert_log_in_code_command.ExecuteNonQueryAsync();
+
+                                                                    if (smtps_operation_result == true)
+                                                                    {
+                                                                        serverPayload.content = log_in_session_key;
+                                                                        serverPayload.response_message = "Check the code sent to your email address to approve your log in session";
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        MySqlCommand delete_account = connection.CreateCommand();
+                                                                        try
+                                                                        {
+                                                                            delete_account.CommandText = "DELETE FROM Log_In_Sessions WHERE Log_In_Session_Key = @Log_In_Session_Key";
+                                                                            delete_account.Parameters.AddWithValue("Log_In_Session_Key", value?.email);
+                                                                            await delete_account.ExecuteNonQueryAsync();
+                                                                        }
+                                                                        finally
+                                                                        {
+                                                                            await delete_account.DisposeAsync();
+                                                                        }
+
+                                                                        serverPayload.response_message = "Internal server error";
+                                                                    }
                                                                 }
-                                                                else
+                                                                finally
                                                                 {
-                                                                    MySqlCommand delete_account = connection.CreateCommand();
-                                                                    try
-                                                                    {
-                                                                        delete_account.CommandText = "DELETE FROM Log_In_Sessions WHERE Log_In_Session_Key = @Log_In_Session_Key";
-                                                                        delete_account.Parameters.AddWithValue("Log_In_Session_Key", value?.email);
-                                                                        await delete_account.ExecuteNonQueryAsync();
-                                                                    }
-                                                                    finally
-                                                                    {
-                                                                        await delete_account.DisposeAsync();
-                                                                    }
-
-                                                                    serverPayload.response_message = "Internal server error";
+                                                                    await insert_log_in_code_command.DisposeAsync();
                                                                 }
                                                             }
-                                                            finally
+                                                            else
                                                             {
-                                                                await insert_log_in_code_command.DisposeAsync();
+                                                                serverPayload.response_message = "Internal server error";
                                                             }
                                                         }
                                                         else
                                                         {
-                                                            serverPayload.response_message = "Internal server error";
+                                                            serverPayload.content = log_in_session_key;
+                                                            serverPayload.response_message = "Authentication successful";
                                                         }
                                                     }
-                                                    else
+                                                    finally
                                                     {
-                                                        serverPayload.content = log_in_session_key;
-                                                        serverPayload.response_message = "Authentication successful";
+                                                        await insert_log_in_key_command.DisposeAsync();
                                                     }
                                                 }
-                                                finally
+                                                else
                                                 {
-                                                    await insert_log_in_key_command.DisposeAsync();
+                                                    serverPayload.response_message = "Internal server error";
                                                 }
+
+                                            End:;
                                             }
                                             else
                                             {
-                                                serverPayload.response_message = "Internal server error";
+                                                serverPayload.response_message = "Invalid password";
                                             }
-
-                                        End:;
                                         }
                                         else
                                         {
-                                            serverPayload.response_message = "Invalid password";
+                                            serverPayload.response_message = "Internal server error";
                                         }
                                     }
                                     else
                                     {
-                                        serverPayload.response_message = "Internal server error";
+                                        serverPayload.response_message = "Invalid email";
                                     }
                                 }
-                                else
+                                finally
                                 {
-                                    serverPayload.response_message = "Invalid email";
+                                    await check_if_account_exists_reader.DisposeAsync();
                                 }
                             }
                             finally
                             {
-                                await check_if_account_exists_reader.DisposeAsync();
+                                await check_if_account_exists_command.DisposeAsync();
                             }
+
                         }
                         finally
                         {
-                            await check_if_account_exists_command.DisposeAsync();
+                            await connection.DisposeAsync();
                         }
-
                     }
                     else
                     {
