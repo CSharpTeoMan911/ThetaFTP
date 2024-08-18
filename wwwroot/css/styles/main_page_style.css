@@ -1,1 +1,110 @@
-﻿
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+div.files_panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    width: 84vw;
+    height: 78vh;
+}
+
+div.files_panel_control {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-content: center;
+    width:100%;
+    background-color: #01407d;
+    padding:5px;
+    border-radius:3px 3px 0px 0px;
+}
+
+div.panel_control_section {
+    margin-top: 10px;
+    margin-bottom: 5px;
+    display: inline-block;
+    vertical-align: top;
+    width: 41vw;
+    min-width: fit-content;
+}
+
+div.files_panel_file_options {
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    align-items: center;
+}
+
+div.files_panel_file_search {
+    display: flex;
+    flex-direction: row-reverse;
+    align-content: center;
+    align-items: center;
+}
+
+div.files_panel_file_search_control {
+    display: flex;
+    flex-direction: row;
+    align-content:center;
+    align-items:center;
+}
+
+div.path_display {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    align-items: center;
+    background-color: #009bea;
+    padding: 5px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+button.control_button {
+    margin-top: 0px;
+    background-color: transparent;
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-width: 0px;
+    border-color: transparent;
+}
+
+
+img.control_image{
+    height: 30px;
+    align-self:center;
+    justify-self:center;
+}
+
+p.control_label {
+    font-size: 20px;
+    align-self: center;
+    justify-self: center;
+    margin: 0px 10px 0px 0px;
+    padding: 0px;
+    color: white;
+    font-family: 'Roboto', sans-serif;
+}
+
+p.path_label {
+    margin: 0px 10px 0px 25px;
+    color: #01407d;
+    align-self: center;
+    font-family: 'Roboto', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+}
+
+input.path_input {
+    width: 92%;
+    align-self: center;
+    border-width: 0px;
+    background-color: #01407d;
+    color: white;
+}

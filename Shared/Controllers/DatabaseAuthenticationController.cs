@@ -288,8 +288,7 @@ namespace ThetaFTP.Shared.Controllers
                                                                         account_validation_code_insertion_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddHours(1));
                                                                         await account_validation_code_insertion_command.ExecuteNonQueryAsync();
 
-                                                                        Console.WriteLine($"smtps_operation_result: {smtps_operation_result}");
-
+                                                                      
                                                                         if (smtps_operation_result == true)
                                                                         {
                                                                             response = "Registration successful";

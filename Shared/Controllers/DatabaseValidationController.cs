@@ -247,7 +247,68 @@ namespace ThetaFTP.Shared.Controllers
                             MySqlCommand log_in_session_key_validation = connection.CreateCommand();
                             try
                             {
+                                log_in_session_key_validation.CommandText = "SELECT Expiration_Date FROM Log_In_Sessions WHERE Log_In_Session_Key = @Log_In_Session_Key";
+                                log_in_session_key_validation.Parameters.AddWithValue("Log_In_Session_Key", hashed_key.Item1);
 
+                                DbDataReader log_in_session_key_validation_reader = await log_in_session_key_validation.ExecuteReaderAsync();
+                                try
+                                {
+                                    if (await log_in_session_key_validation_reader.ReadAsync() == true)
+                                    {
+                                        DateTime expiration_date = DateTime.Parse(log_in_session_key_validation_reader.GetString(0));
+
+                                        if (DateTime.Now < expiration_date)
+                                        {
+                                            if (Shared.config?.two_step_auth == true)
+                                            {
+
+                                                MySqlCommand log_in_session_key_is_validated = connection.CreateCommand();
+                                                log_in_session_key_is_validated.CommandText = "SELECT Log_In_Code FROM Log_In_Sessions_Waiting_For_Approval WHERE Log_In_Session_Key = @Log_In_Session_Key";
+                                                log_in_session_key_is_validated.Parameters.AddWithValue("Log_In_Session_Key", hashed_key.Item1);
+
+                                                try
+                                                {
+                                                    DbDataReader log_in_session_key_is_validated_reader = await log_in_session_key_is_validated.ExecuteReaderAsync();
+                                                    try
+                                                    {
+                                                        if (await log_in_session_key_is_validated_reader.ReadAsync() == true)
+                                                        {
+                                                            serverPayload.response_message = "Log in session key is valid";
+                                                        }
+                                                        else
+                                                        {
+                                                            serverPayload.response_message = "Log in session not approved";
+                                                        }
+                                                    }
+                                                    finally
+                                                    {
+                                                        await log_in_session_key_is_validated_reader.DisposeAsync();
+                                                    }
+                                                }
+                                                finally
+                                                {
+                                                    await log_in_session_key_is_validated.DisposeAsync();
+                                                }
+                                            }
+                                            else
+                                            {
+                                                serverPayload.response_message = "Log in session key is valid";
+                                            }
+                                        }
+                                        else
+                                        {
+                                            serverPayload.response_message = "Log in session key expired";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        serverPayload.response_message = "Invalid log in session key";
+                                    }
+                                }
+                                finally
+                                {
+                                    await log_in_session_key_validation_reader.DisposeAsync();
+                                }
                             }
                             finally
                             {
