@@ -1,6 +1,64 @@
-﻿@page "/"
+﻿@using ThetaFTP.Pages.Components;
 
-<h1>Files</h1>
-<div>
+@page "/"
 
-</div>
+
+<PanelComponent>
+    <Component>
+        <div class="files_panel">
+            <div class="files_panel_control ">
+                <div style="display:inline-block; width:100%;">
+                    <div class="panel_control_section">
+                        <div class="files_panel_file_options">
+                            <button class="control_button" style="margin-left: 20px" onclick="document.getElementById('file_dialog').click()">
+                                <img class="control_image" src="./images/cloud-computing.webp" />
+                                <InputFile id="file_dialog" OnChange="@Upload" hidden/>
+                            </button>
+                            <button class="control_button" style="margin-left: 40px" @onclick=CreateFolder>
+                                <img class="control_image" src="./images/new-folder.webp" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="panel_control_section">
+                        <div class="files_panel_file_search">
+                            <div class="files_panel_file_search_control">
+                                <input style="margin-left: 20px"  placeholder="Search" />
+                                <button class="control_button" @onclick=Search>
+                                    <img class="control_image" src="./images/search.webp" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+           </div>
+            <div class="path_display">
+                <p class="path_label">
+                    Path
+                </p>
+                <input class="path_input" />
+            </div>
+        </div>
+    </Component>
+</PanelComponent>
+
+
+@code{
+    private string Path { get; set; } = "/";
+
+
+    public async void Upload(InputFileChangeEventArgs e)
+    {
+        
+    }
+
+    public void CreateFolder()
+    {
+
+    }
+
+    public void Search()
+    {
+        
+    }
+}

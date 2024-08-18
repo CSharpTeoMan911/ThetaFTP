@@ -41,10 +41,8 @@
 
                 response = true;
             }
-            catch(Exception E)
-            {
-
-                Console.WriteLine(E.Message);
+            catch
+            { 
                 response = false;
             }
             finally

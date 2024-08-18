@@ -12,9 +12,8 @@ namespace ThetaFTP.Shared.Classes
             {
                 await connection.OpenAsync();
             }
-            catch(Exception E)
+            catch
             {
-                Console.WriteLine($"Exception: {E.Message}");
             }
             return connection;
         }
