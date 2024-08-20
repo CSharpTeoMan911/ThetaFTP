@@ -13,53 +13,56 @@ namespace ThetaFTP.Shared.Controllers
 
             MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
 
-            try
+            if (connection.State == ConnectionState.Open)
             {
-                MySqlCommand select_expired_accounts_command = connection.CreateCommand();
-
                 try
                 {
-                    select_expired_accounts_command.CommandText = "SELECT Email FROM accounts_waiting_for_approval WHERE Expiration_Date < NOW();";
-                    DbDataReader expired_accounts_reader = await select_expired_accounts_command.ExecuteReaderAsync();
+                    MySqlCommand select_expired_accounts_command = connection.CreateCommand();
+
                     try
                     {
-                        while (await expired_accounts_reader.ReadAsync() == true)
+                        select_expired_accounts_command.CommandText = "SELECT Email FROM accounts_waiting_for_approval WHERE Expiration_Date < NOW();";
+                        DbDataReader expired_accounts_reader = await select_expired_accounts_command.ExecuteReaderAsync();
+                        try
                         {
-                            string email = expired_accounts_reader.GetString(0);
-                            expired_accounts.Add(email);
-                        }
+                            while (await expired_accounts_reader.ReadAsync() == true)
+                            {
+                                string email = expired_accounts_reader.GetString(0);
+                                expired_accounts.Add(email);
+                            }
 
-                        await expired_accounts_reader.CloseAsync();
+                            await expired_accounts_reader.CloseAsync();
+                        }
+                        finally
+                        {
+                            await expired_accounts_reader.DisposeAsync();
+                        }
                     }
                     finally
                     {
-                        await expired_accounts_reader.DisposeAsync();
+                        await select_expired_accounts_command.DisposeAsync();
+                    }
+
+
+                    for (int i = 0; i < expired_accounts.Count; i++)
+                    {
+                        MySqlCommand delete_expired_account_command = connection.CreateCommand();
+                        try
+                        {
+                            delete_expired_account_command.CommandText = "DELETE FROM Credentials WHERE Email = @Email";
+                            delete_expired_account_command.Parameters.AddWithValue("Email", expired_accounts.ElementAt(i));
+                            await delete_expired_account_command.ExecuteNonQueryAsync();
+                        }
+                        finally
+                        {
+                            await delete_expired_account_command.DisposeAsync();
+                        }
                     }
                 }
                 finally
                 {
-                    await select_expired_accounts_command.DisposeAsync();
+                    await connection.DisposeAsync();
                 }
-
-
-                for (int i = 0; i < expired_accounts.Count; i++)
-                {
-                    MySqlCommand delete_expired_account_command = connection.CreateCommand();
-                    try
-                    {
-                        delete_expired_account_command.CommandText = "DELETE FROM Credentials WHERE Email = @Email";
-                        delete_expired_account_command.Parameters.AddWithValue("Email", expired_accounts.ElementAt(i));
-                        await delete_expired_account_command.ExecuteNonQueryAsync();
-                    }
-                    finally
-                    {
-                        await delete_expired_account_command.DisposeAsync();
-                    }
-                }
-            }
-            finally
-            {
-                await connection.DisposeAsync();
             }
 
 

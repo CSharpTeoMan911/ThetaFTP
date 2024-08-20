@@ -66,7 +66,7 @@
         builder.Append("authentication/insert?");
         builder.Append(query_parameters);
 
-        HttpClient client = HttpClientGen.Generate(true);
+        HttpClient client = HttpClientGen.Generate();
         HttpResponseMessage message = await client.PostAsync(builder.ToString(), null);
         string message_string = await message.Content.ReadAsStringAsync();
 

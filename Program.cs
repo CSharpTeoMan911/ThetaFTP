@@ -1,8 +1,11 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.OpenApi.Models;
+using System.Net.Http.Headers;
 using ThetaFTP.Data;
 using ThetaFTP.Shared;
 using ThetaFTP.Shared.Classes;
+using ThetaFTP.Shared.Formatters;
 
 namespace ThetaFTP
 {
@@ -28,6 +31,22 @@ namespace ThetaFTP
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddSingleton<WeatherForecastService>();
+            builder.Services.AddMvc();
+            builder.Services.AddControllers(options =>
+            {
+                options.InputFormatters.Add(new StreamFormatter());
+                options.InputFormatters.Add(new JsonTextInputFormatter());
+                options.OutputFormatters.Add(new StreamOutputFormatter());
+            });
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+            });
+            builder.WebHost.ConfigureKestrel(c =>
+            {
+                c.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(1);
+                c.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(1);
+            });
 
             var app = builder.Build();
 
@@ -38,6 +57,15 @@ namespace ThetaFTP
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            else
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("v1/swagger.json", "My API V1");
+                });
+            }
+
 
             app.MapControllers();
             app.UseHttpsRedirection();

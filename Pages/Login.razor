@@ -13,11 +13,11 @@
     <Component>
         @if (ShowAccountsApprovalPanel == true)
         {
-            <ValidationPanel closeAccountValidationPanel="CloseAccountValidation" initiateValidationProcedure=ValidationProcedure validationType="Shared.ValidationType.AccountAuthorisation"/>
+            <ValidationPanel closeAccountValidationPanel="CloseAccountValidation" initiateValidationProcedure=ValidationProcedure validationType="ValidationPanel.ValidationType.AccountAuthorisation" />
         }
         else if (ShowLogInSessionValidationPanel)
         {
-            <ValidationPanel closeAccountValidationPanel="CloseAccountValidation" initiateValidationProcedure=ValidationProcedure validationType="Shared.ValidationType.LogInSessionAuthorisation" />
+            <ValidationPanel closeAccountValidationPanel="CloseAccountValidation" initiateValidationProcedure=ValidationProcedure validationType="ValidationPanel.ValidationType.LogInSessionAuthorisation" />
         }
 
         @if(ShowNotification == true){
@@ -79,7 +79,7 @@
         builder.Append("authentication/get?");
         builder.Append(query_parameters);
 
-        HttpClient client = HttpClientGen.Generate(true);
+        HttpClient client = HttpClientGen.Generate();
         HttpResponseMessage message = await client.GetAsync(builder.ToString());
         string response = await message.Content.ReadAsStringAsync();
 
@@ -168,24 +168,34 @@
         StateHasChanged();
     }
 
-    private async void ValidationProcedure(string? code, Shared.ValidationType validationType)
+    private async void ValidationProcedure(string? code, ValidationPanel.ValidationType validationType)
     {
         ValidationModel model = new ValidationModel()
         {
-            validationType = validationType,
             email = Email,
             code = code
         };
 
+        Console.WriteLine($"Email: {Email}");
+
         string formatted_model = await QueryParsing.QueryParser<ValidationModel>(model);
 
         StringBuilder validation_builder = new StringBuilder();
-        validation_builder.Append("/validation/validate-code?");
+
+        switch (validationType)
+        {
+            case ValidationPanel.ValidationType.AccountAuthorisation:
+                validation_builder.Append("/validation/validate-account?");
+                break;
+            case ValidationPanel.ValidationType.LogInSessionAuthorisation:
+                validation_builder.Append("/validation/validate-code?");
+                break;
+        }
         validation_builder.Append(formatted_model);
 
         string validation_query = validation_builder.ToString();
 
-        HttpClient client = HttpClientGen.Generate(true);
+        HttpClient client = HttpClientGen.Generate();
         client.BaseAddress = new Uri(NavigationManager.BaseUri);
         HttpResponseMessage result = await client.GetAsync(validation_query);
 

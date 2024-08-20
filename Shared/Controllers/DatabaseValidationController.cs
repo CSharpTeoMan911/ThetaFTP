@@ -7,47 +7,14 @@ using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class DatabaseValidationController : CRUD_Interface<string, ValidationModel, string, string>
+    public class DatabaseValidationController 
     {
-        public Task<string?> Delete(string? value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<string?> Get(ValidationModel? value)
+        public async Task<string?> ValidateAccount(ValidationModel? value)
         {
             string? response = String.Empty;
             ServerPayloadModel serverPayload = new ServerPayloadModel();
             serverPayload.response_message = "Internal server error";
 
-
-            switch (value?.validationType)
-            {
-                case Shared.ValidationType.AccountAuthorisation:
-                    await ValidateAccount(value, serverPayload);
-                    break;
-                case Shared.ValidationType.LogInSessionAuthorisation:
-                    await ValidateLogInSession(value, serverPayload);
-                    break;
-            }
-
-            response = await JsonFormatter.JsonSerialiser(serverPayload);
-            return response;
-        }
-
-        public Task<string?> Insert(string? value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<string?> Update(string? value)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        private async Task ValidateAccount(ValidationModel? value, ServerPayloadModel serverPayload)
-        {
             if (value?.email != null)
             {
                 if (value?.code != null)
@@ -153,10 +120,18 @@ namespace ThetaFTP.Shared.Controllers
             {
                 serverPayload.response_message = "Invalid email";
             }
+
+            response = await JsonFormatter.JsonSerialiser(serverPayload);
+            return response;
         }
 
-        private async Task ValidateLogInSession(ValidationModel? value, ServerPayloadModel serverPayload)
+        public async Task<string?> ValidateLogInSession(ValidationModel? value)
         {
+            string? response = String.Empty;
+            ServerPayloadModel serverPayload = new ServerPayloadModel();
+            serverPayload.response_message = "Internal server error";
+
+
             if (value?.email != null)
             {
                 if (value?.code != null)
@@ -228,112 +203,159 @@ namespace ThetaFTP.Shared.Controllers
             {
                 serverPayload.response_message = "Invalid email";
             }
+
+            response = await JsonFormatter.JsonSerialiser(serverPayload);
+            return response;
         }
 
-        private async Task ValidateLogInSessionKey(ValidationModel? value, ServerPayloadModel serverPayload)
+        public async Task<string> ValidateLogInSessionKey(string? code)
         {
-            if (value?.email != null)
+            string? response = "Internal server error";
+
+            if (code != null)
             {
-                if (value?.code != null)
+                Tuple<string, Type> hashed_key = await Sha512Hasher.Hash(code);
+
+                if (hashed_key.Item2 != typeof(Exception))
                 {
-                    Tuple<string, Type> hashed_key = await Sha512Hasher.Hash(value.code);
+                    MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
 
-                    if (hashed_key.Item2 != typeof(Exception))
+                    try
                     {
-                        MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
-
+                        MySqlCommand log_in_session_key_validation = connection.CreateCommand();
                         try
                         {
-                            MySqlCommand log_in_session_key_validation = connection.CreateCommand();
+                            log_in_session_key_validation.CommandText = "SELECT Expiration_Date, Email FROM Log_In_Sessions WHERE Log_In_Session_Key = @Log_In_Session_Key";
+                            log_in_session_key_validation.Parameters.AddWithValue("Log_In_Session_Key", hashed_key.Item1);
+
+                            DbDataReader log_in_session_key_validation_reader = await log_in_session_key_validation.ExecuteReaderAsync();
                             try
                             {
-                                log_in_session_key_validation.CommandText = "SELECT Expiration_Date FROM Log_In_Sessions WHERE Log_In_Session_Key = @Log_In_Session_Key";
-                                log_in_session_key_validation.Parameters.AddWithValue("Log_In_Session_Key", hashed_key.Item1);
-
-                                DbDataReader log_in_session_key_validation_reader = await log_in_session_key_validation.ExecuteReaderAsync();
-                                try
+                                if (await log_in_session_key_validation_reader.ReadAsync() == true)
                                 {
-                                    if (await log_in_session_key_validation_reader.ReadAsync() == true)
+                                    DateTime expiration_date = DateTime.Parse(log_in_session_key_validation_reader.GetString(0));
+                                    string email = log_in_session_key_validation_reader.GetString(1);
+
+                                    if (DateTime.Now < expiration_date)
                                     {
-                                        DateTime expiration_date = DateTime.Parse(log_in_session_key_validation_reader.GetString(0));
-
-                                        if (DateTime.Now < expiration_date)
+                                        if (Shared.config?.two_step_auth == true)
                                         {
-                                            if (Shared.config?.two_step_auth == true)
+
+                                            MySqlCommand log_in_session_key_is_validated = connection.CreateCommand();
+                                            log_in_session_key_is_validated.CommandText = "SELECT Log_In_Code FROM Log_In_Sessions_Waiting_For_Approval WHERE Log_In_Session_Key = @Log_In_Session_Key";
+                                            log_in_session_key_is_validated.Parameters.AddWithValue("Log_In_Session_Key", hashed_key.Item1);
+
+                                            try
                                             {
-
-                                                MySqlCommand log_in_session_key_is_validated = connection.CreateCommand();
-                                                log_in_session_key_is_validated.CommandText = "SELECT Log_In_Code FROM Log_In_Sessions_Waiting_For_Approval WHERE Log_In_Session_Key = @Log_In_Session_Key";
-                                                log_in_session_key_is_validated.Parameters.AddWithValue("Log_In_Session_Key", hashed_key.Item1);
-
+                                                DbDataReader log_in_session_key_is_validated_reader = await log_in_session_key_is_validated.ExecuteReaderAsync();
                                                 try
                                                 {
-                                                    DbDataReader log_in_session_key_is_validated_reader = await log_in_session_key_is_validated.ExecuteReaderAsync();
-                                                    try
+                                                    if (await log_in_session_key_is_validated_reader.ReadAsync() == true)
                                                     {
-                                                        if (await log_in_session_key_is_validated_reader.ReadAsync() == true)
-                                                        {
-                                                            serverPayload.response_message = "Log in session key is valid";
-                                                        }
-                                                        else
-                                                        {
-                                                            serverPayload.response_message = "Log in session not approved";
-                                                        }
+                                                        response = email;
                                                     }
-                                                    finally
+                                                    else
                                                     {
-                                                        await log_in_session_key_is_validated_reader.DisposeAsync();
+                                                        response = "Log in session not approved";
                                                     }
                                                 }
                                                 finally
                                                 {
-                                                    await log_in_session_key_is_validated.DisposeAsync();
+                                                    await log_in_session_key_is_validated_reader.DisposeAsync();
                                                 }
                                             }
-                                            else
+                                            finally
                                             {
-                                                serverPayload.response_message = "Log in session key is valid";
+                                                await log_in_session_key_is_validated.DisposeAsync();
                                             }
                                         }
                                         else
                                         {
-                                            serverPayload.response_message = "Log in session key expired";
+                                            response = "Log in session key is valid";
                                         }
                                     }
                                     else
                                     {
-                                        serverPayload.response_message = "Invalid log in session key";
+                                        response = "Log in session key expired";
                                     }
                                 }
-                                finally
+                                else
                                 {
-                                    await log_in_session_key_validation_reader.DisposeAsync();
+                                    response = "Invalid log in session key";
                                 }
                             }
                             finally
                             {
-                                await log_in_session_key_validation.DisposeAsync();
+                                await log_in_session_key_validation_reader.DisposeAsync();
                             }
                         }
                         finally
                         {
-                            await connection.DisposeAsync();
+                            await log_in_session_key_validation.DisposeAsync();
                         }
                     }
-                    else
+                    finally
                     {
-                        serverPayload.response_message = "Internal server error";
+                        await connection.DisposeAsync();
                     }
                 }
                 else
                 {
-                    serverPayload.response_message = "Invalid code";
+                    response = "Internal server error";
                 }
             }
             else
             {
-                serverPayload.response_message = "Invalid email";
+                response = "Invalid code";
             }
+
+            return response;
+        }
+
+        public async Task<string?> DeleteLogInSession(string? code)
+        {
+            string? response = "Internal server error";
+
+            if (code != null)
+            {
+                Tuple<string, Type> hashed_key = await Sha512Hasher.Hash(code);
+
+                if (hashed_key.Item2 != typeof(Exception))
+                {
+                    MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+
+                    try
+                    {
+                        MySqlCommand delete_key_command = connection.CreateCommand();
+                        try
+                        {
+                            delete_key_command.CommandText = "DELETE FROM Log_In_Sessions WHERE Log_In_Session_Key = @Log_In_Session_Key";
+                            delete_key_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_key.Item1);
+                            await delete_key_command.ExecuteNonQueryAsync();
+
+                            response = "Log out successful";
+                        }
+                        finally
+                        {
+                            await delete_key_command.DisposeAsync();
+                        }
+                    }
+                    finally
+                    {
+                        await connection.DisposeAsync();
+                    }
+                }
+                else
+                {
+                    response = "Internal server error";
+                }
+            }
+            else
+            {
+                response = "Invalid code";
+            }
+
+            return response;
         }
     }
 }
