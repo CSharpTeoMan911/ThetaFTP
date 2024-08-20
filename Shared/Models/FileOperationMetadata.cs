@@ -1,4 +1,4 @@
-﻿namespace ThetaFTP.Shared.Classes
+﻿namespace ThetaFTP.Shared.Models
 {
     public class FileOperationMetadata
     {

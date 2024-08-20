@@ -1,13 +1,12 @@
 ﻿using MySqlConnector;
-using System.Data;
 using System.Data.Common;
-using ThetaFTP.Shared.Classes;
+using System.Data;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class DatabaseAuthenticationValidationController : CRUD_Interface<string, string, string, string>
+    public class DatabaseServerFunctionsController
     {
-        public async Task<string?> Delete(string? value)
+        public async Task DeleteDatabaseCache()
         {
             List<string> expired_accounts = new List<string>();
 
@@ -64,24 +63,6 @@ namespace ThetaFTP.Shared.Controllers
                     await connection.DisposeAsync();
                 }
             }
-
-
-            return "OK";
-        }
-
-        public Task<string?> Get(string? value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<string?> Insert(string? value)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<string?> Update(string? value)
-        {
-            throw new NotImplementedException();
         }
     }
 }

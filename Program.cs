@@ -84,7 +84,7 @@ namespace ThetaFTP
 
         private static async void Server_utility_timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
-            await Shared.Shared.database_auth_validation.Delete(null);
+            await Shared.Shared.databaseServerFunctions.DeleteDatabaseCache();
         }
     }
 }

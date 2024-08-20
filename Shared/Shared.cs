@@ -9,7 +9,8 @@ namespace ThetaFTP.Shared
         public static ServerConfigModel? config;
         public static MySql mysql= new MySql();
         public static CRUD_Strategy<AuthenticationModel, AuthenticationModel, AuthenticationModel, AuthenticationModel> database_auth = new CRUD_Strategy<AuthenticationModel, AuthenticationModel, AuthenticationModel, AuthenticationModel>(new DatabaseAuthenticationController());
+        public static CRUD_Strategy<FtpModel, FtpModel, FtpModel, FtpModel> database_ftp = new CRUD_Strategy<FtpModel, FtpModel, FtpModel, FtpModel>(new FtpDatabaseController());
+        public static DatabaseServerFunctionsController databaseServerFunctions = new DatabaseServerFunctionsController();
         public static DatabaseValidationController database_validation = new DatabaseValidationController();
-        public static DatabaseAuthenticationValidationController database_auth_validation = new DatabaseAuthenticationValidationController();
     }
 }

@@ -25,18 +25,26 @@ namespace ThetaFTP.Shared.Controllers
         [HttpPost("insert")]
         public async Task<ActionResult?> Insert([FromQuery] FileOperationMetadata? query, [FromBody] Stream? body)
         {
+            string? result = "Internal server error";
 
-            //string? log_in_key_validation_result = await Shared.database_validation.Get(new ValidationModel()
-            //{
-            //    code = query?.key,
-            //    validationType = Shared.ValidationType.LogInSessionKeyAuthorisation
-            //});
+            string? log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
 
-            Console.WriteLine($"Filename: {query?.file_name}");
+            if (log_in_key_validation_result != "Internal server error")
+            {
+                if (log_in_key_validation_result != "Invalid code")
+                {
+                    FtpModel ftpModel = new FtpModel()
+                    {
+                        file_name = query?.file_name,
+                        path = query?.path,
+                        fileStream = body
+                    };
 
-            Console.WriteLine($"Stream: {body?.Length}");
+                    result = await Shared.database_ftp.Insert(ftpModel);
+                }
+            }
 
-            return Ok("Success");
+            return Ok(result);
         }
 
         [HttpPut("update")]
