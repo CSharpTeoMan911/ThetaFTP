@@ -24,13 +24,20 @@
 
 
 @code {
+    public enum ValidationType
+    {
+        AccountAuthorisation,
+        LogInSessionAuthorisation,
+        LogInSessionKeyAuthorisation
+    }
+
     public delegate void CloseAccountValidationPanel();
     [Parameter] public CloseAccountValidationPanel? closeAccountValidationPanel { get; set; }
 
-    public delegate void InitiateValidationProcedure(string? code, Shared.ValidationType validationType);
+    public delegate void InitiateValidationProcedure(string? code, ValidationType validationType);
     [Parameter] public InitiateValidationProcedure? initiateValidationProcedure { get; set; }
 
-    [Parameter] public Shared.ValidationType validationType { get; set; }
+    [Parameter] public ValidationType validationType { get; set; }
 
     private string? code;
 

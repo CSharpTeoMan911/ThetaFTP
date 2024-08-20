@@ -6,30 +6,31 @@ using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 namespace ThetaFTP.Shared.Controllers
 {
     [Route("/validation")]
-    public class ValidationController : Controller, CRUD_Interface<string, ValidationModel, string, string>
+    [ApiController]
+    public class ValidationController : Controller
     {
-
-        [HttpGet("validate-code")]
-        public async Task<string?> Get(ValidationModel? value)
+        [HttpGet("validate-account")]
+        public async Task<string?> GetAccount([FromQuery] ValidationModel? value)
         {
             string? result = String.Empty;
-            result = await Shared.database_validation.Get(value);
+            result = await Shared.database_validation.ValidateAccount(value);
             return result;
         }
 
-        public Task<string?> Insert(string? value)
+        [HttpGet("validate-code")]
+        public async Task<string?> GetLogInCode([FromQuery] ValidationModel? value)
         {
-            throw new NotImplementedException();
+            string? result = String.Empty;
+            result = await Shared.database_validation.ValidateLogInSession(value);
+            return result;
         }
 
-        public Task<string?> Update(string? value)
+        [HttpDelete("delete-session")]
+        public async Task<string?> DeleteLogInSession([FromQuery] string? value)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<string?> Delete(string? value)
-        {
-            throw new NotImplementedException();
+            string? result = String.Empty;
+            result = await Shared.database_validation.DeleteLogInSession(value);
+            return result;
         }
     }
 }

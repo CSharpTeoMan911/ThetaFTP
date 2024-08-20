@@ -1,6 +1,7 @@
 ﻿@inject IJSRuntime JS;
 @inject NavigationManager NavigationManager;
 @using System.Text;
+@using ThetaFTP.Shared.Classes;
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
@@ -87,8 +88,19 @@
             if (AuthState == "Log out")
             {
                 // IMPLEMENT LOG OUT API LOGIC
-
                 IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "././js/functions.js");
+
+                string? key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+
+                StringBuilder builder = new StringBuilder("/validation/delete-session?value=");
+                builder.Append(key);
+
+                HttpClient client = HttpClientGen.Generate();
+                client.BaseAddress = new Uri(NavigationManager.BaseUri);
+                HttpResponseMessage responseMessage = await client.DeleteAsync(builder.ToString());
+
+                Console.WriteLine(await responseMessage.Content.ReadAsStringAsync());
+
                 await module.InvokeVoidAsync("Delete_Cache", "auth", "AuthCache");
             }
         }

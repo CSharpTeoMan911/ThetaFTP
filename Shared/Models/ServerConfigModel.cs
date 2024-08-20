@@ -10,7 +10,8 @@
         public string? smtp_password { get; set; } = "!!! REPLACE WITH SMTPS EMAIL PASSWORD !!!";
         public string? smtp_server { get; set; } = "!!! REPLACE WITH SMTPS SERVER ADDRESS !!!";
         public int smtp_port { get; set; }
-        public bool smtp_use_ssl { get; set; }
+        public bool smtp_use_ssl { get; set; } = false;
         public bool two_step_auth { get; set; } = false;
+        public bool validate_ssl_certificates { get; set; } = false;
     }
 }
