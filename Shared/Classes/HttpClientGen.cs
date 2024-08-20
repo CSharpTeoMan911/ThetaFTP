@@ -2,13 +2,15 @@
 {
     public class HttpClientGen
     {
-        public static HttpClient Generate(bool allow_untrusted_cert_authority)
+        public static HttpClient Generate()
         {
             return new HttpClient(new HttpClientHandler()
             {
                 ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) =>
                 {
-                    return allow_untrusted_cert_authority;
+                    if (Shared.config != null)
+                        return Shared.config.validate_ssl_certificates;
+                    return true;
                 }
             });
         }
