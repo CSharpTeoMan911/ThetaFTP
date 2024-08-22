@@ -9,7 +9,7 @@
                 ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) =>
                 {
                     if (Shared.config != null)
-                        return Shared.config.validate_ssl_certificates;
+                        return !Shared.config.validate_ssl_certificates;
                     return true;
                 }
             });

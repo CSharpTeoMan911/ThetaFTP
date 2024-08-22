@@ -176,8 +176,6 @@
             code = code
         };
 
-        Console.WriteLine($"Email: {Email}");
-
         string formatted_model = await QueryParsing.QueryParser<ValidationModel>(model);
 
         StringBuilder validation_builder = new StringBuilder();
