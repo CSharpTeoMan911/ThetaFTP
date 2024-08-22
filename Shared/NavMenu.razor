@@ -93,13 +93,11 @@
                 string? key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
 
                 StringBuilder builder = new StringBuilder("/validation/delete-session?value=");
-                builder.Append(key);
+                builder.Append(System.Web.HttpUtility.UrlEncode(key));
 
                 HttpClient client = HttpClientGen.Generate();
                 client.BaseAddress = new Uri(NavigationManager.BaseUri);
                 HttpResponseMessage responseMessage = await client.DeleteAsync(builder.ToString());
-
-                Console.WriteLine(await responseMessage.Content.ReadAsStringAsync());
 
                 await module.InvokeVoidAsync("Delete_Cache", "auth", "AuthCache");
             }

@@ -33,18 +33,48 @@ namespace ThetaFTP.Shared.Controllers
             {
                 if (log_in_key_validation_result != "Invalid code")
                 {
-                    FtpModel ftpModel = new FtpModel()
+                    if (log_in_key_validation_result != "Invalid log in session key")
                     {
-                        file_name = query?.file_name,
-                        path = query?.path,
-                        fileStream = body
-                    };
+                        if (log_in_key_validation_result != "Log in session key expired")
+                        {
+                            if (log_in_key_validation_result != "Log in session not approved")
+                            {
+                                FtpModel ftpModel = new FtpModel()
+                                {
+                                    email = log_in_key_validation_result,
+                                    file_name = query?.file_name,
+                                    path = query?.path,
+                                    fileStream = body
+                                };
 
-                    result = await Shared.database_ftp.Insert(ftpModel);
+                                result = await Shared.database_ftp.Insert(ftpModel);
+
+                                return Ok(result);
+                            }
+                            else
+                            {
+                                return BadRequest(result);
+                            }
+                        }
+                        else
+                        {
+                            return BadRequest(result);
+                        }
+                    }
+                    else
+                    {
+                        return BadRequest(result);
+                    }
+                }
+                else
+                {
+                    return BadRequest(result);
                 }
             }
-
-            return Ok(result);
+            else
+            {
+                return BadRequest(result);
+            }
         }
 
         [HttpPut("update")]

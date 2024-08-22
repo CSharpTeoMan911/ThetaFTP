@@ -67,7 +67,7 @@
                     string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
 
                     FileOperationMetadata metadata = new FileOperationMetadata();
-                    metadata.path = "/";
+                    metadata.path = Path;
                     metadata.file_name = e.File.Name;
                     metadata.key = log_in_session_key;
 
