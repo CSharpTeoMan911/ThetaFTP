@@ -58,10 +58,13 @@ namespace ThetaFTP.Shared.Controllers
                                                     MySqlCommand insert_log_in_key_command = connection.CreateCommand();
                                                     try
                                                     {
+
                                                         insert_log_in_key_command.CommandText = "INSERT INTO Log_In_Sessions VALUES(@Log_In_Session_Key, @Email, @Expiration_Date)";
                                                         insert_log_in_key_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_log_in_session_key.Item1);
                                                         insert_log_in_key_command.Parameters.AddWithValue("Email", value.email);
                                                         insert_log_in_key_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddDays(2));
+
+                                                        await insert_log_in_key_command.ExecuteNonQueryAsync();
 
                                                         serverPayload.response_message = "Account authorised";
                                                         serverPayload.content = log_in_session_key;
@@ -233,8 +236,10 @@ namespace ThetaFTP.Shared.Controllers
                             {
                                 if (await log_in_session_key_validation_reader.ReadAsync() == true)
                                 {
-                                    DateTime expiration_date = DateTime.Parse(log_in_session_key_validation_reader.GetString(0));
+                                    DateTime expiration_date = (DateTime)log_in_session_key_validation_reader.GetValue(0);
                                     string email = log_in_session_key_validation_reader.GetString(1);
+
+                                    await log_in_session_key_validation_reader.CloseAsync();
 
                                     if (DateTime.Now < expiration_date)
                                     {
@@ -250,7 +255,7 @@ namespace ThetaFTP.Shared.Controllers
                                                 DbDataReader log_in_session_key_is_validated_reader = await log_in_session_key_is_validated.ExecuteReaderAsync();
                                                 try
                                                 {
-                                                    if (await log_in_session_key_is_validated_reader.ReadAsync() == true)
+                                                    if (await log_in_session_key_is_validated_reader.ReadAsync() == false)
                                                     {
                                                         response = email;
                                                     }
@@ -271,7 +276,7 @@ namespace ThetaFTP.Shared.Controllers
                                         }
                                         else
                                         {
-                                            response = "Log in session key is valid";
+                                            response = email;
                                         }
                                     }
                                     else

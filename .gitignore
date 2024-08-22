@@ -370,3 +370,6 @@ Theta_FTP.db
 
 # Logs file
 ErrorLogs.txt
+
+# User Files
+FTP_Server

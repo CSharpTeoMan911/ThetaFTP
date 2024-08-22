@@ -282,15 +282,15 @@ namespace ThetaFTP.Shared.Controllers
                                                                     if (key_hash_result.Item2 != typeof(Exception))
                                                                     {
                                                                         bool smtps_operation_result = await SMTPS_Service.SendSMTPS(value?.email, "Account approval", $"Account approval key: {key}");
-                                                                        account_validation_code_insertion_command.CommandText = "INSERT INTO Accounts_Waiting_For_Approval VALUES(@Account_Validation_Code, @Email, @Expiration_Date)";
-                                                                        account_validation_code_insertion_command.Parameters.AddWithValue("Email", value?.email);
-                                                                        account_validation_code_insertion_command.Parameters.AddWithValue("Account_Validation_Code", key_hash_result.Item1);
-                                                                        account_validation_code_insertion_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddHours(1));
-                                                                        await account_validation_code_insertion_command.ExecuteNonQueryAsync();
-
                                                                       
                                                                         if (smtps_operation_result == true)
                                                                         {
+                                                                            account_validation_code_insertion_command.CommandText = "INSERT INTO Accounts_Waiting_For_Approval VALUES(@Account_Validation_Code, @Email, @Expiration_Date)";
+                                                                            account_validation_code_insertion_command.Parameters.AddWithValue("Email", value?.email);
+                                                                            account_validation_code_insertion_command.Parameters.AddWithValue("Account_Validation_Code", key_hash_result.Item1);
+                                                                            account_validation_code_insertion_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddHours(1));
+                                                                            await account_validation_code_insertion_command.ExecuteNonQueryAsync();
+
                                                                             response = "Registration successful";
                                                                         }
                                                                         else
