@@ -318,7 +318,7 @@ namespace ThetaFTP.Shared.Controllers
                                                             }
                                                             else
                                                             {
-                                                                response = "Registration Successful";
+                                                                response = "Registration successful";
                                                             }
                                                         }
                                                         finally

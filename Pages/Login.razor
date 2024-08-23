@@ -87,7 +87,7 @@
 
         if (serverPayload != null)
         {
-            if (serverPayload.response_message == "Account not approved")
+            if (serverPayload.response_message?.Contains("Account not approved") == true)
             {
                 NotificationType = Notifications.NotificationType.Information;
                 NotificationMessage = "Authentication successful.";
@@ -98,15 +98,17 @@
                 NotificationMessage = "Account not approved. Verify the inbox of your email address used for this account.";
                 ShowAccountsApprovalPanelOnClose = true;
             }
-            else if (serverPayload.response_message == "Authentication successful")
+            else if (serverPayload.response_message?.Contains("Authentication successful") == true)
             {
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
+
                 NotificationType = Notifications.NotificationType.Information;
                 NotificationMessage = serverPayload.response_message;
+                NavigateToMainPageOnClose = true;
             }
-            else if (serverPayload.response_message == "Check the code sent to your email address to approve your log in session")
+            else if (serverPayload.response_message?.Contains("Check the code sent to your email address to approve your log in session") == true)
             {
-                NotificationType = Notifications.NotificationType.Information;
-                NotificationMessage = "Authentication successful.";
                 IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
                 await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
 
@@ -114,7 +116,7 @@
                 NotificationMessage = serverPayload.response_message;
                 ShowLogInSessionValidationPanelOnClose = true;
             }
-            else if (serverPayload.response_message == "Invalid email" || serverPayload.response_message == "Invalid password" || serverPayload.response_message == "Invalid credentials" || serverPayload.response_message == "Internal server error")
+            else if (serverPayload.response_message?.Contains("Invalid email") == true || serverPayload.response_message?.Contains("Invalid password") == true || serverPayload.response_message?.Contains("Invalid credentials") == true || serverPayload.response_message?.Contains("Internal server error") == true)
             {
                 NotificationType = Notifications.NotificationType.Error;
                 NotificationMessage = serverPayload.response_message;
@@ -202,7 +204,7 @@
 
         if (serverPayload != null)
         {
-            if (serverPayload.response_message == "Account authorised")
+            if (serverPayload.response_message?.Contains("Account authorised") == true)
             {
                 IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
                 await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
@@ -212,13 +214,13 @@
                 NavigateToMainPageOnClose = true;
 
             }
-            else if (serverPayload.response_message == "Authentication successful")
+            else if (serverPayload.response_message?.Contains("Authentication successful") == true)
             {
                 NotificationType = Notifications.NotificationType.Information;
                 NotificationMessage = "Authentication successful.";
                 NavigateToMainPageOnClose = true;
             }
-            else if (serverPayload.response_message == "Invalid email" || serverPayload.response_message == "Invalid code" || serverPayload.response_message == "Internal server error")
+            else if (serverPayload.response_message?.Contains("Invalid email") == true || serverPayload.response_message?.Contains("Invalid code") == true || serverPayload.response_message?.Contains("Internal server error") == true)
             {
                 NotificationType = Notifications.NotificationType.Error;
                 NotificationMessage = serverPayload.response_message;

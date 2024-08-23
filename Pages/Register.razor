@@ -16,7 +16,7 @@
         <br/>
         <InputSection inputSectionTitle="Password" inputValue="new InputSection.InputValue(OnPasswordValue)" isPassword="true" input_with_button="false" />
         <br />
-        <InputSection inputSectionTitle="Re-Password" isPassword="true" input_with_button="false" />
+        <InputSection inputSectionTitle="Re-Password" inputValue="new InputSection.InputValue(OnRePasswordValue)" isPassword="true" input_with_button="false" />
         <div style="display:flex;flex-direction:column;margin-top:40px;">
             <button class="auth_action" @onclick=SignUp>
                 Sign Up
@@ -32,6 +32,7 @@
 
     private string? Email { get; set; }
     private string? Password { get; set; }
+    private string? Re_Password { get; set; }
 
     private bool ShowNotification { get; set; }
     private Notifications.NotificationType NotificationType { get; set; }
@@ -54,6 +55,11 @@
         Password = value;
     }
 
+    private void OnRePasswordValue(string? value)
+    {
+        Re_Password = value;
+    }
+
     private async void SignUp()
     {
         AuthenticationModel authentication = new AuthenticationModel();
@@ -70,18 +76,26 @@
         HttpResponseMessage message = await client.PostAsync(builder.ToString(), null);
         string message_string = await message.Content.ReadAsStringAsync();
 
-
-        if (message_string == "Registration successful")
+        if (Password == Re_Password)
         {
-            NotificationType = Notifications.NotificationType.Information;
-            NavigateToLogInOnPanelClose = true;
+            if (message_string.Contains("Registration successful") == true)
+            {
+                NotificationType = Notifications.NotificationType.Information;
+                NavigateToLogInOnPanelClose = true;
+            }
+            else
+            {
+                NotificationType = Notifications.NotificationType.Error;
+            }
+
+            NotificationMessage = message_string;
         }
         else
         {
             NotificationType = Notifications.NotificationType.Error;
+            NotificationMessage = "Passwords do not match";
         }
 
-        NotificationMessage = message_string;
         ShowNotification = true;
         StateHasChanged();
     }
