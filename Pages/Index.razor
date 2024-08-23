@@ -57,39 +57,32 @@
     {
         try
         {
-            Stream stream = e.File.OpenReadStream(524288000);
+            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+            string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
 
-            try
+
+            Tuple<string, Stream, StreamContent?> payload =  await FileUploadPayloadBuilder.FileUpload(e.File, Path, log_in_session_key);
+
+            if (payload.Item3 != null)
             {
-                if (stream.CanRead)
+                try
                 {
-                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                    string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-
-                    FileOperationMetadata metadata = new FileOperationMetadata();
-                    metadata.path = Path;
-                    metadata.file_name = e.File.Name;
-                    metadata.key = log_in_session_key;
-
-                    StringBuilder builder = new StringBuilder("/files/insert?");
-                    builder.Append(await QueryParsing.QueryParser(metadata));
-;
-
-                    StreamContent content = new StreamContent(stream);
-                    content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
-
                     HttpClient client = HttpClientGen.Generate();
                     client.BaseAddress = new Uri(NavigationManager.BaseUri);
 
-                    HttpResponseMessage responseMessage = await client.PostAsync(builder.ToString(), content);
+                    HttpResponseMessage responseMessage = await client.PostAsync(payload.Item1, payload.Item3);
 
                     Console.WriteLine(await responseMessage.Content.ReadAsStringAsync());
                 }
+                finally
+                {
+                    await payload.Item2.DisposeAsync();
+                }
             }
-            finally
+            else
             {
-                await stream.DisposeAsync();
             }
+
         }
         catch{}
     }

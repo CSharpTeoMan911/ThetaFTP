@@ -27,8 +27,11 @@ namespace ThetaFTP.Shared.Controllers
         {
             string? result = "Internal server error";
 
+            string payload = String.Empty;
+
             string? log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
 
+            
             if (log_in_key_validation_result != "Internal server error")
             {
                 if (log_in_key_validation_result != "Invalid code")
@@ -49,7 +52,46 @@ namespace ThetaFTP.Shared.Controllers
 
                                 result = await Shared.database_ftp.Insert(ftpModel);
 
-                                return Ok(result);
+                                if (result == "Internal server error")
+                                {
+                                    return BadRequest(result);
+                                }
+                                else if(result == "File already exists")
+                                {
+                                    return BadRequest(result);
+                                }
+                                else if (result == "Cannot read file content")
+                                {
+                                    return BadRequest(result);
+                                }
+                                else if (result == "Invalid file name")
+                                {
+                                    return BadRequest(result);
+                                }
+                                else if (result == "Invalid path")
+                                {
+                                    return BadRequest(result);
+                                }
+                                else if (result == "Insufficient space on disk")
+                                {
+                                    return BadRequest(result);
+                                }
+                                else if (result == "Invalid file name. Use only numbers, letters, '-' and '/'.")
+                                {
+                                    return BadRequest(result);
+                                }
+                                else if (result == "File name more than 100 characters long")
+                                {
+                                    return BadRequest(result);
+                                }
+                                else if (result == "File size exceeds 500 MB")
+                                {
+                                    return BadRequest(result);
+                                }
+                                else
+                                {
+                                    return Ok(result);
+                                }
                             }
                             else
                             {
