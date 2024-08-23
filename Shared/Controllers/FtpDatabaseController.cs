@@ -60,19 +60,24 @@ namespace ThetaFTP.Shared.Controllers
                                                                     {
                                                                         while (value.fileStream.CanRead)
                                                                         {
-                                                                            byte[] binary_buffer = new byte[1024];
+                                                                            byte[] binary_buffer = new byte[1024000];
                                                                             int bytes_read = await value.fileStream.ReadAsync(binary_buffer, 0, binary_buffer.Length);
 
                                                                             if (bytes_read > 0)
                                                                             {
                                                                                 await file_stream.WriteAsync(binary_buffer, 0, bytes_read);
-                                                                                await file_stream.FlushAsync();
+
+                                                                                if (file_stream.Length >= 3072000)
+                                                                                    await file_stream.FlushAsync();
                                                                             }
                                                                             else
                                                                             {
                                                                                 break;
                                                                             }
                                                                         }
+
+                                                                        if (file_stream.Length > 0)
+                                                                            await file_stream.FlushAsync();
 
                                                                         insert_file_command.CommandText = "INSERT INTO Files VALUES(@File_Name, @File_Path, @Email)";
                                                                         insert_file_command.Parameters.AddWithValue("File_Name", FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.file_name));

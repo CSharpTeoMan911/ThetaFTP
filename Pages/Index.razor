@@ -99,7 +99,7 @@
                     {
                         notificationType = Notifications.NotificationType.Information;
                     }
-                    else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true)
+                    else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
                     {
                         notificationType = Notifications.NotificationType.Error;
                         InvalidLogInSessionKey = true;
@@ -108,9 +108,11 @@
                     {
                         notificationType = Notifications.NotificationType.Error;
                     }
-
-                    ShowNotification = true;
-                    StateHasChanged();
+                }
+                catch
+                {
+                    notificationMessage = "Could not upload file";
+                    notificationType = Notifications.NotificationType.Error;
                 }
                 finally
                 {
@@ -119,10 +121,19 @@
             }
             else
             {
+                notificationMessage = "Could not read file";
+                notificationType = Notifications.NotificationType.Error;
             }
 
+            ShowNotification = true;
+            StateHasChanged();
         }
-        catch{}
+        catch(Exception E)
+        {
+            System.Diagnostics.Debug.WriteLine(E.Message);
+            notificationMessage = "Could not upload file";
+            notificationType = Notifications.NotificationType.Error;
+        }
     }
 
     public void CreateDirectory()
@@ -163,7 +174,7 @@
                     {
                         notificationType = Notifications.NotificationType.Information;
                     }
-                    else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true)
+                    else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
                     {
                         notificationType = Notifications.NotificationType.Error;
                         InvalidLogInSessionKey = true;
@@ -191,10 +202,14 @@
         ShowNotification = false;
         if (InvalidLogInSessionKey == true)
         {
+            Console.WriteLine("Log out");
             await LogOut();
             NavigationManager.NavigateTo("/log-in", true);
         }
-        StateHasChanged();
+        else
+        {
+            StateHasChanged();
+        }
     }
 
     public void Search()

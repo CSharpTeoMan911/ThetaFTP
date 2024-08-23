@@ -30,32 +30,39 @@ namespace ThetaFTP.Shared.Controllers
             string payload = String.Empty;
 
             string? log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
-            
-            if (log_in_key_validation_result != "Internal server error")
+
+            if (body != null)
             {
-                if (log_in_key_validation_result != "Invalid log in session key")
+                if (log_in_key_validation_result != "Internal server error")
                 {
-                    if (log_in_key_validation_result != "Log in session key expired")
+                    if (log_in_key_validation_result != "Invalid log in session key")
                     {
-                        if (log_in_key_validation_result != "Log in session not approved")
+                        if (log_in_key_validation_result != "Log in session key expired")
                         {
-                            FtpModel ftpModel = new FtpModel()
+                            if (log_in_key_validation_result != "Log in session not approved")
                             {
-                                email = log_in_key_validation_result,
-                                file_name = query?.file_name,
-                                path = query?.path,
-                                fileStream = body
-                            };
+                                FtpModel ftpModel = new FtpModel()
+                                {
+                                    email = log_in_key_validation_result,
+                                    file_name = query?.file_name,
+                                    path = query?.path,
+                                    fileStream = body
+                                };
 
-                            result = await Shared.database_ftp.Insert(ftpModel);
+                                result = await Shared.database_ftp.Insert(ftpModel);
 
-                            if (result == "File upload successful")
-                            {
-                                return Ok(result);
+                                if (result == "File upload successful")
+                                {
+                                    return Ok(result);
+                                }
+                                else
+                                {
+                                    return BadRequest(result);
+                                }
                             }
                             else
                             {
-                                return BadRequest(result);
+                                return BadRequest(log_in_key_validation_result);
                             }
                         }
                         else
@@ -75,7 +82,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             else
             {
-                return BadRequest(log_in_key_validation_result);
+                return BadRequest(result);
             }
         }
 

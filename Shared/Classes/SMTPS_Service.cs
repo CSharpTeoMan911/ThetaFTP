@@ -7,7 +7,7 @@
 
     public class SMTPS_Service
     {
-        public static async Task<bool> SendSMTPS(string? email, string? subject, string? message)
+        public static bool SendSMTPS(string? email, string? subject, string? message)
         {
             bool response = false;
 
@@ -31,13 +31,13 @@
                     Text = message
                 };
 
-                await client.ConnectAsync(config.smtp_server, config.smtp_port, config.smtp_use_ssl);
+                client.Connect(config.smtp_server, config.smtp_port, config.smtp_use_ssl);
 
-                await client.AuthenticateAsync(config.smtp_email, config.smtp_password);
+                client.Authenticate(config.smtp_email, config.smtp_password);
 
-                await client.SendAsync(message_object);
+                client.Send(message_object);
 
-                await client.DisconnectAsync(true);
+                client.Disconnect(true);
 
                 response = true;
             }
