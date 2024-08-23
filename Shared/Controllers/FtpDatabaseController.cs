@@ -1,6 +1,7 @@
 ﻿using MySqlConnector;
 using System.Text;
 using ThetaFTP.Shared.Classes;
+using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Controllers
@@ -28,100 +29,130 @@ namespace ThetaFTP.Shared.Controllers
                 {
                     if (value?.path != null)
                     {
-                        if (IsValidFileName(value.file_name) == true)
+                        if (value?.file_name.Length <= 100)
                         {
-                            if (IsValidPath(value.path) == true)
+                            if (value?.size <= 65536000)
                             {
-                                if (CreateUserRootDir(value?.email))
+                                if (GetAvailableSpace() > value?.size)
                                 {
-                                    string converted_path = PathConverter(value?.path, value?.email);
-
-                                    if (IsValidDiskPath(converted_path) == true)
+                                    if (IsValidFileName(value.file_name) == true)
                                     {
-                                        MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
-                                        try
+                                        if (IsValidPath(value.path) == true)
                                         {
-                                            MySqlCommand insert_file_command = connection.CreateCommand();
-                                            try
+                                            if (CreateUserRootDir(value?.email))
                                             {
-                                                StringBuilder file_name_builder = new StringBuilder(value?.email);
-                                                file_name_builder.Append("/");
-                                                file_name_builder.Append(value?.file_name);
+                                                string converted_path = PathConverter(value?.path, value?.email);
 
-                                                Console.WriteLine($"Path: {converted_path}");
-
-                                                try
+                                                if (IsValidDiskPath(converted_path) == true)
                                                 {
-                                                    StringBuilder file_path = new StringBuilder(converted_path);
-                                                    file_path.Append(value?.file_name);
-
-                                                    FileStream file_stream = File.OpenWrite(file_path.ToString());
+                                                    MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
                                                     try
                                                     {
-                                                        if (value != null)
+                                                        MySqlCommand insert_file_command = connection.CreateCommand();
+                                                        try
                                                         {
-                                                            await value.fileStream.CopyToAsync(file_stream);
-                                                            await file_stream.FlushAsync();
+                                                            StringBuilder file_name_builder = new StringBuilder(value?.email);
+                                                            file_name_builder.Append("/");
+                                                            file_name_builder.Append(value?.file_name);
 
-                                                            insert_file_command.CommandText = "INSERT INTO Files VALUES(@File_Name, @File_Path, @Email)";
-                                                            insert_file_command.Parameters.AddWithValue("File_Name", file_name_builder.ToString());
-                                                            insert_file_command.Parameters.AddWithValue("File_Path", value?.path);
-                                                            insert_file_command.Parameters.AddWithValue("Email", value?.email);
+                                                            try
+                                                            {
+                                                                StringBuilder file_path = new StringBuilder(converted_path);
+                                                                file_path.Append(value?.file_name);
 
-                                                            await insert_file_command.ExecuteNonQueryAsync();
+                                                                FileStream file_stream = File.OpenWrite(file_path.ToString());
+                                                                try
+                                                                {
+                                                                    if (value != null)
+                                                                    {
+                                                                        while (value.fileStream.CanRead)
+                                                                        {
+                                                                            byte[] binary_buffer = new byte[1024];
+                                                                            int bytes_read = await value.fileStream.ReadAsync(binary_buffer, 0, binary_buffer.Length);
 
-                                                            result = "File upload successful";
+                                                                            if (bytes_read > 0)
+                                                                            {
+                                                                                await file_stream.WriteAsync(binary_buffer, 0, bytes_read);
+                                                                                await file_stream.FlushAsync();
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                break;
+                                                                            }
+                                                                        }
+
+                                                                        insert_file_command.CommandText = "INSERT INTO Files VALUES(@File_Name, @File_Path, @Email)";
+                                                                        insert_file_command.Parameters.AddWithValue("File_Name", file_name_builder.ToString());
+                                                                        insert_file_command.Parameters.AddWithValue("File_Path", value?.path);
+                                                                        insert_file_command.Parameters.AddWithValue("Email", value?.email);
+
+                                                                        await insert_file_command.ExecuteNonQueryAsync();
+
+                                                                        result = "File upload successful";
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        result = "Internal server error";
+                                                                    }
+                                                                }
+                                                                catch
+                                                                {
+                                                                    result = "File already exists";
+                                                                }
+                                                                finally
+                                                                {
+                                                                    await file_stream.DisposeAsync();
+                                                                }
+                                                            }
+                                                            catch
+                                                            {
+                                                                result = "Internal server error";
+                                                            }
                                                         }
-                                                        else
+                                                        finally
                                                         {
-                                                            result = "Internal server error";
+                                                            await insert_file_command.DisposeAsync();
                                                         }
-                                                    }
-                                                    catch (Exception E)
-                                                    {
-                                                        Console.WriteLine($"Error: {E.Message}");
                                                     }
                                                     finally
                                                     {
-                                                        await file_stream.DisposeAsync();
+                                                        await connection.DisposeAsync();
                                                     }
                                                 }
-                                                catch (Exception E)
+                                                else
                                                 {
-                                                    Console.WriteLine($"Error: {E.Message}");
-                                                    result = "Internal server error";
+                                                    result = "Invalid path";
                                                 }
                                             }
-                                            finally
+                                            else
                                             {
-                                                await insert_file_command.DisposeAsync();
+                                                result = "Internal server error";
                                             }
                                         }
-                                        finally
+                                        else
                                         {
-                                            await connection.DisposeAsync();
+                                            result = "Invalid path";
                                         }
                                     }
                                     else
                                     {
-                                        result = "Invalid path";
+                                        result = "Invalid file name. Use only numbers, letters, '-' and '/'.";
                                     }
                                 }
                                 else
                                 {
-                                    result = "Internal server error";
+                                    result = "Insufficient space on disk";
                                 }
                             }
                             else
                             {
-                                result = "Invalid path";
+                                result = "File size exceeds 500 MB";
                             }
                         }
                         else
                         {
-                            result = "Invalid file name. Use only numbers, letters, '-' and '/'.";
+                            result = "File name more than 100 characters long";
                         }
-
                     }
                     else
                     {
@@ -152,6 +183,8 @@ namespace ThetaFTP.Shared.Controllers
         private bool CheckIfDirectoryOnDisk(string? path) => IsValidDiskPath(path) == false ? false : true;
         private char PathSeparator() => OperatingSystem.IsWindows() == true ? '\\' : '/';
         private bool IsValidDiskPath(string? path) => Directory.Exists(path);
+        private long GetAvailableSpace() => new DriveInfo(Path.GetPathRoot(new FileInfo(Environment.CurrentDirectory).FullName) ?? String.Empty).AvailableFreeSpace;
+
 
 
         private bool CreateUserRootDir(string? email)
@@ -165,7 +198,6 @@ namespace ThetaFTP.Shared.Controllers
             path_builder.Append(email);
 
             string user_dir = path_builder.ToString();
-            Console.WriteLine(user_dir);
 
             if (IsValidDiskPath(user_dir) == false)
                 try

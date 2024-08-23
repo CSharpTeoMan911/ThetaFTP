@@ -22,17 +22,25 @@ namespace ThetaFTP.Shared.Formatters
 
         public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
         {
-            string text = String.Empty;
+            StringBuilder text = new StringBuilder();
 
-            Stream stream = new MemoryStream();
+            Stream stream = context.HttpContext.Request.Body;
             try
             {
-                await context.HttpContext.Request.Body.CopyToAsync(stream);
+                while (stream.CanRead == true)
+                {
+                    byte[] text_bytes = new byte[1024];
+                    int bytes_read = await stream.ReadAsync(text_bytes, 0, text_bytes.Length);
 
-                byte[] text_bytes = new byte[stream.Length];
-                await stream.ReadAsync(text_bytes, 0, text_bytes.Length);
-
-                text = encoding.GetString(text_bytes);
+                    if (bytes_read > 0)
+                    {
+                        text.Append(encoding.GetString(text_bytes, 0, bytes_read));
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
             }
             finally
             {
@@ -41,7 +49,7 @@ namespace ThetaFTP.Shared.Formatters
 
 
 
-            return await InputFormatterResult.SuccessAsync(text);
+            return await InputFormatterResult.SuccessAsync(text.ToString());
         }
     }
 }
