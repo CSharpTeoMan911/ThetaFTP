@@ -16,9 +16,7 @@ namespace ThetaFTP.Shared.Formatters
 
         public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
         {
-            Stream stream = new MemoryStream();
-            await context.HttpContext.Request.Body.CopyToAsync(stream);
-            return await InputFormatterResult.SuccessAsync(stream);
+            return await InputFormatterResult.SuccessAsync(context.HttpContext.Request.Body);
         }
     }
 }
