@@ -33,17 +33,17 @@ namespace ThetaFTP.Shared.Controllers
                         {
                             if (value?.size <= 65536000)
                             {
-                                if (GetAvailableSpace() > value?.size)
+                                if (FileSystemFormatter.GetAvailableSpace() > value?.size)
                                 {
-                                    if (IsValidFileName(value.file_name) == true)
+                                    if (FileSystemFormatter.IsValidFileName(value.file_name) == true)
                                     {
-                                        if (IsValidPath(value.path) == true)
+                                        if (FileSystemFormatter.IsValidPath(value.path) == true)
                                         {
-                                            if (CreateUserRootDir(value?.email))
+                                            if (FileSystemFormatter.CreateUserRootDir(value?.email))
                                             {
-                                                string converted_path = PathConverter(value?.path, value?.email);
+                                                string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
 
-                                                if (IsValidDiskPath(converted_path) == true)
+                                                if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
                                                 {
                                                     MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
                                                     try
@@ -51,29 +51,24 @@ namespace ThetaFTP.Shared.Controllers
                                                         MySqlCommand insert_file_command = connection.CreateCommand();
                                                         try
                                                         {
-                                                            StringBuilder file_name_builder = new StringBuilder(value?.email);
-                                                            file_name_builder.Append("/");
-                                                            file_name_builder.Append(value?.file_name);
-
                                                             try
                                                             {
-                                                                StringBuilder file_path = new StringBuilder(converted_path);
-                                                                file_path.Append(value?.file_name);
-
-                                                                FileStream file_stream = File.OpenWrite(file_path.ToString());
+                                                                FileStream file_stream = File.OpenWrite(FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name));
                                                                 try
                                                                 {
                                                                     if (value != null)
                                                                     {
                                                                         while (value.fileStream.CanRead)
                                                                         {
-                                                                            byte[] binary_buffer = new byte[1024];
+                                                                            byte[] binary_buffer = new byte[1024000];
                                                                             int bytes_read = await value.fileStream.ReadAsync(binary_buffer, 0, binary_buffer.Length);
 
                                                                             if (bytes_read > 0)
                                                                             {
                                                                                 await file_stream.WriteAsync(binary_buffer, 0, bytes_read);
-                                                                                await file_stream.FlushAsync();
+
+                                                                                if (file_stream.Length >= 3072000)
+                                                                                    await file_stream.FlushAsync();
                                                                             }
                                                                             else
                                                                             {
@@ -81,8 +76,11 @@ namespace ThetaFTP.Shared.Controllers
                                                                             }
                                                                         }
 
+                                                                        if (file_stream.Length > 0)
+                                                                            await file_stream.FlushAsync();
+
                                                                         insert_file_command.CommandText = "INSERT INTO Files VALUES(@File_Name, @File_Path, @Email)";
-                                                                        insert_file_command.Parameters.AddWithValue("File_Name", file_name_builder.ToString());
+                                                                        insert_file_command.Parameters.AddWithValue("File_Name", FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.file_name));
                                                                         insert_file_command.Parameters.AddWithValue("File_Path", value?.path);
                                                                         insert_file_command.Parameters.AddWithValue("Email", value?.email);
 
@@ -136,7 +134,7 @@ namespace ThetaFTP.Shared.Controllers
                                     }
                                     else
                                     {
-                                        result = "Invalid file name. Use only numbers, letters, '-' and '/'.";
+                                        result = "Invalid file name. Use only numbers, letters, '-', '/', '_', ' ', and '.'";
                                     }
                                 }
                                 else
@@ -177,54 +175,6 @@ namespace ThetaFTP.Shared.Controllers
             throw new NotImplementedException();
         }
 
-        private bool IsValidPath(string path_name) => path_name[0] == '/' ? path_name.All(c => char.IsLetter(c) || char.IsNumber(c) || c == '_' || c == '-' || c == ' ' || c == '/') : false;
-        private bool IsValidFileName(string file_name) => file_name.All(c => char.IsLetter(c) || char.IsNumber(c) || c == '_' || c == '-' || c == ' ' || c == '.');
-        private string? PathConverter(string? path) => OperatingSystem.IsWindows() == true ? path?.Replace('/', '\\') : path;
-        private bool CheckIfDirectoryOnDisk(string? path) => IsValidDiskPath(path) == false ? false : true;
-        private char PathSeparator() => OperatingSystem.IsWindows() == true ? '\\' : '/';
-        private bool IsValidDiskPath(string? path) => Directory.Exists(path);
-        private long GetAvailableSpace() => new DriveInfo(Path.GetPathRoot(new FileInfo(Environment.CurrentDirectory).FullName) ?? String.Empty).AvailableFreeSpace;
 
-
-
-        private bool CreateUserRootDir(string? email)
-        {
-            char path_separator = PathSeparator();
-
-            StringBuilder path_builder = new StringBuilder(Environment.CurrentDirectory);
-            path_builder.Append(path_separator);
-            path_builder.Append("FTP_Server");
-            path_builder.Append(path_separator);
-            path_builder.Append(email);
-
-            string user_dir = path_builder.ToString();
-
-            if (IsValidDiskPath(user_dir) == false)
-                try
-                {
-                    Directory.CreateDirectory(user_dir);
-                }
-                catch
-                {
-                    return false;
-                }
-
-            return true;
-        }
-
-        private string PathConverter(string? path, string? email)
-        {
-            char path_separator = PathSeparator();
-            string? converted_path = PathConverter(path);
-
-            StringBuilder path_builder = new StringBuilder(Environment.CurrentDirectory);
-            path_builder.Append(path_separator);
-            path_builder.Append("FTP_Server");
-            path_builder.Append(path_separator);
-            path_builder.Append(email);
-            path_builder.Append(PathConverter(path));
-
-            return path_builder.ToString();
-        }
     }
 }

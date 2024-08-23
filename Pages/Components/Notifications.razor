@@ -48,12 +48,13 @@ else
     {
         base.OnAfterRender(firstRender);
 
-        render_time = DateTime.Now;
-
-        timer.Elapsed += ElapsedTime;
-        timer.Interval = 100;
-        timer.Start();
-
+        if (firstRender == true)
+        {
+            render_time = DateTime.Now;
+            timer.Elapsed += ElapsedTime;
+            timer.Interval = 100;
+            timer.Start();
+        }
     }
 
     public void ElapsedTime(object? sender, System.Timers.ElapsedEventArgs args)
@@ -66,9 +67,8 @@ else
 
     public async void CloseNotification_()
     {
-        timer.Stop();
-        timer.Dispose();
-
+        timer?.Stop();
+        timer?.Dispose();
         await InvokeAsync(() =>
         {
             closeNotification?.Invoke();

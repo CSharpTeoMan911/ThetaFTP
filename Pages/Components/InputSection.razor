@@ -11,13 +11,13 @@
             @if (input_with_button == true)
             {
                 <div style="width:100%; display:flex; flex-direction: row; align-content:center">
-                    <input class="input_style" style="align-self:center" type="password" @oninput=OnInput />
+                    <input class="input_style" style="align-self:center" type="password" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
                     @InputButton
                 </div>
             }
             else
             {
-                <input class="input_style" type="password" @oninput=OnInput />
+                <input class="input_style" type="password" placeholder=@placeholder value=@defaultValue @oninput =OnInput />
             }
         }
         else
@@ -25,13 +25,13 @@
             @if (input_with_button == true)
             {
                 <div style="width:100%; display:flex; flex-direction: row; align-content:center">
-                    <input class="input_style" style="align-self:center;" @oninput=OnInput />
+                    <input class="input_style" style="align-self:center;" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
                     @InputButton
                 </div>
             }
             else
             {
-                <input class="input_style" @oninput=OnInput />
+                <input class="input_style" placeholder=@placeholder value=@defaultValue @oninput =OnInput />
             }
         }
     </div>
@@ -54,6 +54,12 @@
 
     [Parameter]
     public bool input_with_button { get; set; }
+
+    [Parameter]
+    public string? placeholder { get; set; } = String.Empty;
+
+    [Parameter]
+    public string? defaultValue { get; set; } = String.Empty;
 
     [Parameter] public RenderFragment? InputButton { get; set; }
 

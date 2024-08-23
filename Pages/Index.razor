@@ -11,6 +11,14 @@
 
 <PanelComponent>
     <Component>
+        @if (ShowNotification == true)
+        {
+            <Notifications notificationType=@notificationType NotificationMessage=@notificationMessage closeNotification=@CloseNotification/>
+        }
+        @if(ShowValidationPanel == true)
+        {
+            <ValidationPanel closeAccountValidationPanel="CloseValidationPanel" initiateValidationProcedure="ValidationProcedure" validationType=@validationType validationInputTopic=@validationInputTopic placeholder=@placeholder defaultValue=@defaultValue/>
+        }
         <div class="files_panel">
             <div class="files_panel_control ">
                 <div style="display:inline-block; width:100%;">
@@ -20,7 +28,7 @@
                                 <img class="control_image" src="./images/cloud-computing.webp" />
                                 <InputFile id="file_dialog" OnChange="@Upload" hidden/>
                             </button>
-                            <button class="control_button" style="margin-left: 40px" @onclick=CreateFolder>
+                            <button class="control_button" style="margin-left: 40px" @onclick=CreateDirectory>
                                 <img class="control_image" src="./images/new-folder.webp" />
                             </button>
                         </div>
@@ -50,7 +58,20 @@
 
 
 @code{
-    private string Path { get; set; } = "/";
+    private string? Path { get; set; } = "/";
+    private string? DirectoryName { get; set; }
+    private bool ShowValidationPanel { get; set; }
+    private bool ShowNotification { get; set; }
+    private bool InvalidLogInSessionKey { get; set; }
+
+    private ValidationPanel.ValidationType validationType { get; set; }
+    private string? validationInputTopic { get; set; }
+    private string? placeholder { get; set; }
+    private string? defaultValue { get; set; }
+
+    private Notifications.NotificationType notificationType { get; set; }
+    private string? notificationMessage { get; set; }
+
 
 
     public async void Upload(InputFileChangeEventArgs e)
@@ -71,8 +92,27 @@
                     client.BaseAddress = new Uri(NavigationManager.BaseUri);
 
                     HttpResponseMessage responseMessage = await client.PostAsync(payload.Item1, payload.Item3);
+                    string response = await responseMessage.Content.ReadAsStringAsync();
+                    notificationMessage = response;
 
-                    Console.WriteLine(await responseMessage.Content.ReadAsStringAsync());
+                    if (response.Contains("File upload successful") == true)
+                    {
+                        notificationType = Notifications.NotificationType.Information;
+                    }
+                    else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
+                    {
+                        notificationType = Notifications.NotificationType.Error;
+                        InvalidLogInSessionKey = true;
+                    }
+                    else
+                    {
+                        notificationType = Notifications.NotificationType.Error;
+                    }
+                }
+                catch
+                {
+                    notificationMessage = "Could not upload file";
+                    notificationType = Notifications.NotificationType.Error;
                 }
                 finally
                 {
@@ -81,19 +121,119 @@
             }
             else
             {
+                notificationMessage = "Could not read file";
+                notificationType = Notifications.NotificationType.Error;
             }
 
+            ShowNotification = true;
+            StateHasChanged();
         }
-        catch{}
+        catch(Exception E)
+        {
+            System.Diagnostics.Debug.WriteLine(E.Message);
+            notificationMessage = "Could not upload file";
+            notificationType = Notifications.NotificationType.Error;
+        }
     }
 
-    public void CreateFolder()
+    public void CreateDirectory()
     {
+        validationType = ValidationPanel.ValidationType.DirectoryName;
+        validationInputTopic = "Directory";
+        placeholder = "Directory name";
+        ShowValidationPanel = true;
+        StateHasChanged();
+    }
 
+    private void CloseValidationPanel()
+    {
+        ShowValidationPanel = false;
+        StateHasChanged();
+    }
+
+    private async void ValidationProcedure(string? code, ValidationPanel.ValidationType validationType)
+    {
+        try
+        {
+            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+            string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+
+            HttpClient client = HttpClientGen.Generate();
+            try
+            {
+                client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
+                if (validationType == ValidationPanel.ValidationType.DirectoryName)
+                {
+
+                    HttpResponseMessage responseMessage = await client.PostAsync(await DirectoryUploadPayloadBuilder.DirectoryUpload(code, Path, log_in_session_key), null);
+                    string response = await responseMessage.Content.ReadAsStringAsync();
+                    notificationMessage = response;
+
+                    if (response.Contains("Directory upload successful") == true)
+                    {
+                        notificationType = Notifications.NotificationType.Information;
+                    }
+                    else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
+                    {
+                        notificationType = Notifications.NotificationType.Error;
+                        InvalidLogInSessionKey = true;
+                    }
+                    else
+                    {
+                        notificationType = Notifications.NotificationType.Error;
+                    }
+                }
+            }
+            finally
+            {
+                client.Dispose();
+            }
+        }
+        catch{}
+
+        ShowValidationPanel = false;
+        ShowNotification = true;
+        StateHasChanged();
+    }
+
+    private async void CloseNotification()
+    {
+        ShowNotification = false;
+        if (InvalidLogInSessionKey == true)
+        {
+            Console.WriteLine("Log out");
+            await LogOut();
+            NavigationManager.NavigateTo("/log-in", true);
+        }
+        else
+        {
+            StateHasChanged();
+        }
     }
 
     public void Search()
     {
-        
+
+    }
+
+    private async Task LogOut()
+    {
+        try
+        {
+            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "././js/functions.js");
+
+            string? key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+
+            StringBuilder builder = new StringBuilder("/validation/delete-session?value=");
+            builder.Append(System.Web.HttpUtility.UrlEncode(key));
+
+            HttpClient client = HttpClientGen.Generate();
+            client.BaseAddress = new Uri(NavigationManager.BaseUri);
+            HttpResponseMessage responseMessage = await client.DeleteAsync(builder.ToString());
+
+            await module.InvokeVoidAsync("Delete_Cache", "auth", "AuthCache");
+        }
+        catch { }
     }
 }

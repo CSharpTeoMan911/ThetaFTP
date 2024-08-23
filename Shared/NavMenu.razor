@@ -87,7 +87,6 @@
         {
             if (AuthState == "Log out")
             {
-                // IMPLEMENT LOG OUT API LOGIC
                 IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "././js/functions.js");
 
                 string? key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");

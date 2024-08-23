@@ -12,7 +12,10 @@
                         return !Shared.config.validate_ssl_certificates;
                     return true;
                 }
-            });
+            })
+            {
+                Timeout = TimeSpan.FromMinutes(10)
+            };
         }
     }
 }
