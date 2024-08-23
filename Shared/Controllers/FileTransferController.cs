@@ -31,10 +31,9 @@ namespace ThetaFTP.Shared.Controllers
 
             string? log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
 
-            
-            if (log_in_key_validation_result != "Internal server error")
+            if (body != null)
             {
-                if (log_in_key_validation_result != "Invalid code")
+                if (log_in_key_validation_result != "Internal server error")
                 {
                     if (log_in_key_validation_result != "Invalid log in session key")
                     {
@@ -52,65 +51,33 @@ namespace ThetaFTP.Shared.Controllers
 
                                 result = await Shared.database_ftp.Insert(ftpModel);
 
-                                if (result == "Internal server error")
+                                if (result == "File upload successful")
                                 {
-                                    return BadRequest(result);
-                                }
-                                else if(result == "File already exists")
-                                {
-                                    return BadRequest(result);
-                                }
-                                else if (result == "Cannot read file content")
-                                {
-                                    return BadRequest(result);
-                                }
-                                else if (result == "Invalid file name")
-                                {
-                                    return BadRequest(result);
-                                }
-                                else if (result == "Invalid path")
-                                {
-                                    return BadRequest(result);
-                                }
-                                else if (result == "Insufficient space on disk")
-                                {
-                                    return BadRequest(result);
-                                }
-                                else if (result == "Invalid file name. Use only numbers, letters, '-' and '/'.")
-                                {
-                                    return BadRequest(result);
-                                }
-                                else if (result == "File name more than 100 characters long")
-                                {
-                                    return BadRequest(result);
-                                }
-                                else if (result == "File size exceeds 500 MB")
-                                {
-                                    return BadRequest(result);
+                                    return Ok(result);
                                 }
                                 else
                                 {
-                                    return Ok(result);
+                                    return BadRequest(result);
                                 }
                             }
                             else
                             {
-                                return BadRequest(result);
+                                return BadRequest(log_in_key_validation_result);
                             }
                         }
                         else
                         {
-                            return BadRequest(result);
+                            return BadRequest(log_in_key_validation_result);
                         }
                     }
                     else
                     {
-                        return BadRequest(result);
+                        return BadRequest(log_in_key_validation_result);
                     }
                 }
                 else
                 {
-                    return BadRequest(result);
+                    return BadRequest(log_in_key_validation_result);
                 }
             }
             else

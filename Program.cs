@@ -22,7 +22,7 @@ namespace ThetaFTP
 
             System.Timers.Timer server_utility_timer = new System.Timers.Timer();
             server_utility_timer.Elapsed += Server_utility_timer_Elapsed;
-            server_utility_timer.Interval = 100;
+            server_utility_timer.Interval = 600000;
             server_utility_timer.Start();
 
             var builder = WebApplication.CreateBuilder(args);
@@ -42,11 +42,42 @@ namespace ThetaFTP
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
             });
+
+
+
+
+
+            //////////////////////////////////////////////
+            //              !!! TO DO !!!               //
+            //////////////////////////////////////////////
+            //                                          //
+            // COMFIGURE SERVER'S KESTER SERVICE LIMITS //
+            //                                          //
+            //////////////////////////////////////////////
             builder.WebHost.ConfigureKestrel(c =>
             {
-                c.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(1);
-                c.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(1);
+                c.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(10);
+                c.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(10);
+                c.Limits.MinResponseDataRate = null;
+                c.Limits.MaxConcurrentConnections = null;
+                c.Limits.MinResponseDataRate = null;
+                c.Limits.MinRequestBodyDataRate = null;
+                c.Limits.MaxRequestBodySize = null;
+                c.Limits.MaxConcurrentConnections = null;
+                c.Limits.MaxConcurrentUpgradedConnections = null;
             });
+            //////////////////////////////////////////////
+            //              !!! TO DO !!!               //
+            //////////////////////////////////////////////
+            //                                          //
+            // COMFIGURE SERVER'S KESTER SERVICE LIMITS //
+            //                                          //
+            //////////////////////////////////////////////
+
+
+
+
+
 
             var app = builder.Build();
 

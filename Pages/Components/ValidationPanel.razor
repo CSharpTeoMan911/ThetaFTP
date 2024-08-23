@@ -9,7 +9,7 @@
                     </button>
                 </div>
 
-                <InputSection inputSectionTitle="Validation code" isPassword=false inputValue="new InputSection.InputValue(OnInput)" style="padding:calc(8px + 0.5vw) calc(28px + 0.5vw) calc(38px + 0.5vw) calc(48px + 0.5vw)" input_with_button="true">
+                <InputSection placeholder=@placeholder defaultValue=@defaultValue inputSectionTitle=@validationInputTopic isPassword=false inputValue="new InputSection.InputValue(OnInput)" style="padding:calc(8px + 0.5vw) calc(28px + 0.5vw) calc(38px + 0.5vw) calc(48px + 0.5vw)" input_with_button="true">
                     <InputButton>
                         <button class="close_button" @onclick=ValidationProcedure>
                             <img style="height:calc(22px + 0.5vw); align-self:center; margin: 0px 0px 0px 5px; padding: 0px; justify-self:center;" src="./images/next.webp" />
@@ -28,7 +28,8 @@
     {
         AccountAuthorisation,
         LogInSessionAuthorisation,
-        LogInSessionKeyAuthorisation
+        DirectoryName,
+        FileName
     }
 
     public delegate void CloseAccountValidationPanel();
@@ -37,22 +38,19 @@
     public delegate void InitiateValidationProcedure(string? code, ValidationType validationType);
     [Parameter] public InitiateValidationProcedure? initiateValidationProcedure { get; set; }
 
+    [Parameter] public string? validationInputTopic { get; set; }
+
     [Parameter] public ValidationType validationType { get; set; }
+
+    [Parameter] public string? placeholder { get; set; }
+
+    [Parameter] public string? defaultValue { get; set; }
 
     private string? code;
 
-    private void ClosePanel()
-    {
-        closeAccountValidationPanel?.Invoke();
-    }
+    private void ClosePanel() => closeAccountValidationPanel?.Invoke();
 
-    private void ValidationProcedure()
-    {
-        initiateValidationProcedure?.Invoke(code, validationType);
-    }
+    private void ValidationProcedure() => initiateValidationProcedure?.Invoke(code, validationType);
 
-    private void OnInput(string? value)
-    {
-        code = value;
-    }
+    private void OnInput(string? value) => code = value;
 }

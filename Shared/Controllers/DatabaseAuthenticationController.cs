@@ -117,7 +117,7 @@ namespace ThetaFTP.Shared.Controllers
                                                                 MySqlCommand insert_log_in_code_command = connection.CreateCommand();
                                                                 try
                                                                 {
-                                                                    bool smtps_operation_result = await SMTPS_Service.SendSMTPS(value?.email, "Log in authorisation", $"Login code: {log_in_code}");
+                                                                    bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Log in authorisation", $"Login code: {log_in_code}");
                                                                     insert_log_in_code_command.CommandText = "INSERT INTO Log_In_Sessions_Waiting_For_Approval VALUES(@Log_In_Code, @Log_In_Session_Key, @Expiration_Date)";
                                                                     insert_log_in_code_command.Parameters.AddWithValue("Log_In_Code", hashed_log_in_code.Item1);
                                                                     insert_log_in_code_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_log_in_session_key.Item1);
@@ -281,7 +281,7 @@ namespace ThetaFTP.Shared.Controllers
 
                                                                     if (key_hash_result.Item2 != typeof(Exception))
                                                                     {
-                                                                        bool smtps_operation_result = await SMTPS_Service.SendSMTPS(value?.email, "Account approval", $"Account approval key: {key}");
+                                                                        bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Account approval", $"Account approval key: {key}");
                                                                       
                                                                         if (smtps_operation_result == true)
                                                                         {

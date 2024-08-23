@@ -9,7 +9,7 @@ namespace ThetaFTP.Shared.Classes
 {
     public class FileUploadPayloadBuilder
     {
-        public static async Task<Tuple<string, Stream, StreamContent?>> FileUpload(IBrowserFile file, string path, string log_in_session_key)
+        public static async Task<Tuple<string, Stream, StreamContent?>> FileUpload(IBrowserFile file, string? path, string? log_in_session_key)
         {
             string uri = String.Empty;
             Stream stream = new MemoryStream();
@@ -23,7 +23,7 @@ namespace ThetaFTP.Shared.Classes
                 if (stream.CanRead == true)
                 {
                     metadata.path = path;
-                    metadata.file_name = FileNameFormatter.CharacterReplacement(file.Name);
+                    metadata.file_name = FileSystemFormatter.FileNameCharacterReplacement(file.Name);
                     metadata.key = log_in_session_key;
                     metadata.file_length = file.Size;
 

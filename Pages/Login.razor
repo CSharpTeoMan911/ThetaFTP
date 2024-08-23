@@ -13,20 +13,20 @@
     <Component>
         @if (ShowAccountsApprovalPanel == true)
         {
-            <ValidationPanel closeAccountValidationPanel="CloseAccountValidation" initiateValidationProcedure=ValidationProcedure validationType="ValidationPanel.ValidationType.AccountAuthorisation" />
+            <ValidationPanel validationInputTopic=@validationInputTopic closeAccountValidationPanel="CloseAccountValidation" initiateValidationProcedure=ValidationProcedure validationType="ValidationPanel.ValidationType.AccountAuthorisation" />
         }
         else if (ShowLogInSessionValidationPanel)
         {
-            <ValidationPanel closeAccountValidationPanel="CloseAccountValidation" initiateValidationProcedure=ValidationProcedure validationType="ValidationPanel.ValidationType.LogInSessionAuthorisation" />
+            <ValidationPanel validationInputTopic=@validationInputTopic closeAccountValidationPanel="CloseAccountValidation" initiateValidationProcedure=ValidationProcedure validationType="ValidationPanel.ValidationType.LogInSessionAuthorisation" />
         }
 
         @if(ShowNotification == true){
             <Notifications NotificationMessage="@NotificationMessage" notificationType="@NotificationType" closeNotification="CloseNotification"/>
         }
         <TitleSection title="Log In" />
-        <InputSection inputSectionTitle="Email" inputValue="new InputSection.InputValue(OnEmailValue)" isPassword="false" input_with_button="false" />
+        <InputSection inputSectionTitle="Email" placeholder="Email" inputValue="new InputSection.InputValue(OnEmailValue)" isPassword="false" input_with_button="false" />
         <br/>
-        <InputSection inputSectionTitle="Password" inputValue="new InputSection.InputValue(OnPasswordValue)" isPassword="true" input_with_button="false" />
+        <InputSection inputSectionTitle="Password" placeholder="Password" inputValue="new InputSection.InputValue(OnPasswordValue)" isPassword="true" input_with_button="false" />
         <div style="display:flex;flex-direction:column;margin-top:40px;">
             <button class="auth_action" @onclick=SignIn>
                 Sign In
@@ -54,6 +54,8 @@
     private bool ShowLogInSessionValidationPanelOnClose { get; set; }
 
     private bool NavigateToMainPageOnClose { get; set; }
+
+    private readonly string validationInputTopic = "Validation code";
 
     // ADD CALLBACK METHODS FOR THE 'input' SECTIONS
     private void NavigateToRegister()
