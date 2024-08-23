@@ -311,7 +311,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             else
             {
-                response = "Invalid code";
+                response = "Invalid log in session key";
             }
 
             return response;
