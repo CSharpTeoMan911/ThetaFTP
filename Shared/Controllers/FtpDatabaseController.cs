@@ -53,38 +53,29 @@ namespace ThetaFTP.Shared.Controllers
                                                         {
                                                             try
                                                             {
-                                                                FileStream file_stream = File.OpenWrite(FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name));
+                                                                string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
+                                                                FileStream file_stream = File.OpenWrite(full_path);
                                                                 try
                                                                 {
                                                                     if (value != null)
                                                                     {
-                                                                        while (value.fileStream.CanRead)
+                                                                        bool file_upload_result = await StreamOperations.ReadAsync(value.fileStream, value.size, file_stream, 102400, 3);
+
+                                                                        if(file_upload_result == true)
                                                                         {
-                                                                            byte[] binary_buffer = new byte[1024000];
-                                                                            int bytes_read = await value.fileStream.ReadAsync(binary_buffer, 0, binary_buffer.Length);
+                                                                            insert_file_command.CommandText = "INSERT INTO Files VALUES(@File_Name, @File_Path, @Email)";
+                                                                            insert_file_command.Parameters.AddWithValue("File_Name", FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.file_name));
+                                                                            insert_file_command.Parameters.AddWithValue("File_Path", value?.path);
+                                                                            insert_file_command.Parameters.AddWithValue("Email", value?.email);
 
-                                                                            if (bytes_read > 0)
-                                                                            {
-                                                                                await file_stream.WriteAsync(binary_buffer, 0, bytes_read);
-
-                                                                                if (file_stream.Length >= 3072000)
-                                                                                    await file_stream.FlushAsync();
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                break;
-                                                                            }
+                                                                            await insert_file_command.ExecuteNonQueryAsync();
+                                                                            result = "File upload successful";
                                                                         }
-
-                                                                        if (file_stream.Length > 0)
-                                                                            await file_stream.FlushAsync();
-
-                                                                        insert_file_command.CommandText = "INSERT INTO Files VALUES(@File_Name, @File_Path, @Email)";
-                                                                        insert_file_command.Parameters.AddWithValue("File_Name", FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.file_name));
-                                                                        insert_file_command.Parameters.AddWithValue("File_Path", value?.path);
-                                                                        insert_file_command.Parameters.AddWithValue("Email", value?.email);
-
-                                                                        await insert_file_command.ExecuteNonQueryAsync();
+                                                                        else
+                                                                        {
+                                                                            if (File.Exists(full_path) == true)
+                                                                                File.Delete(full_path);
+                                                                        }
 
                                                                         result = "File upload successful";
                                                                     }

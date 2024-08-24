@@ -54,10 +54,17 @@ namespace ThetaFTP
             // COMFIGURE SERVER'S KESTER SERVICE LIMITS //
             //                                          //
             //////////////////////////////////////////////
+            ///
+
+            int connection_timeout = 600;
+            if (Shared.Shared.config != null)
+                connection_timeout = Shared.Shared.config.ConnectionTimeoutSeconds;
+
+
             builder.WebHost.ConfigureKestrel(c =>
             {
-                c.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(10);
-                c.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(10);
+                c.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(connection_timeout);
+                c.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(connection_timeout);
                 c.Limits.MinResponseDataRate = null;
                 c.Limits.MaxConcurrentConnections = null;
                 c.Limits.MinResponseDataRate = null;
