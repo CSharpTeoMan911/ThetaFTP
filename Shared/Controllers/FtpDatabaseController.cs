@@ -65,8 +65,9 @@ namespace ThetaFTP.Shared.Controllers
 
                                                                         if (file_upload_result == true)
                                                                         {
-                                                                            insert_file_command.CommandText = "INSERT INTO Files VALUES(@File_Name, @File_Path, @Email)";
+                                                                            insert_file_command.CommandText = "INSERT INTO Files VALUES(@File_Name, @File_Size, @File_Path, @Email)";
                                                                             insert_file_command.Parameters.AddWithValue("File_Name", formatted_file_name);
+                                                                            insert_file_command.Parameters.AddWithValue("File_Size", value?.size);
                                                                             insert_file_command.Parameters.AddWithValue("File_Path", value?.path);
                                                                             insert_file_command.Parameters.AddWithValue("Email", value?.email);
 

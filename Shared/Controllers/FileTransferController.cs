@@ -22,6 +22,13 @@ namespace ThetaFTP.Shared.Controllers
             throw new NotImplementedException();
         }
 
+        [HttpGet("get-files")]
+        public Task<ActionResult?> GetFiles([FromQuery] FileOperationMetadata? query, [FromBody] Stream? body)
+        {
+            throw new NotImplementedException();
+        }
+
+
         [HttpPost("insert")]
         public async Task<ActionResult?> Insert([FromQuery] FileOperationMetadata? query, [FromBody] Stream? body)
         {

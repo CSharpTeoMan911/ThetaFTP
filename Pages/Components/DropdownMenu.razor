@@ -16,6 +16,16 @@
                         Upload
                     </p>
                     break;
+                case Operation.deletion:
+                    <p class="dropdown_context_text">
+                        Moving
+                    </p>
+                    break;
+                case Operation.moving:
+                    <p class="dropdown_context_text">
+                        Moving
+                    </p>
+                    break;
             }
         </div>
         @Content
@@ -26,7 +36,9 @@
 
     public enum Operation{
         download,
-        upload
+        upload,
+        deletion,
+        moving
     }
 
     [Parameter] public Operation operation { get; set; }
