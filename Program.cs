@@ -44,6 +44,17 @@ namespace ThetaFTP
             });
 
 
+            List<string>? urls = builder.Configuration[WebHostDefaults.ServerUrlsKey]?.Split(';').ToList();
+            List<string>? config_urls = new List<string>();
+
+            Shared.Shared.config?.http_addresses?.ForEach(element =>
+            {
+                if (urls?.Contains(element) == false)
+                    config_urls.Add(element);
+            });
+
+            if (config_urls.Count > 0)
+                builder.WebHost.UseUrls(config_urls.ToArray());
 
 
 

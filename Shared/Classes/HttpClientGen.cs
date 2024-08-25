@@ -4,6 +4,10 @@
     {
         public static HttpClient Generate()
         {
+            int timeout = 600;
+            if (Shared.config != null)
+                timeout = Shared.config.ConnectionTimeoutSeconds;
+
             return new HttpClient(new HttpClientHandler()
             {
                 ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) =>
@@ -14,7 +18,7 @@
                 }
             })
             {
-                Timeout = TimeSpan.FromMinutes(10)
+                Timeout = TimeSpan.FromMinutes(timeout)
             };
         }
     }

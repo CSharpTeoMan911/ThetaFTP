@@ -4,6 +4,7 @@
 @using ThetaFTP.Shared.Classes;
 @using System.Text;
 @using ThetaFTP.Shared.Models;
+@using System.Collections.Concurrent;
 @inject NavigationManager NavigationManager;
 @inject IJSRuntime JS;
 @page "/"
@@ -72,7 +73,8 @@
     private Notifications.NotificationType notificationType { get; set; }
     private string? notificationMessage { get; set; }
 
-
+    private ConcurrentDictionary<DateTime, HttpClient> pending_upload_operations = new ConcurrentDictionary<DateTime, HttpClient>();
+    private ConcurrentDictionary<string, Stream> pending_upload_progress_operations = new ConcurrentDictionary<string, Stream>();
 
     public async void Upload(InputFileChangeEventArgs e)
     {
@@ -81,19 +83,19 @@
             IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
             string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
 
-
             Tuple<string, Stream, StreamContent?> payload =  await FileUploadPayloadBuilder.FileUpload(e.File, Path, log_in_session_key);
 
             if (payload.Item3 != null)
             {
                 try
                 {
-                    HttpClient client = HttpClientGen.Generate();
+                    Console.WriteLine("Request");
+                    HttpClient client = client = HttpClientGen.Generate();
                     client.BaseAddress = new Uri(NavigationManager.BaseUri);
 
                     HttpResponseMessage responseMessage = await client.PostAsync(payload.Item1, payload.Item3);
                     string response = await responseMessage.Content.ReadAsStringAsync();
-                    notificationMessage = response;
+                    Console.WriteLine("response: " + response);
 
                     if (response.Contains("File upload successful") == true)
                     {
@@ -108,11 +110,14 @@
                     {
                         notificationType = Notifications.NotificationType.Error;
                     }
+
+                    notificationMessage = response;
                 }
-                catch
+                catch(Exception E)
                 {
-                    notificationMessage = "Could not upload file";
+                    System.Diagnostics.Debug.WriteLine("Error: " + E.Message);
                     notificationType = Notifications.NotificationType.Error;
+                    notificationMessage = "Could not upload file";
                 }
                 finally
                 {
@@ -121,8 +126,8 @@
             }
             else
             {
-                notificationMessage = "Could not read file";
                 notificationType = Notifications.NotificationType.Error;
+                notificationMessage = "Could not read file";
             }
 
             ShowNotification = true;
@@ -130,9 +135,9 @@
         }
         catch(Exception E)
         {
-            System.Diagnostics.Debug.WriteLine(E.Message);
-            notificationMessage = "Could not upload file";
+            System.Diagnostics.Debug.WriteLine("Error: " + E.Message);
             notificationType = Notifications.NotificationType.Error;
+            notificationMessage = "Could not upload file";
         }
     }
 

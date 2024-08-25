@@ -25,7 +25,7 @@ namespace ThetaFTP.Shared.Classes
                     metadata.path = path;
                     metadata.file_name = FileSystemFormatter.FileNameCharacterReplacement(file.Name);
                     metadata.key = log_in_session_key;
-                    metadata.file_length = file.Size;
+                    metadata.file_length = stream.Length;
 
                     StringBuilder builder = new StringBuilder("/files/insert?");
                     builder.Append(await QueryParsing.QueryParser(metadata));

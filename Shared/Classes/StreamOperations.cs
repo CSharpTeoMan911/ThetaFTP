@@ -4,37 +4,45 @@ namespace ThetaFTP.Shared.Classes
 {
     public class StreamOperations
     {
-        public static async Task<bool> ReadAsync(Stream input_stream, long file_size, Stream output_stream, int buffer_size, int buffer_count_flush)
+        public static async Task<bool> ReadAsync(Stream input_stream, long file_size, Stream output_stream, int buffer_size, int buffer_count_flush, CancellationToken cancellation)
         {
             bool result = false;
 
             IMemoryOwner<byte> contingent_memory_buffer = MemoryPool<byte>.Shared.Rent(buffer_size);
 
             DateTime start = DateTime.Now;
+            Console.WriteLine("file size: " + file_size);
 
             try
             {
-                while (input_stream.CanRead)
+                while (input_stream.CanRead == true)
                 {
-                    if ((DateTime.Now - start) >= TimeSpan.FromMicroseconds(GetOperationsPerSecond()))
+                    if (cancellation.IsCancellationRequested == false)
                     {
-                        start = DateTime.Now;
-
-                        int bytes_read = await input_stream.ReadAsync(contingent_memory_buffer.Memory.Slice(0, buffer_size));
-                        if (bytes_read > 0)
+                        if ((DateTime.Now - start) >= TimeSpan.FromMicroseconds(GetOperationsPerSecond()))
                         {
-                            await output_stream.WriteAsync(contingent_memory_buffer.Memory.Slice(0, bytes_read));
+                            start = DateTime.Now;
 
-                            if (output_stream.Length >= buffer_size * buffer_count_flush)
+                            int bytes_read = await input_stream.ReadAsync(contingent_memory_buffer.Memory.Slice(0, buffer_size));
+                            if (bytes_read > 0)
                             {
-                                await output_stream.FlushAsync();
+                                await output_stream.WriteAsync(contingent_memory_buffer.Memory.Slice(0, bytes_read));
+
+                                if (output_stream.Length >= buffer_size * buffer_count_flush)
+                                {
+                                    await output_stream.FlushAsync();
+                                }
+                                file_size -= bytes_read;
                             }
-                            file_size += bytes_read;
+                            else
+                            {
+                                break;
+                            }
                         }
-                        else
-                        {
-                            break;
-                        }
+                    }
+                    else
+                    {
+                        return false;
                     }
                 }
 

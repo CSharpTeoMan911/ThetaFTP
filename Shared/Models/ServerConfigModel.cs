@@ -15,5 +15,11 @@
         public bool validate_ssl_certificates { get; set; } = false;
         public int ReadAndWriteOperationsPerSecond { get; set; } = 2500;
         public int ConnectionTimeoutSeconds { get; set; } = 600;
+        public List<string> http_addresses { get; set; } = new List<string>()
+        {
+            "https://localhost:7040",
+            "http://localhost:5219"
+        };
+        public bool enforce_https { get; set;}
     }
 }

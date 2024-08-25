@@ -33,41 +33,50 @@ namespace ThetaFTP.Shared.Controllers
 
             if (body != null)
             {
-                if (log_in_key_validation_result != "Internal server error")
+                if (query != null)
                 {
-                    if (log_in_key_validation_result != "Invalid log in session key")
+                    if (log_in_key_validation_result != "Internal server error")
                     {
-                        if (log_in_key_validation_result != "Log in session key expired")
+                        if (log_in_key_validation_result != "Invalid log in session key")
                         {
-                            if (log_in_key_validation_result != "Log in session not approved")
+                            if (log_in_key_validation_result != "Log in session key expired")
                             {
-                                FtpModel ftpModel = new FtpModel()
+                                if (log_in_key_validation_result != "Log in session not approved")
                                 {
-                                    email = log_in_key_validation_result,
-                                    file_name = query?.file_name,
-                                    path = query?.path,
-                                    fileStream = body
-                                };
+                                    long file_size = 0;
+                                    if (query != null)
+                                        file_size = query.file_length;
 
-                                result = await Shared.database_ftp.Insert(ftpModel);
+                                    FtpModel ftpModel = new FtpModel()
+                                    {
+                                        email = log_in_key_validation_result,
+                                        file_name = query?.file_name,
+                                        path = query?.path,
+                                        fileStream = body,
+                                        operation_cancellation = HttpContext.RequestAborted,
+                                        size = file_size
+                                    };
 
-                                if (result == "File upload successful")
-                                {
+                                    Console.WriteLine("Size: " + file_size);
+
+                                    result = await Shared.database_ftp.Insert(ftpModel);
+
+                                    Console.WriteLine("Server response: " + result);
                                     return Ok(result);
                                 }
                                 else
                                 {
-                                    return BadRequest(result);
+                                    return Ok(log_in_key_validation_result);
                                 }
                             }
                             else
                             {
-                                return BadRequest(log_in_key_validation_result);
+                                return Ok(log_in_key_validation_result);
                             }
                         }
                         else
                         {
-                            return BadRequest(log_in_key_validation_result);
+                            return Ok(log_in_key_validation_result);
                         }
                     }
                     else
@@ -77,7 +86,7 @@ namespace ThetaFTP.Shared.Controllers
                 }
                 else
                 {
-                    return BadRequest(log_in_key_validation_result);
+                    return BadRequest(result);
                 }
             }
             else
