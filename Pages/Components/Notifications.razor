@@ -1,6 +1,6 @@
 ﻿@if (notificationType == NotificationType.Error)
 {
-    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="position:absolute; z-index:100">
+    <div class="toast show notification_panel" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
             <img src="./images/close.webp" class="rounded me-2 notification_image" alt="...">
             <strong class="me-auto">@notificationType.ToString()</strong>
@@ -13,7 +13,7 @@
 }
 else
 {
-    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true" style="position:absolute; z-index:100">
+    <div class="toast show notification_panel" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="toast-header">
             <img src="./images/notification-bell.webp" class="rounded me-2 notification_image" alt="...">
             <strong class="me-auto">@notificationType.ToString()</strong>

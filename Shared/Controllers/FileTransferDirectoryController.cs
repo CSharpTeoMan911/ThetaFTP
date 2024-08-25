@@ -13,7 +13,14 @@ namespace ThetaFTP.Shared.Controllers
             throw new NotImplementedException();
         }
 
-        public Task<ActionResult?> Get(DirectoryOperationMetadata? query, string? body)
+        [HttpGet("get")]
+        public Task<ActionResult?> Get([FromQuery] DirectoryOperationMetadata? query, string? body)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpGet("get-directories")]
+        public Task<ActionResult?> GetFiles([FromQuery] FileOperationMetadata? query, [FromBody] Stream? body)
         {
             throw new NotImplementedException();
         }

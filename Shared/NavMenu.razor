@@ -8,7 +8,7 @@
         <a class="navbar-brand" href="#" @onclick=@(()=>Navigate("/", false))>
             <img alt="Logo" width="30" height="24" class="d-inline-block align-text-top" src="./images/ThetaDrive logo.png" style="height:80px;width:120px;">
         </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" style="margin-right:40px;" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -50,6 +50,7 @@
             {
                 IJSObjectReference animation_module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/animations.js");
                 await animation_module.InvokeVoidAsync("InitBackgroundGradientFluctuation");
+                await animation_module.InvokeVoidAsync("InitMainPanelGeometry");
             }
         }
         catch{}

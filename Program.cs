@@ -44,6 +44,17 @@ namespace ThetaFTP
             });
 
 
+            List<string>? urls = builder.Configuration[WebHostDefaults.ServerUrlsKey]?.Split(';').ToList();
+            List<string>? config_urls = new List<string>();
+
+            Shared.Shared.config?.http_addresses?.ForEach(element =>
+            {
+                if (urls?.Contains(element) == false)
+                    config_urls.Add(element);
+            });
+
+            if (config_urls.Count > 0)
+                builder.WebHost.UseUrls(config_urls.ToArray());
 
 
 
@@ -54,10 +65,17 @@ namespace ThetaFTP
             // COMFIGURE SERVER'S KESTER SERVICE LIMITS //
             //                                          //
             //////////////////////////////////////////////
+            ///
+
+            int connection_timeout = 600;
+            if (Shared.Shared.config != null)
+                connection_timeout = Shared.Shared.config.ConnectionTimeoutSeconds;
+
+
             builder.WebHost.ConfigureKestrel(c =>
             {
-                c.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(10);
-                c.Limits.RequestHeadersTimeout = TimeSpan.FromMinutes(10);
+                c.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(connection_timeout);
+                c.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(connection_timeout);
                 c.Limits.MinResponseDataRate = null;
                 c.Limits.MaxConcurrentConnections = null;
                 c.Limits.MinResponseDataRate = null;

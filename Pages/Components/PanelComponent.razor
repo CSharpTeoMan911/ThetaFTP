@@ -1,8 +1,9 @@
-﻿<div class="jumbotron jumbotron-custom" style="@style">
+﻿<div id=@Id class="jumbotron jumbotron-custom" style="@style">
     @Component
 </div>
 
 @code {
     [Parameter] public string? style { get; set; }
     [Parameter] public RenderFragment? Component { get; set; }
+    [Parameter] public string? Id { get; set; }
 }
