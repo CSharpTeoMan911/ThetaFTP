@@ -11,7 +11,6 @@ namespace ThetaFTP.Shared.Classes
             IMemoryOwner<byte> contingent_memory_buffer = MemoryPool<byte>.Shared.Rent(buffer_size);
 
             DateTime start = DateTime.Now;
-            Console.WriteLine("file size: " + file_size);
 
             try
             {

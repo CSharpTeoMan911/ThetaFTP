@@ -89,13 +89,11 @@
             {
                 try
                 {
-                    Console.WriteLine("Request");
                     HttpClient client = client = HttpClientGen.Generate();
                     client.BaseAddress = new Uri(NavigationManager.BaseUri);
 
                     HttpResponseMessage responseMessage = await client.PostAsync(payload.Item1, payload.Item3);
                     string response = await responseMessage.Content.ReadAsStringAsync();
-                    Console.WriteLine("response: " + response);
 
                     if (response.Contains("File upload successful") == true)
                     {
@@ -207,7 +205,6 @@
         ShowNotification = false;
         if (InvalidLogInSessionKey == true)
         {
-            Console.WriteLine("Log out");
             await LogOut();
             NavigationManager.NavigateTo("/log-in", true);
         }

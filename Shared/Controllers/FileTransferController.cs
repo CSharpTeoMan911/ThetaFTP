@@ -57,11 +57,9 @@ namespace ThetaFTP.Shared.Controllers
                                         size = file_size
                                     };
 
-                                    Console.WriteLine("Size: " + file_size);
 
                                     result = await Shared.database_ftp.Insert(ftpModel);
 
-                                    Console.WriteLine("Server response: " + result);
                                     return Ok(result);
                                 }
                                 else
