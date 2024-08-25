@@ -14,7 +14,9 @@ namespace ThetaFTP.Shared.Classes
 
             try
             {
-                while (input_stream.CanRead == true)
+                double progress = 0;
+
+                while (input_stream.CanRead == true && file_size > 0)
                 {
                     if (cancellation.IsCancellationRequested == false)
                     {

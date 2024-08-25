@@ -1,0 +1,34 @@
+﻿<div class="dropdown">
+    <button class=@($"ftp_operation_{operation.ToString()}_status") type="button" data-bs-toggle="dropdown" alt="https://icons8.com/icon/RVArEyjdO53C/download" style="margin-left: 20px; margin-right: 20px;">
+        <img style="height:20px;" src=@($"./images/{operation.ToString()}.gif") />
+    </button>
+    <ul class=@($"dropdown-menu custom_{operation.ToString()}_dropdown")>
+        <div class=@($"dropdown_{operation.ToString()}_context")>
+            @switch (operation)
+            {
+                case Operation.download:
+                    <p class="dropdown_context_text">
+                        Download
+                    </p>
+                    break;
+                case Operation.upload:
+                    <p class="dropdown_context_text">
+                        Upload
+                    </p>
+                    break;
+            }
+        </div>
+        @Content
+    </ul>
+</div>
+
+@code {
+
+    public enum Operation{
+        download,
+        upload
+    }
+
+    [Parameter] public Operation operation { get; set; }
+    [Parameter] public RenderFragment? Content { get; set; }
+}

@@ -1,0 +1,44 @@
+﻿@using System.Text;
+
+<div class="dropdown_item_container">
+
+    <div class="item_progress_container">
+        <p class="progress_label">
+            @($"{progress}%")
+        </p>
+    </div>
+
+    <p class="item_file_name">
+        @FormatFileName()
+    </p>
+
+    <button class="item_cancellation" @onclick=CancelOp>
+        <img class="item_cancellation_image" src="./images/cancel.webp"/>
+    </button>
+</div>
+@code {
+    [Parameter] public string? file_name { get; set; }
+    [Parameter] public string? progress { get; set; }
+    [Parameter] public CancellationTokenSource? source { get; set; }
+
+    private string? FormatFileName(){
+        if(file_name?.Length > 14){
+            StringBuilder builder = new StringBuilder(14);
+            for (int i = 0; i < 6; i++)
+                builder.Append(file_name[i]);
+            builder.Append("...");
+            for (int i = file_name.Length - 5; i < file_name.Length; i++)
+                builder.Append(file_name[i]);
+            file_name = builder.ToString();
+
+        }
+
+        return file_name;
+    } 
+
+    private async void CancelOp()
+    {
+        if(source != null)
+            await source.CancelAsync();
+    }
+}

@@ -10,7 +10,7 @@
 @page "/"
 
 
-<PanelComponent>
+<PanelComponent Id="index_panel">
     <Component>
         @if (ShowNotification == true)
         {
@@ -20,16 +20,53 @@
         {
             <ValidationPanel closeAccountValidationPanel="CloseValidationPanel" initiateValidationProcedure="ValidationProcedure" validationType=@validationType validationInputTopic=@validationInputTopic placeholder=@placeholder defaultValue=@defaultValue/>
         }
-        <div class="files_panel">
+        <div id="index_panel_inner" class="files_panel">
             <div class="files_panel_control ">
                 <div style="display:inline-block; width:100%;">
                     <div class="panel_control_section">
                         <div class="files_panel_file_options">
-                            <button class="control_button" style="margin-left: 20px" onclick="document.getElementById('file_dialog').click()">
+
+                            @if (DownloadInProgress == true)
+                            {
+                                <DropdownMenu operation="DropdownMenu.Operation.download">
+                                    <Content>
+                                        @for (int i = 0; i < pending_download_progress_data.Count; i++)
+                                        {
+                                            string? progress = null;
+                                            string? file_name = pending_download_progress_data.Keys.ElementAt(i);
+
+                                            Tuple<string, CancellationTokenSource>? item = null;
+                                            pending_download_progress_data.TryGetValue(file_name, out item);
+
+                                            <DropDownMenuItem file_name=@file_name progress=@item?.Item1 source=@item?.Item2 />
+                                        }
+                                    </Content>
+                                </DropdownMenu>
+                            }
+
+                            @if (UploadInProgress == true)
+                            {
+                                <DropdownMenu operation="DropdownMenu.Operation.upload">
+                                    <Content>
+                                        @for (int i = 0; i < pending_upload_progress_data.Count; i++)
+                                        {
+                                            string? progress = null;
+                                            string? file_name = pending_upload_progress_data.Keys.ElementAt(i);
+
+                                            Tuple<string, CancellationTokenSource>? item = null;
+                                            pending_upload_progress_data.TryGetValue(file_name, out item);
+
+                                            <DropDownMenuItem file_name=@file_name progress=@item?.Item1 source =@item?.Item2 />
+                                        }
+                                    </Content>
+                                </DropdownMenu>
+                            }
+
+                            <button class="control_button" style="margin-left: 30px" onclick="document.getElementById('file_dialog').click()">
                                 <img class="control_image" src="./images/cloud-computing.webp" />
                                 <InputFile id="file_dialog" OnChange="@Upload" hidden/>
                             </button>
-                            <button class="control_button" style="margin-left: 40px" @onclick=CreateDirectory>
+                            <button class="control_button" style="margin-left: 30px" @onclick=CreateDirectory>
                                 <img class="control_image" src="./images/new-folder.webp" />
                             </button>
                         </div>
@@ -47,12 +84,12 @@
                     </div>
                 </div>
            </div>
-            <div class="path_display">
+@*             <div class="path_display">
                 <p class="path_label">
                     Path
                 </p>
                 <input class="path_input" />
-            </div>
+            </div> *@
         </div>
     </Component>
 </PanelComponent>
@@ -65,6 +102,9 @@
     private bool ShowNotification { get; set; }
     private bool InvalidLogInSessionKey { get; set; }
 
+    private bool UploadInProgress { get; set; }
+    private bool DownloadInProgress { get; set; }
+
     private ValidationPanel.ValidationType validationType { get; set; }
     private string? validationInputTopic { get; set; }
     private string? placeholder { get; set; }
@@ -73,13 +113,16 @@
     private Notifications.NotificationType notificationType { get; set; }
     private string? notificationMessage { get; set; }
 
-    private ConcurrentDictionary<DateTime, HttpClient> pending_upload_operations = new ConcurrentDictionary<DateTime, HttpClient>();
-    private ConcurrentDictionary<string, Stream> pending_upload_progress_operations = new ConcurrentDictionary<string, Stream>();
+    private ConcurrentDictionary<string, Tuple<string, CancellationTokenSource>> pending_upload_progress_data = new ConcurrentDictionary<string, Tuple<string, CancellationTokenSource>>();
+
+    private ConcurrentDictionary<string, Tuple<string, CancellationTokenSource>> pending_download_progress_data = new ConcurrentDictionary<string, Tuple<string, CancellationTokenSource>>();
+
 
     public async void Upload(InputFileChangeEventArgs e)
     {
         try
         {
+
             IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
             string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
 
@@ -87,13 +130,74 @@
 
             if (payload.Item3 != null)
             {
+                CancellationTokenSource source = new CancellationTokenSource();
+                CancellationToken token = source.Token;
+
                 try
                 {
+                    UploadInProgress = true;
+                    double progress = 0;
+
                     HttpClient client = client = HttpClientGen.Generate();
                     client.BaseAddress = new Uri(NavigationManager.BaseUri);
 
+                    System.Timers.Timer timer = new System.Timers.Timer();
+
+                    pending_upload_progress_data.TryAdd(e.File.Name, new Tuple<string, CancellationTokenSource>("0", source));
+
+                    timer.Elapsed += async (object? sender, System.Timers.ElapsedEventArgs args) =>
+                    {
+                        if (token.IsCancellationRequested == false)
+                        {
+                            long file_size = payload.Item2.Length;
+                            long position = payload.Item2.Position + 1;
+                            double difference = 0;
+
+                            if (position != 0)
+                                difference = file_size / position;
+                            if (difference != 0)
+                                progress = 100 / (difference);
+
+
+                            Tuple<string, CancellationTokenSource>? previous_value = null;
+                            pending_upload_progress_data.TryGetValue(e.File.Name, out previous_value);
+
+                            if (previous_value != null)
+                                pending_upload_progress_data.TryUpdate(e.File.Name, new Tuple<string, CancellationTokenSource>(progress.ToString("F2"), source), previous_value);
+
+                            await InvokeAsync(() =>
+                            {
+                                StateHasChanged();
+                            });
+                        }
+                        else
+                        {
+                            pending_upload_progress_data.Remove(e.File.Name, out _);
+                            pending_upload_progress_data.Remove(e.File.Name, out _);
+                            timer.Dispose();
+
+                            await InvokeAsync(() =>
+                            {
+                                if (pending_upload_progress_data.Count == 0)
+                                    UploadInProgress = false;
+                                StateHasChanged();
+                            });
+
+                            client.CancelPendingRequests();
+                        }
+                    };
+                    timer.Interval = 500;
+                    timer.Start();
+
                     HttpResponseMessage responseMessage = await client.PostAsync(payload.Item1, payload.Item3);
                     string response = await responseMessage.Content.ReadAsStringAsync();
+
+                    pending_upload_progress_data.Remove(e.File.Name, out _);
+                    pending_upload_progress_data.Remove(e.File.Name, out _);
+                    timer?.Dispose();
+
+                    if (pending_upload_progress_data.Count == 0)
+                        UploadInProgress = false;
 
                     if (response.Contains("File upload successful") == true)
                     {
@@ -111,11 +215,17 @@
 
                     notificationMessage = response;
                 }
-                catch(Exception E)
+                catch (Exception E)
                 {
-                    System.Diagnostics.Debug.WriteLine("Error: " + E.Message);
-                    notificationType = Notifications.NotificationType.Error;
-                    notificationMessage = "Could not upload file";
+                    if (E.Message.Contains("The operation was canceled") == false)
+                    {
+                        notificationType = Notifications.NotificationType.Error;
+                        notificationMessage = "Could not upload file";
+                    }
+                    else
+                    {
+                        goto DoNotRenderNotification;
+                    }
                 }
                 finally
                 {
@@ -130,6 +240,7 @@
 
             ShowNotification = true;
             StateHasChanged();
+            DoNotRenderNotification:;
         }
         catch(Exception E)
         {
