@@ -31,7 +31,7 @@ namespace ThetaFTP.Shared.Controllers
                     {
                         if (value?.file_name.Length <= 100)
                         {
-                            if (value?.size <= 65536000)
+                            if (value?.size <= 183701214)
                             {
                                 if (FileSystemFormatter.GetAvailableSpace() > value?.size)
                                 {
@@ -53,40 +53,63 @@ namespace ThetaFTP.Shared.Controllers
                                                         {
                                                             try
                                                             {
-                                                                FileStream file_stream = File.OpenWrite(FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name));
+                                                                string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
+                                                                FileStream file_stream = File.OpenWrite(full_path);
                                                                 try
                                                                 {
                                                                     if (value != null)
                                                                     {
-                                                                        while (value.fileStream.CanRead)
+                                                                        bool file_upload_result = await StreamOperations.ReadAsync(value.fileStream, value.size, file_stream, 102400, 3, value.operation_cancellation);
+                                                                        FileInfo uploaded_file = new FileInfo(full_path);
+                                                                        string formatted_file_name = FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.file_name);
+
+                                                                        if (file_upload_result == true)
                                                                         {
-                                                                            byte[] binary_buffer = new byte[1024000];
-                                                                            int bytes_read = await value.fileStream.ReadAsync(binary_buffer, 0, binary_buffer.Length);
+                                                                            insert_file_command.CommandText = "INSERT INTO Files VALUES(@File_Name, @File_Size, @File_Path, @Email)";
+                                                                            insert_file_command.Parameters.AddWithValue("File_Name", formatted_file_name);
+                                                                            insert_file_command.Parameters.AddWithValue("File_Size", value?.size);
+                                                                            insert_file_command.Parameters.AddWithValue("File_Path", value?.path);
+                                                                            insert_file_command.Parameters.AddWithValue("Email", value?.email);
 
-                                                                            if (bytes_read > 0)
+                                                                            await insert_file_command.ExecuteNonQueryAsync();
+
+                                                                            if (value?.operation_cancellation.IsCancellationRequested == true)
                                                                             {
-                                                                                await file_stream.WriteAsync(binary_buffer, 0, bytes_read);
+                                                                                if (File.Exists(full_path) == true)
+                                                                                {
+                                                                                    file_stream?.Dispose();
+                                                                                    uploaded_file.Delete();
+                                                                                }
 
-                                                                                if (file_stream.Length >= 3072000)
-                                                                                    await file_stream.FlushAsync();
+                                                                                MySqlCommand delete_file_command = connection.CreateCommand();
+                                                                                try
+                                                                                {
+                                                                                    delete_file_command.CommandText = "DELETE FROM Files WHERE File_Name=@File_Name";
+                                                                                    delete_file_command.Parameters.AddWithValue("File_Name", formatted_file_name);
+                                                                                    await delete_file_command.ExecuteNonQueryAsync();
+                                                                                }
+                                                                                finally
+                                                                                {
+                                                                                    await delete_file_command.DisposeAsync();
+                                                                                }
+
+                                                                                result = "Operation cancelled";
                                                                             }
                                                                             else
                                                                             {
-                                                                                break;
+                                                                                result = "File upload successful";
                                                                             }
                                                                         }
+                                                                        else
+                                                                        {
+                                                                            if (File.Exists(full_path) == true)
+                                                                            {
+                                                                                file_stream?.Dispose();
+                                                                                uploaded_file.Delete();
+                                                                            }
 
-                                                                        if (file_stream.Length > 0)
-                                                                            await file_stream.FlushAsync();
-
-                                                                        insert_file_command.CommandText = "INSERT INTO Files VALUES(@File_Name, @File_Path, @Email)";
-                                                                        insert_file_command.Parameters.AddWithValue("File_Name", FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.file_name));
-                                                                        insert_file_command.Parameters.AddWithValue("File_Path", value?.path);
-                                                                        insert_file_command.Parameters.AddWithValue("Email", value?.email);
-
-                                                                        await insert_file_command.ExecuteNonQueryAsync();
-
-                                                                        result = "File upload successful";
+                                                                            result = "Operation cancelled";
+                                                                        }
                                                                     }
                                                                     else
                                                                     {

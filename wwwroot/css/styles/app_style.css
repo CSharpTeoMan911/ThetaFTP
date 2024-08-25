@@ -49,6 +49,13 @@ div.focus_panel {
     background-color: rgba(80,80,80, 0.7);
 }
 
+div.notification_panel {
+    position: absolute;
+    top: 15%;
+    left: 50vw;
+    transform: translate(-50%, 0)
+}
+
 h1.title {
     font-family: 'JetBrains Mono', sans-serif;
     width: fit-content;
@@ -74,9 +81,6 @@ input.input_style {
     border-width: calc(1px + 0.1vw);
 }
 
-button.control_button{
-    margin-top: 20px;
-}
 
 button.close_button {
     display: flex;

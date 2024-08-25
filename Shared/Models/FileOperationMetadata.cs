@@ -6,5 +6,6 @@
         public string? file_name { get; set; }
         public string? path { get; set; }
         public long file_length { get; set; }
+        public Stream? ftp_operation_info_channel { get; set; }
     }
 }
