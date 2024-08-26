@@ -20,9 +20,61 @@ namespace ThetaFTP.Shared.Controllers
         }
 
         [HttpGet("get-directories")]
-        public Task<ActionResult?> GetFiles([FromQuery] FileOperationMetadata? query, [FromBody] Stream? body)
+        public async Task<ActionResult?> GetInfo([FromQuery] Metadata? query)
         {
-            throw new NotImplementedException();
+            string? result = "Internal server error";
+
+            string payload = String.Empty;
+
+            string? log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+
+            if (log_in_key_validation_result != "Internal server error")
+            {
+                if (log_in_key_validation_result != "Invalid log in session key")
+                {
+                    if (log_in_key_validation_result != "Log in session key expired")
+                    {
+                        if (log_in_key_validation_result != "Log in session not approved")
+                        {
+
+                            if (query != null)
+                            {
+                                query.email = log_in_key_validation_result;
+                                result = await Shared.database_directory_ftp.GetInfo(query);
+
+                                if (result != "Invalid path" && result != "Internal server error")
+                                {
+                                    return Ok(result);
+                                }
+                                else
+                                {
+                                    return BadRequest(result);
+                                }
+                            }
+                            else
+                            {
+                                return BadRequest(result);
+                            }
+                        }
+                        else
+                        {
+                            return BadRequest(log_in_key_validation_result);
+                        }
+                    }
+                    else
+                    {
+                        return BadRequest(log_in_key_validation_result);
+                    }
+                }
+                else
+                {
+                    return BadRequest(log_in_key_validation_result);
+                }
+            }
+            else
+            {
+                return BadRequest(log_in_key_validation_result);
+            }
         }
 
         [HttpPost("insert")]

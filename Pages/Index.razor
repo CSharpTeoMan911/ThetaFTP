@@ -84,12 +84,21 @@
                     </div>
                 </div>
            </div>
+            <div class="directory_file_items">
+                <div style="height: 700px; width: 200px; align-self: center; background-color: green;">
+
+                </div>
+
+                <div style="height: 700px; width: 200px; align-self: center; background-color: yellow;">
+                </div>
+            </div>
 @*             <div class="path_display">
                 <p class="path_label">
                     Path
                 </p>
                 <input class="path_input" />
             </div> *@
+
         </div>
     </Component>
 </PanelComponent>
@@ -117,6 +126,96 @@
 
     private ConcurrentDictionary<string, Tuple<string, CancellationTokenSource>> pending_download_progress_data = new ConcurrentDictionary<string, Tuple<string, CancellationTokenSource>>();
 
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+
+        if (firstRender == true)
+        {
+            GetDirectoryInfo();
+        }
+    }
+
+    public async void GetDirectoryInfo()
+    {
+        try
+        {
+            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+            string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+
+            Metadata metadata = new Metadata();
+            metadata.path = Path;
+            metadata.key = log_in_session_key;
+
+            StringBuilder url_builder = new StringBuilder("/files/get-files?");
+            url_builder.Append(await QueryParsing.QueryParser(metadata));
+
+            HttpClient client = HttpClientGen.Generate();
+            client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
+            HttpResponseMessage result = await client.GetAsync(url_builder.ToString());
+            string result_string = await result.Content.ReadAsStringAsync();
+
+            if (result_string == "Invalid log in session key" || result_string == "Log in session key expired" || result_string == "Log in session not approved" || result_string == "Invalid file path" || result_string == "Internal server error")
+            {
+                ShowNotification = true;
+                notificationMessage = result_string;
+                notificationType = Notifications.NotificationType.Error;
+            }
+            else
+            {
+                List<string>? files = await JsonFormatter.JsonDeserialiser<List<string>>(result_string);
+
+                if (files != null)
+                {
+                    url_builder.Clear();
+                    url_builder.Append("/directories/get-directories?").Append(await QueryParsing.QueryParser(metadata));
+
+                    result = await client.GetAsync(url_builder.ToString());
+                    result_string = await result.Content.ReadAsStringAsync();
+
+                    if (result_string == "Invalid log in session key" || result_string == "Log in session key expired" || result_string == "Log in session not approved" || result_string == "Invalid file path" || result_string == "Internal server error")
+                    {
+                        ShowNotification = true;
+                        notificationMessage = result_string;
+                        notificationType = Notifications.NotificationType.Error;
+                    }
+                    else
+                    {
+                        List<string>? directories = await JsonFormatter.JsonDeserialiser<List<string>>(result_string);
+
+                        if (directories != null)
+                        {
+
+                        }
+                        else
+                        {
+                            ShowNotification = true;
+                            notificationMessage = "Internal server error";
+                            notificationType = Notifications.NotificationType.Error;
+                        }
+                    }
+                }
+                else
+                {
+                    ShowNotification = true;
+                    notificationMessage = "Internal server error";
+                    notificationType = Notifications.NotificationType.Error;
+                }
+
+                Console.WriteLine($"result: {result_string}");
+            }
+
+            await module.DisposeAsync();
+        }
+        catch
+        {
+
+        }
+
+        StateHasChanged();
+    }
 
     public async void Upload(InputFileChangeEventArgs e)
     {
@@ -238,9 +337,11 @@
                 notificationMessage = "Could not read file";
             }
 
+            await module.DisposeAsync();
+
             ShowNotification = true;
             StateHasChanged();
-            DoNotRenderNotification:;
+        DoNotRenderNotification:;
         }
         catch(Exception E)
         {
@@ -303,6 +404,8 @@
             {
                 client.Dispose();
             }
+
+            await module.DisposeAsync();
         }
         catch{}
 
@@ -346,6 +449,8 @@
             HttpResponseMessage responseMessage = await client.DeleteAsync(builder.ToString());
 
             await module.InvokeVoidAsync("Delete_Cache", "auth", "AuthCache");
+
+            await module.DisposeAsync();
         }
         catch { }
     }

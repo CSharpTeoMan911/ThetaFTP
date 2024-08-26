@@ -6,7 +6,7 @@ using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class FtpDatabaseController : CRUD_Interface<FtpModel, FtpModel, FtpModel, FtpModel>
+    public class FtpDatabaseController : CRUD_Interface<FtpModel, Metadata, FtpModel, FtpModel, FtpModel>
     {
         public Task<string?> Delete(FtpModel? value)
         {
@@ -16,6 +16,64 @@ namespace ThetaFTP.Shared.Controllers
         public Task<string?> Get(FtpModel? value)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<string?> GetInfo(Metadata? value)
+        {
+            string? result = "Internal server error";
+
+            if (value != null)
+            {
+                if (value?.path != null)
+                {
+                    if (FileSystemFormatter.IsValidPath(value.path) == true)
+                    {
+                        if (FileSystemFormatter.CreateUserRootDir(value.email) == true)
+                        {
+                            string converted_path = FileSystemFormatter.PathConverter(value.path, value.email);
+
+                            if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
+                            {
+                                try
+                                {
+                                    List<string> file_names = new List<string>();
+                                    DirectoryInfo directoryInfo = new DirectoryInfo(converted_path);
+                                    directoryInfo.GetFiles()?.ToList()?.ForEach(fileInfo => file_names.Add(fileInfo.Name));
+
+                                    string? serialised_file_names = await JsonFormatter.JsonSerialiser(file_names);
+                                    return serialised_file_names;
+                                }
+                                catch
+                                {
+                                    result = "Internal server error";
+                                }
+                            }
+                            else
+                            {
+                                result = "Invalid path";
+                            }
+                        }
+                        else
+                        {
+                            result = "Internal server error";
+                        }
+                    }
+                    else
+                    {
+                        result = "Invalid path";
+                    }
+                }
+                else
+                {
+                    result = "Invalid path";
+                }
+            }
+            else
+            {
+                result = "Internal server error";
+            }
+
+            return result;
         }
 
         public async Task<string?> Insert(FtpModel? value)
