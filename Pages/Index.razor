@@ -219,6 +219,8 @@
 
     public async void Upload(InputFileChangeEventArgs e)
     {
+
+        System.Timers.Timer timer = new System.Timers.Timer();
         try
         {
 
@@ -239,8 +241,6 @@
 
                     HttpClient client = client = HttpClientGen.Generate();
                     client.BaseAddress = new Uri(NavigationManager.BaseUri);
-
-                    System.Timers.Timer timer = new System.Timers.Timer();
 
                     pending_upload_progress_data.TryAdd(e.File.Name, new Tuple<string, CancellationTokenSource>("0", source));
 
@@ -295,9 +295,6 @@
                     pending_upload_progress_data.Remove(e.File.Name, out _);
                     timer?.Dispose();
 
-                    if (pending_upload_progress_data.Count == 0)
-                        UploadInProgress = false;
-
                     if (response.Contains("File upload successful") == true)
                     {
                         notificationType = Notifications.NotificationType.Information;
@@ -316,6 +313,10 @@
                 }
                 catch (Exception E)
                 {
+                    pending_upload_progress_data.Remove(e.File.Name, out _);
+                    pending_upload_progress_data.Remove(e.File.Name, out _);
+                    timer.Dispose();
+
                     if (E.Message.Contains("The operation was canceled") == false)
                     {
                         notificationType = Notifications.NotificationType.Error;
@@ -333,19 +334,34 @@
             }
             else
             {
+                pending_upload_progress_data.Remove(e.File.Name, out _);
+                pending_upload_progress_data.Remove(e.File.Name, out _);
+                timer.Dispose();
+
                 notificationType = Notifications.NotificationType.Error;
                 notificationMessage = "Could not read file";
             }
 
             await module.DisposeAsync();
 
+            if (pending_upload_progress_data.Count == 0)
+                UploadInProgress = false;
+
             ShowNotification = true;
             StateHasChanged();
         DoNotRenderNotification:;
         }
-        catch(Exception E)
+        catch
         {
-            System.Diagnostics.Debug.WriteLine("Error: " + E.Message);
+            pending_upload_progress_data.Remove(e.File.Name, out _);
+            pending_upload_progress_data.Remove(e.File.Name, out _);
+            timer.Dispose();
+
+            if (pending_upload_progress_data.Count == 0)
+                UploadInProgress = false;
+
+            StateHasChanged();
+
             notificationType = Notifications.NotificationType.Error;
             notificationMessage = "Could not upload file";
         }
