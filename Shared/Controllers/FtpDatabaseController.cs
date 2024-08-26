@@ -89,7 +89,7 @@ namespace ThetaFTP.Shared.Controllers
                     {
                         if (value?.file_name.Length <= 100)
                         {
-                            if (value?.size <= 183701214)
+                            if (value?.size <= 524288000)
                             {
                                 if (FileSystemFormatter.GetAvailableSpace() > value?.size)
                                 {
