@@ -1,7 +1,8 @@
 ﻿namespace ThetaFTP.Shared.Classes
 {
-    public interface CRUD_Interface<InsertType, GetType, UpdateType, DeleteType>
+    public interface CRUD_Interface<InsertType, GetInfoType, GetType, UpdateType, DeleteType>
     {
+        public Task<string?> GetInfo(GetInfoType? value);
         public Task<string?> Get(GetType? value);
         public Task<string?> Insert(InsertType? value);
         public Task<string?> Update(UpdateType? value);

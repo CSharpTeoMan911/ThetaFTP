@@ -1,11 +1,11 @@
 ﻿
 namespace ThetaFTP.Shared.Classes
 {
-    public class CRUD_Strategy<InsertType, GetType, UpdateType, DeleteType> : CRUD_Interface<InsertType, GetType, UpdateType, DeleteType>
+    public class CRUD_Strategy<InsertType, GetInfoType, GetType, UpdateType, DeleteType> : CRUD_Interface<InsertType, GetInfoType, GetType, UpdateType, DeleteType>
     {
-        CRUD_Interface<InsertType, GetType, UpdateType, DeleteType> strategy;
+        CRUD_Interface<InsertType, GetInfoType, GetType, UpdateType, DeleteType> strategy;
 
-        public CRUD_Strategy(CRUD_Interface<InsertType, GetType, UpdateType, DeleteType> strategy_)
+        public CRUD_Strategy(CRUD_Interface<InsertType, GetInfoType, GetType, UpdateType, DeleteType> strategy_)
         {
             strategy = strategy_;
         }
@@ -18,6 +18,11 @@ namespace ThetaFTP.Shared.Classes
         public async Task<string?> Get(GetType? value)
         {
             return await strategy.Get(value);
+        }
+
+        public async Task<string?> GetInfo(GetInfoType? value)
+        {
+            return await strategy.GetInfo(value);
         }
 
         public async Task<string?> Insert(InsertType? value)
