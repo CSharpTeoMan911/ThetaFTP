@@ -13,7 +13,7 @@
         public bool smtp_use_ssl { get; set; } = false;
         public bool two_step_auth { get; set; } = false;
         public bool validate_ssl_certificates { get; set; } = false;
-        public int ReadAndWriteOperationsPerSecond { get; set; } = 2500;
+        public int ReadAndWriteOperationsPerSecond { get; set; } = 1250;
         public int ConnectionTimeoutSeconds { get; set; } = 600;
         public List<string> http_addresses { get; set; } = new List<string>()
         {

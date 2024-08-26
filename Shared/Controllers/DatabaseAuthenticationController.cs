@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class DatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, AuthenticationModel, AuthenticationModel, AuthenticationModel>
+    public class DatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, AuthenticationModel>
     {
         public async Task<string?> Delete(AuthenticationModel? value)
         {
@@ -223,6 +223,11 @@ namespace ThetaFTP.Shared.Controllers
             response = await JsonFormatter.JsonSerialiser(serverPayload);
 
             return response;
+        }
+
+        public Task<string?> GetInfo(string? value)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task<string?> Insert(AuthenticationModel? value)

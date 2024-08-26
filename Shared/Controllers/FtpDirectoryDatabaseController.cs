@@ -1,12 +1,16 @@
-﻿using MySqlConnector;
+﻿using Microsoft.AspNetCore.Mvc;
+using MySqlConnector;
+using Newtonsoft.Json.Linq;
+using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class FtpDirectoryDatabaseController : CRUD_Interface<FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel>
+    public class FtpDirectoryDatabaseController : CRUD_Interface<FtpDirectoryModel, Metadata,FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel>
     {
         public Task<string?> Delete(FtpDirectoryModel? value)
         {
@@ -16,6 +20,64 @@ namespace ThetaFTP.Shared.Controllers
         public Task<string?> Get(FtpDirectoryModel? value)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<string?> GetInfo(Metadata? value)
+        {
+            string? result = "Internal server error";
+
+            if (value != null)
+            {
+                if (value?.path != null)
+                {
+                    if (FileSystemFormatter.IsValidPath(value.path) == true)
+                    {
+                        if (FileSystemFormatter.CreateUserRootDir(value.email) == true)
+                        {
+                            string converted_path = FileSystemFormatter.PathConverter(value.path, value.email);
+
+                            if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
+                            {
+                                try
+                                {
+                                    List<string> directory_names = new List<string>();
+                                    DirectoryInfo directoryInfo = new DirectoryInfo(converted_path);
+                                    directoryInfo.GetDirectories()?.ToList()?.ForEach(directoryInfo => directory_names.Add(directoryInfo.Name));
+
+                                    string? serialised_directory_names = await JsonFormatter.JsonSerialiser(directory_names);
+                                    return serialised_directory_names;
+                                }
+                                catch
+                                {
+                                    result = "Internal server error";
+                                }
+                            }
+                            else
+                            {
+                                result = "Invalid path";
+                            }
+                        }
+                        else
+                        {
+                            result = "Internal server error";
+                        }
+                    }
+                    else
+                    {
+                        result = "Invalid path";
+                    }
+                }
+                else
+                {
+                    result = "Invalid path";
+                }
+            }
+            else
+            {
+                result = "Internal server error";
+            }
+
+            return result;
         }
 
         public async Task<string?> Insert(FtpDirectoryModel? value)
@@ -32,7 +94,7 @@ namespace ThetaFTP.Shared.Controllers
                         {
                             if (FileSystemFormatter.IsValidPath(value.path) == true)
                             {
-                                if (FileSystemFormatter.CreateUserRootDir(value?.email))
+                                if (FileSystemFormatter.CreateUserRootDir(value?.email) == true)
                                 {
                                     string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
 
