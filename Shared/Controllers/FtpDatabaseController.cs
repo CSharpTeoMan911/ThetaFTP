@@ -36,11 +36,16 @@ namespace ThetaFTP.Shared.Controllers
                             {
                                 try
                                 {
-                                    List<string> file_names = new List<string>();
+                                    List<DirectoryItem> file_info = new List<DirectoryItem>();
                                     DirectoryInfo directoryInfo = new DirectoryInfo(converted_path);
-                                    directoryInfo.GetFiles()?.ToList()?.ForEach(fileInfo => file_names.Add(fileInfo.Name));
+                                    directoryInfo.GetFiles()?.ToList()?.ForEach(fileInfo => file_info.Add(new DirectoryItem()
+                                    {
+                                        name = fileInfo.Name,
+                                        size = fileInfo.Length,
+                                        isDirectory = false
+                                    }));
 
-                                    string? serialised_file_names = await JsonFormatter.JsonSerialiser(file_names);
+                                    string? serialised_file_names = await JsonFormatter.JsonSerialiser(file_info);
                                     return serialised_file_names;
                                 }
                                 catch

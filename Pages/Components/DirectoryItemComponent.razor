@@ -1,0 +1,16 @@
+﻿@using ThetaFTP.Shared.Models;
+
+<div class="directory_file_item">
+    @if (directoryItem?.isDirectory == true)
+    {
+
+    }
+    else
+    {
+
+    }
+</div>
+
+@code {
+    [Parameter] public DirectoryItem? directoryItem { get; set; }
+}

@@ -40,11 +40,15 @@ namespace ThetaFTP.Shared.Controllers
                             {
                                 try
                                 {
-                                    List<string> directory_names = new List<string>();
+                                    List<DirectoryItem> directories_info = new List<DirectoryItem>();
                                     DirectoryInfo directoryInfo = new DirectoryInfo(converted_path);
-                                    directoryInfo.GetDirectories()?.ToList()?.ForEach(directoryInfo => directory_names.Add(directoryInfo.Name));
+                                    directoryInfo.GetDirectories()?.ToList()?.ForEach(directoryInfo => directories_info.Add(new DirectoryItem()
+                                    {
+                                        name = directoryInfo.Name,
+                                        isDirectory = true
+                                    }));
 
-                                    string? serialised_directory_names = await JsonFormatter.JsonSerialiser(directory_names);
+                                    string? serialised_directory_names = await JsonFormatter.JsonSerialiser(directories_info);
                                     return serialised_directory_names;
                                 }
                                 catch

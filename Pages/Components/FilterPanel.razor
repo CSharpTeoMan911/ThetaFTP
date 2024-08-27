@@ -1,0 +1,73 @@
+﻿<div class="dropdown">
+    <button class="sorting-items-control-button" type="button" data-bs-toggle="dropdown" style="margin-right: 30px; margin-left: 20px;">
+        <img class="sorting-items-control-img" src="./images/filter.webp" />
+    </button>
+    <ul class="dropdown-menu">
+        <li>
+            <button class="filter_panel_item" style="margin-bottom: 15px;" @onclick=@(()=>Sort(Type.Name))>
+                <p class="filter_item_label">
+                    File name
+                </p>
+
+                @if (type == Type.Name)
+                {
+                    <img class="sorting-items-control-img" src=@($"./images/{order.ToString()}.webp") />
+                }
+            </button>
+        </li>
+        <li>
+            <button class="filter_panel_item" @onclick=@(()=>Sort(Type.Size))>
+                <p class="filter_item_label">
+                    File size
+                </p>
+
+                @if (type == Type.Size)
+                {
+                    <img class="sorting-items-control-img" src=@($"./images/{order.ToString()}.webp") />
+                }
+            </button>
+        </li>
+    </ul>
+</div>
+
+
+@code {
+    public enum Order
+    {
+        up,
+        down
+    }
+
+    public enum Type
+    {
+        Name,
+        Size
+    }
+
+    private Order order { get; set; }
+
+    private Type type { get; set; }
+
+    public delegate void SortedItems(Order order_, Type type_);
+    [Parameter] public SortedItems? sortedItems { get; set; }
+
+
+    private void Sort(Type type_)
+    {
+        type = type_;
+
+        switch (order)
+        {
+            case Order.up:
+                order = Order.down;
+                break;
+            case Order.down:
+                order = Order.up;
+                break;
+        }
+
+        sortedItems?.Invoke(order, type);
+    }
+
+
+}
