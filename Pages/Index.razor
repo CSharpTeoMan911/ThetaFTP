@@ -24,7 +24,11 @@
             <div class="files_panel_control ">
                 <div style="display:inline-block; width:100%;">
                     <div class="panel_control_section">
+
+
                         <div class="files_panel_file_options">
+
+                            <FilterPanel sortedItems="new FilterPanel.SortedItems(Sort)"/>
 
                             @if (DownloadInProgress == true)
                             {
@@ -84,12 +88,14 @@
                     </div>
                 </div>
            </div>
+
+
             <div class="directory_file_items">
-                <div style="height: 700px; width: 200px; align-self: center; background-color: green;">
-
-                </div>
-
-                <div style="height: 700px; width: 200px; align-self: center; background-color: yellow;">
+                <div style="width:100%; height:fit-content; display:flex; flex-direction:column;">
+                    @for (int i = 0; i < items.Count; i++)
+                    {
+                        <DirectoryItemComponent directoryItem="@items.ElementAt(i)"/>
+                    }
                 </div>
             </div>
 @*             <div class="path_display">
@@ -122,10 +128,14 @@
     private Notifications.NotificationType notificationType { get; set; }
     private string? notificationMessage { get; set; }
 
+    private FilterPanel.Order order { get; set; }
+    private FilterPanel.Type type { get; set; }
+
     private ConcurrentDictionary<string, Tuple<string, CancellationTokenSource>> pending_upload_progress_data = new ConcurrentDictionary<string, Tuple<string, CancellationTokenSource>>();
 
     private ConcurrentDictionary<string, Tuple<string, CancellationTokenSource>> pending_download_progress_data = new ConcurrentDictionary<string, Tuple<string, CancellationTokenSource>>();
 
+    private List<DirectoryItem> items = new List<DirectoryItem>();
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -165,7 +175,7 @@
             }
             else
             {
-                List<string>? files = await JsonFormatter.JsonDeserialiser<List<string>>(result_string);
+                List<DirectoryItem>? files = await JsonFormatter.JsonDeserialiser<List<DirectoryItem>>(result_string);
 
                 if (files != null)
                 {
@@ -183,11 +193,27 @@
                     }
                     else
                     {
-                        List<string>? directories = await JsonFormatter.JsonDeserialiser<List<string>>(result_string);
+                        List<DirectoryItem>? directories = await JsonFormatter.JsonDeserialiser<List<DirectoryItem>>(result_string);
 
                         if (directories != null)
                         {
+                            files.AddRange(directories);
+                            items = files;
 
+                            bool ascending = false;
+
+                            if (order == FilterPanel.Order.up)
+                                ascending = true;
+
+                            switch (type)
+                            {
+                                case FilterPanel.Type.Name:
+                                    MergeSortByName(items, ascending);
+                                    break;
+                                case FilterPanel.Type.Size:
+                                    MergeSortBySize(items, ascending);
+                                    break;
+                            }
                         }
                         else
                         {
@@ -444,11 +470,6 @@
         }
     }
 
-    public void Search()
-    {
-
-    }
-
     private async Task LogOut()
     {
         try
@@ -469,5 +490,27 @@
             await module.DisposeAsync();
         }
         catch { }
+    }
+
+    public void Sort(FilterPanel.Order order_, FilterPanel.Type type_)
+    {
+        order = order_;
+        type = type_;
+        GetDirectoryInfo();
+    }
+
+    public void MergeSortByName(List<DirectoryItem> items, bool ascending)
+    {
+        
+    }
+
+    public void MergeSortBySize(List<DirectoryItem> items, bool ascending)
+    {
+
+    }
+
+    public void Search()
+    {
+
     }
 }

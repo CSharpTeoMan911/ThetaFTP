@@ -48,11 +48,13 @@ function MainPanelGeometry() {
 
             if (window_width <= 550) {
                 index_panel.style.marginTop = "0px";
+                index_panel.style.marginBottom = "0px";
                 index_panel_inner.style.width = "100vw";
                 index_panel_inner.style.height = "100vh";
             }
             else {
                 index_panel.style.marginTop = "60px";
+                index_panel.style.marginBottom = "30px";
                 index_panel_inner.style.width = "84vw";
                 index_panel_inner.style.height = "78vh";
             }
