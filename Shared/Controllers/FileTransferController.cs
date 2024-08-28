@@ -50,32 +50,32 @@ namespace ThetaFTP.Shared.Controllers
                                 }
                                 else
                                 {
-                                    return BadRequest(result);
+                                    return Ok(result);
                                 }
                             }
                             else
                             {
-                                return BadRequest(result);
+                                return Ok(result);
                             }
                         }
                         else
                         {
-                            return BadRequest(log_in_key_validation_result);
+                            return Ok(log_in_key_validation_result);
                         }
                     }
                     else
                     {
-                        return BadRequest(log_in_key_validation_result);
+                        return Ok(log_in_key_validation_result);
                     }
                 }
                 else
                 {
-                    return BadRequest(log_in_key_validation_result);
+                    return Ok(log_in_key_validation_result);
                 }
             }
             else
             {
-                return BadRequest(log_in_key_validation_result);
+                return Ok(log_in_key_validation_result);
             }
         }
 
@@ -117,7 +117,6 @@ namespace ThetaFTP.Shared.Controllers
 
 
                                     result = await Shared.database_ftp.Insert(ftpModel);
-
                                     return Ok(result);
                                 }
                                 else
@@ -137,17 +136,17 @@ namespace ThetaFTP.Shared.Controllers
                     }
                     else
                     {
-                        return BadRequest(log_in_key_validation_result);
+                        return Ok(log_in_key_validation_result);
                     }
                 }
                 else
                 {
-                    return BadRequest(result);
+                    return Ok(result);
                 }
             }
             else
             {
-                return BadRequest(result);
+                return Ok(result);
             }
         }
 
