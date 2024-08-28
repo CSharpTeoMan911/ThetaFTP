@@ -10,7 +10,7 @@
 @page "/"
 
 
-<PanelComponent Id="index_panel">
+<PanelComponent Id="index_panel" style="background-color: rgb(255,255,255);">
     <Component>
         @if (ShowNotification == true)
         {
@@ -197,7 +197,11 @@
 
                         if (directories != null)
                         {
+                            SortUtility sortUtility = new SortUtility();
+
                             files.AddRange(directories);
+                            Console.WriteLine("Files: " + files.Count);
+
                             items = files;
 
                             bool ascending = false;
@@ -208,10 +212,10 @@
                             switch (type)
                             {
                                 case FilterPanel.Type.Name:
-                                    MergeSortByName(items, ascending);
+                                    sortUtility.MergeSortByName(files, ascending);
                                     break;
                                 case FilterPanel.Type.Size:
-                                    MergeSortBySize(items, ascending);
+                                    sortUtility.MergeSortBySize(files, ascending);
                                     break;
                             }
                         }
@@ -230,7 +234,7 @@
                     notificationType = Notifications.NotificationType.Error;
                 }
 
-                Console.WriteLine($"result: {result_string}");
+                //Console.WriteLine($"result: {result_string}");
             }
 
             await module.DisposeAsync();
@@ -324,6 +328,7 @@
                     if (response.Contains("File upload successful") == true)
                     {
                         notificationType = Notifications.NotificationType.Information;
+                        GetDirectoryInfo();
                     }
                     else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
                     {
@@ -399,7 +404,6 @@
         validationInputTopic = "Directory";
         placeholder = "Directory name";
         ShowValidationPanel = true;
-        StateHasChanged();
     }
 
     private void CloseValidationPanel()
@@ -430,6 +434,7 @@
                     if (response.Contains("Directory upload successful") == true)
                     {
                         notificationType = Notifications.NotificationType.Information;
+                        GetDirectoryInfo();
                     }
                     else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
                     {
@@ -497,16 +502,6 @@
         order = order_;
         type = type_;
         GetDirectoryInfo();
-    }
-
-    public void MergeSortByName(List<DirectoryItem> items, bool ascending)
-    {
-        
-    }
-
-    public void MergeSortBySize(List<DirectoryItem> items, bool ascending)
-    {
-
     }
 
     public void Search()

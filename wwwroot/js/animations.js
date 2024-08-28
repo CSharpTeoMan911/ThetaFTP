@@ -1,5 +1,6 @@
 ﻿let gradient_fluctuation = null;
-let panel_geometry = null
+let panel_geometry = null;
+let auth_geometry = null;
 let gradient_value = 90;
 let substract = true;
 
@@ -44,7 +45,6 @@ function MainPanelGeometry() {
     if (index_panel !== null) {
         if (index_panel_inner !== null) {
             let window_width = window.innerWidth;
-            console.log("window_width: " + window_width);
 
             if (window_width <= 550) {
                 index_panel.style.marginTop = "0px";

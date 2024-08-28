@@ -1,15 +1,40 @@
 ﻿@using ThetaFTP.Shared.Models;
 
+
 <div class="directory_file_item">
     @if (directoryItem?.isDirectory == true)
     {
-
+        <img class="directory_file_type" src="./images/open-folder.webp" />
     }
     else
     {
-
+        <img class="directory_file_type" src="./images/google-docs.webp" />
     }
+    <input class="file-item-name" readonly="readonly" value="@directoryItem?.name"/>
+
+    <div class="directory-item-control-div">
+
+        <div class="dropdown">
+            <button class="item-menu-button" type="button" data-bs-toggle="dropdown">
+                <img style="height: 20px" src="./images/dots.webp" />
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item">Download</a></li>
+                <li><a class="dropdown-item">Rename</a></li>
+                <li><a class="dropdown-item">Move</a></li>
+                <li><a class="dropdown-item">Delete</a></li>
+            </ul>
+        </div>
+
+        @if (directoryItem?.isDirectory == false)
+        {
+            <p class="directory-item-size">
+                @(((double)directoryItem.size / (double)1048576).ToString("F3") + " MB")
+            </p>
+        }
+    </div>
 </div>
+<div class="separator"></div>
 
 @code {
     [Parameter] public DirectoryItem? directoryItem { get; set; }

@@ -138,7 +138,22 @@ div.directory_file_item {
     display:flex;
     flex-direction: row;
     width:100%;
+    padding: 5px;
+}
 
+div.separator{
+    height: 1px;
+    width: 100%;
+    background-color: #868585
+}
+
+div.directory-item-control-div{
+    align-self: center;
+    display: flex;
+    flex-direction: row-reverse;
+    align-content: center;
+    align-items: center;
+    width: 60%;
 }
 
 ul.custom_upload_dropdown {
@@ -270,6 +285,16 @@ button.filter_panel_item {
     margin-left: 30px;
 }
 
+button.item-menu-button{
+    align-self: center;
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    border-width: 0px;
+    border-color: transparent;
+}
+
 img.control_image {
     height: 30px;
     align-self: center;
@@ -286,6 +311,11 @@ img.sorting-items-control-img{
     padding: 0px;
     height: 18px;
     align-self: center;
+}
+
+img.directory_file_type{
+    height: 30px;
+    margin-left: 20px;
 }
 
 p.control_label {
@@ -329,16 +359,6 @@ p.progress_label {
     color: #0d8304
 }
 
-input.path_input {
-    width: 92%;
-    align-self: center;
-    border-width: 0px;
-    background-color: #01407d;
-    color: white;
-    align-self: center;
-    justify-self: center;
-}
-
 p.item_file_name {
     overflow-x: hidden;
     width: 100px;
@@ -360,4 +380,31 @@ p.filter_item_label {
     font-size: 15px;
     padding: 0px;
     margin:0px 10px 0px 0px;
+}
+
+p.directory-item-size {
+    font-size: 15px;
+    align-self: center;
+    padding: 0px;
+    margin: 0px 30px 0px 30px;
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+}
+
+input.path_input {
+    width: 92%;
+    align-self: center;
+    border-width: 0px;
+    background-color: #01407d;
+    color: white;
+    align-self: center;
+    justify-self: center;
+}
+
+input.file-item-name {
+    margin-left: 40px;
+    width: 40%;
+    border-width: 0px;
+    background-color: transparent;
+    max-height: 30px;
 }

@@ -51,6 +51,8 @@
                 IJSObjectReference animation_module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/animations.js");
                 await animation_module.InvokeVoidAsync("InitBackgroundGradientFluctuation");
                 await animation_module.InvokeVoidAsync("InitMainPanelGeometry");
+                await animation_module.InvokeVoidAsync("InitAuthPanelGeometry");
+
             }
 
             await module.DisposeAsync();
