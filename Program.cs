@@ -1,9 +1,5 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.OpenApi.Models;
-using System.Net.Http.Headers;
 using ThetaFTP.Data;
-using ThetaFTP.Shared;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 
@@ -18,6 +14,9 @@ namespace ThetaFTP
 
         private static async Task<bool> Main_OP(string[] args)
         {
+            if (Shared.Shared.config != null)
+                ThreadPool.SetMinThreads(Shared.Shared.config.min_worker_threads, Shared.Shared.config.min_input_output_threads);
+
             Shared.Shared.config = await ServerConfig.GetServerConfig();
 
             System.Timers.Timer server_utility_timer = new System.Timers.Timer();

@@ -49,13 +49,11 @@ namespace ThetaFTP.Shared.Classes
                             {
                                 items[main_index] = left_l.ElementAt(left_index);
                                 left_index++;
-                                main_index++;
                             }
                             else
                             {
                                 items[main_index] = right_l.ElementAt(right_index);
                                 right_index++;
-                                main_index++;
                             }
                             break;
                         case false:
@@ -63,16 +61,16 @@ namespace ThetaFTP.Shared.Classes
                             {
                                 items[main_index] = left_l.ElementAt(left_index);
                                 left_index++;
-                                main_index++;
                             }
                             else
                             {
                                 items[main_index] = right_l.ElementAt(right_index);
                                 right_index++;
-                                main_index++;
                             }
                             break;
                     }
+
+                    main_index++;
                 }
 
                 while (left_index < left_l.Count)
@@ -108,8 +106,8 @@ namespace ThetaFTP.Shared.Classes
                 for (int i = middle; i < items.Count; i++)
                     right_l.Add(items.ElementAt(i));
 
-                MergeSortBySize(left_l, ascending);
-                MergeSortBySize(right_l, ascending);
+                MergeSortByName(left_l, ascending);
+                MergeSortByName(right_l, ascending);
 
 
 
@@ -119,67 +117,49 @@ namespace ThetaFTP.Shared.Classes
 
                 while (left_index < left_l.Count && right_index < right_l.Count)
                 {
-                    if (left_l.ElementAt(left_index).name != null && right_l.ElementAt(right_index).name != null)
+                    char? left = left_l.ElementAt(left_index).name?[0];
+                    char? right = right_l.ElementAt(right_index).name?[0];
+
+                    if (left.HasValue && right.HasValue)
                     {
-                        #pragma warning disable CS8602 // Dereference of a possibly null reference.
-                        char left_c = left_l.ElementAt(left_index).name[0];
-                        char right_c = right_l.ElementAt(right_index).name[0];
+                        int left_value = 0;
+                        alphabetic_order.TryGetValue(char.ToLower((char)left), out left_value);
 
-                        Console.WriteLine("L Val W: " + left_l.ElementAt(left_index).name);
-
-                        Console.WriteLine("R Val W: " + right_l.ElementAt(right_index).name);
-
-                        int l_val = 0;
-                        alphabetic_order.TryGetValue(left_c, out l_val);
-
-                        int r_val = 0;
-                        alphabetic_order.TryGetValue(right_c, out r_val);
+                        int right_value = 0;
+                        alphabetic_order.TryGetValue(char.ToLower((char)right), out right_value);
 
                         switch (ascending)
                         {
                             case true:
-                                if (l_val <= r_val)
+                                if (left_value <= right_value)
                                 {
                                     items[main_index] = left_l.ElementAt(left_index);
-                                    Console.WriteLine("Val: " + items[main_index].name[0]);
-                                    Console.WriteLine("Val w: " + items[main_index].name);
                                     left_index++;
-                                    main_index++;
                                 }
                                 else
                                 {
                                     items[main_index] = right_l.ElementAt(right_index);
-                                    Console.WriteLine("Val: " + items[main_index].name[0]);
-                                    Console.WriteLine("Val w: " + items[main_index].name);
                                     right_index++;
-                                    main_index++;
                                 }
                                 break;
                             case false:
-                                if (l_val >= r_val)
+                                if (left_value >= right_value)
                                 {
                                     items[main_index] = left_l.ElementAt(left_index);
-                                    Console.WriteLine("Val: " + items[main_index].name[0]);
-                                    Console.WriteLine("Val w: " + items[main_index].name);
                                     left_index++;
-                                    main_index++;
                                 }
                                 else
                                 {
                                     items[main_index] = right_l.ElementAt(right_index);
-                                    Console.WriteLine("Val: " + items[main_index].name[0]);
-                                    Console.WriteLine("Val w: " + items[main_index].name);
                                     right_index++;
-                                    main_index++;
                                 }
                                 break;
                         }
 
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                        main_index++;
                     }
                     else
                     {
-                        Console.WriteLine("!!! NULL !!!");
                         break;
                     }
                 }
@@ -189,8 +169,6 @@ namespace ThetaFTP.Shared.Classes
                     items[main_index] = left_l.ElementAt(left_index);
                     left_index++;
                     main_index++;
-
-                    Console.WriteLine("Val: " + items[main_index].name[0]);
                 }
 
 
@@ -200,13 +178,8 @@ namespace ThetaFTP.Shared.Classes
                     items[main_index] = right_l.ElementAt(right_index);
                     right_index++;
                     main_index++;
-
-                    Console.WriteLine("Val: " + items[main_index].name[0]);
                 }
-
             }
-
-            Console.WriteLine("\n\n\n\n");
         }
 
     }

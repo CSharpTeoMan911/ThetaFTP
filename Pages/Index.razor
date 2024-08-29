@@ -36,7 +36,6 @@
                                     <Content>
                                         @for (int i = 0; i < pending_download_progress_data.Count; i++)
                                         {
-                                            string? progress = null;
                                             string? file_name = pending_download_progress_data.Keys.ElementAt(i);
 
                                             Tuple<string, CancellationTokenSource>? item = null;
@@ -143,11 +142,11 @@
 
         if (firstRender == true)
         {
-            GetDirectoryInfo();
+            GetDirectoryInfo(true);
         }
     }
 
-    public async void GetDirectoryInfo()
+    public async void GetDirectoryInfo(bool re_render)
     {
         try
         {
@@ -200,7 +199,6 @@
                             SortUtility sortUtility = new SortUtility();
 
                             files.AddRange(directories);
-                            Console.WriteLine("Files: " + files.Count);
 
                             items = files;
 
@@ -234,17 +232,14 @@
                     notificationType = Notifications.NotificationType.Error;
                 }
 
-                //Console.WriteLine($"result: {result_string}");
             }
 
             await module.DisposeAsync();
         }
-        catch
-        {
+        catch { }
 
-        }
-
-        StateHasChanged();
+        if (re_render == true)
+            StateHasChanged();
     }
 
     public async void Upload(InputFileChangeEventArgs e)
@@ -253,7 +248,6 @@
         System.Timers.Timer timer = new System.Timers.Timer();
         try
         {
-
             IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
             string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
 
@@ -309,7 +303,6 @@
                             {
                                 if (pending_upload_progress_data.Count == 0)
                                     UploadInProgress = false;
-                                StateHasChanged();
                             });
 
                             client.CancelPendingRequests();
@@ -328,7 +321,7 @@
                     if (response.Contains("File upload successful") == true)
                     {
                         notificationType = Notifications.NotificationType.Information;
-                        GetDirectoryInfo();
+                        GetDirectoryInfo(false);
                     }
                     else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
                     {
@@ -434,7 +427,7 @@
                     if (response.Contains("Directory upload successful") == true)
                     {
                         notificationType = Notifications.NotificationType.Information;
-                        GetDirectoryInfo();
+                        GetDirectoryInfo(false);
                     }
                     else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
                     {
@@ -501,7 +494,7 @@
     {
         order = order_;
         type = type_;
-        GetDirectoryInfo();
+        GetDirectoryInfo(true);
     }
 
     public void Search()

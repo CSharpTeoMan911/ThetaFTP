@@ -4,16 +4,33 @@
     {
         private static string ErrorLogsFile = "ErrorLogs.txt";
 
-        /*
-        public static Task<bool> WriteErrorLog()
+        
+        public static async Task WriteErrorLog()
         {
+            try
+            {
 
+            }
+            catch
+            {
+
+            }
+            finally
+            {
+
+            }
         }
 
-        public static Task<bool> DeleteErrorLogFile()
+        public static async Task DeleteErrorLogFile()
         {
+            try
+            {
 
+            }
+            catch
+            {
+
+            }
         }
-        */
     }
 }
