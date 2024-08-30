@@ -285,6 +285,7 @@
                         }
                         else
                         {
+                            Console.WriteLine("client.CancelPendingRequests()");
                             pending_upload_progress_data.Remove(e.File.Name, out _);
                             pending_upload_progress_data.Remove(e.File.Name, out _);
                             timer.Dispose();
@@ -292,7 +293,10 @@
                             await InvokeAsync(() =>
                             {
                                 if (pending_upload_progress_data.Count == 0)
+                                {
                                     UploadInProgress = false;
+                                    StateHasChanged();
+                                }
                             });
 
                             client.CancelPendingRequests();
