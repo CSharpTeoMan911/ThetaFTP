@@ -34,23 +34,6 @@
 
                             <FilterPanel sortedItems="new FilterPanel.SortedItems(Sort)"/>
 
-                            @if (DownloadInProgress == true)
-                            {
-                                <DropdownMenu operation="DropdownMenu.Operation.download">
-                                    <Content>
-                                        @for (int i = 0; i < pending_download_progress_data.Count; i++)
-                                        {
-                                            string? file_name = pending_download_progress_data.Keys.ElementAt(i);
-
-                                            Tuple<string, CancellationTokenSource>? item = null;
-                                            pending_download_progress_data.TryGetValue(file_name, out item);
-
-                                            <DropDownMenuItem file_name=@file_name progress=@item?.Item1 source=@item?.Item2 />
-                                        }
-                                    </Content>
-                                </DropdownMenu>
-                            }
-
                             @if (UploadInProgress == true)
                             {
                                 <DropdownMenu operation="DropdownMenu.Operation.upload">
@@ -121,7 +104,6 @@
     private bool InvalidLogInSessionKey { get; set; }
 
     private bool UploadInProgress { get; set; }
-    private bool DownloadInProgress { get; set; }
 
     private ValidationPanel.ValidationType validationType { get; set; }
     private string? validationInputTopic { get; set; }
@@ -169,6 +151,7 @@
 
             HttpClient client = HttpClientGen.Generate();
             client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
 
             HttpResponseMessage result = await client.GetAsync(url_builder.ToString());
             string result_string = await result.Content.ReadAsStringAsync();
@@ -511,13 +494,13 @@
 
     public void FileOperation(DirectoryItemComponent.FileOperation fileOperation, DirectoryItem item)
     {
-        Console.WriteLine(fileOperation.ToString());
-        Console.WriteLine(item.name);
-
         switch (fileOperation)
         {
             case DirectoryItemComponent.FileOperation.Details:
                 ShowDetails(item);
+                break;
+            case DirectoryItemComponent.FileOperation.Download:
+                DownloadFile(item);
                 break;
         }
     }
@@ -533,5 +516,30 @@
     {
         ShowDirectoryItemDetails = false;
         StateHasChanged();
+    }
+
+    private async void DownloadFile(DirectoryItem item)
+    {
+        try
+        {
+
+            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+            string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+
+            string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
+            {
+                key = log_in_session_key,
+                file_name = item.name,
+                path = Path,
+                file_length = item.size,
+            });
+
+            string formatted_url = new StringBuilder("/files/get?").Append(formated_query_content).ToString();
+
+            await module.InvokeVoidAsync("BrowserManagedFileDownload", formatted_url, item.name);
+
+            await module.DisposeAsync();
+        }
+        catch { }
     }
 }

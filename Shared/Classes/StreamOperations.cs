@@ -1,4 +1,5 @@
-﻿using System.Buffers;
+﻿using Org.BouncyCastle.Utilities.Zlib;
+using System.Buffers;
 
 namespace ThetaFTP.Shared.Classes
 {
@@ -18,6 +19,7 @@ namespace ThetaFTP.Shared.Classes
 
                 while (input_stream.CanRead == true && file_size > 0)
                 {
+
                     if (cancellation.IsCancellationRequested == false)
                     {
                         if ((DateTime.Now - start) >= TimeSpan.FromMicroseconds(timeout))
@@ -63,6 +65,7 @@ namespace ThetaFTP.Shared.Classes
 
             return result;
         }
+        
 
         private static double GetTimeout()
         {

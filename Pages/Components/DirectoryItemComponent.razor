@@ -20,7 +20,14 @@
             </button>
             <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Details))>Details</a></li>
-                <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Download))>Download</a></li>
+                @if(directoryItem?.isDirectory == false)
+                {
+                    <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Download))>Download</a></li>
+                }
+                else
+                {
+                    <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Download))>Open</a></li>
+                }
                 <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Rename))>Rename</a></li>
                 <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Move))>Move</a></li>
                 <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Delete))>Delete</a></li>
