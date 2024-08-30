@@ -23,5 +23,6 @@
         public bool enforce_https { get; set;}
         public int min_worker_threads { get; set; } = 100;
         public int min_input_output_threads { get; set; } = 100;
+        public int logs_expiration_days { get; set; } = 10;
     }
 }

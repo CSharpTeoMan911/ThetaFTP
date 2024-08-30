@@ -6,11 +6,6 @@
         <div class=@($"dropdown_{operation.ToString()}_context")>
             @switch (operation)
             {
-                case Operation.download:
-                    <p class="dropdown_context_text">
-                        Download
-                    </p>
-                    break;
                 case Operation.upload:
                     <p class="dropdown_context_text">
                         Upload
@@ -35,7 +30,6 @@
 @code {
 
     public enum Operation{
-        download,
         upload,
         deletion,
         moving

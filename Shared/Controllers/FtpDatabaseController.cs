@@ -1,4 +1,5 @@
 ﻿using MySqlConnector;
+using System.Data.Common;
 using System.Text;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
@@ -13,9 +14,103 @@ namespace ThetaFTP.Shared.Controllers
             throw new NotImplementedException();
         }
 
-        public Task<string?> Get(FtpModel? value)
+        public async Task<string?> Get(FtpModel? value)
         {
-            throw new NotImplementedException();
+            string result = "Internal server error";
+
+            if (value != null)
+            {
+                if (value.file_name != null)
+                {
+                    if (value.email != null)
+                    {
+                        if (value.path != null)
+                        {
+                            if (value.size <= 524288000)
+                            {
+                                MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+                                try
+                                {
+                                    MySqlCommand get_file_metadata_command = connection.CreateCommand();
+                                    try
+                                    {
+                                        string formatted_file_name = FileSystemFormatter.DatabaseKeyBuilder(value.email, value.file_name);
+                                        get_file_metadata_command.CommandText = "SELECT File_Size, File_Path, Email FROM Files WHERE File_Name = @File_Name";
+                                        get_file_metadata_command.Parameters.AddWithValue("File_Name", formatted_file_name);
+
+                                        DbDataReader get_file_metadata_command_reader = await get_file_metadata_command.ExecuteReaderAsync();
+                                        try
+                                        {
+                                            if (await get_file_metadata_command_reader.ReadAsync() == true)
+                                            {
+                                                long file_size = (int)get_file_metadata_command_reader.GetValue(0);
+                                                string file_path = get_file_metadata_command_reader.GetString(1);
+                                                string email = get_file_metadata_command_reader.GetString(2);
+
+                                                await get_file_metadata_command_reader.CloseAsync();
+
+                                                if (file_path == value.path || file_size == value.size || email == value.email)
+                                                {
+                                                    string converted_path = FileSystemFormatter.PathConverter(value.path, value.email);
+
+                                                    if (FileSystemFormatter.IsValidDiskPath(converted_path))
+                                                    {
+                                                        result = FileSystemFormatter.FullPathBuilder(converted_path, value.file_name);
+                                                    }
+                                                    else
+                                                    {
+                                                        result = "Invalid path";
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    result = "Internal server error";
+                                                }
+                                            }
+                                        }
+                                        finally
+                                        {
+                                            await get_file_metadata_command_reader.DisposeAsync();
+                                        }
+
+                                    }
+                                    finally
+                                    {
+                                        await get_file_metadata_command.DisposeAsync();
+                                    }
+
+                                }
+                                finally
+                                {
+                                    await connection.DisposeAsync();
+                                }
+                            }
+                            else
+                            {
+                                result = "File size exceeds 500 MB";
+                            }
+                        }
+                        else
+                        {
+                            result = "Invalid path";
+                        }
+                    }
+                    else
+                    {
+                        result = "Internal server error";
+                    }
+                }
+                else
+                {
+                    result = "Invalid file name";
+                }
+            }
+            else
+            {
+                result = "Internal server error";
+            }
+
+            return result;
         }
 
         public async Task<string?> GetInfo(Metadata? value)

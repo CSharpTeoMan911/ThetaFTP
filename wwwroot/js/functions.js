@@ -24,3 +24,13 @@ export async function Delete_Cache(option, key) {
             break;
     }
 }
+
+export async function BrowserManagedFileDownload(url, filename) {
+    console.log("url: " + url);
+    console.log("filename: " + filename);
+    let anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = filename ?? "File";
+    anchor.click();
+    anchor.remove();
+}

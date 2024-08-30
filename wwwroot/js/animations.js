@@ -42,9 +42,8 @@ function MainPanelGeometry() {
     if (index_panel !== null) {
         if (index_panel_inner !== null) {
             let window_width = window.innerWidth;
-            var md = new MobileDetect(window.navigator.userAgent);
 
-            if (window_width <= 550 || md.mobile() !== null && navigator.maxTouchPoints > 0) {
+            if (navigator.maxTouchPoints > 0 || window_width <= 550) {
                 index_panel.style.marginTop = "0px";
                 index_panel.style.marginBottom = "0px";
                 index_panel_inner.style.width = "100vw";

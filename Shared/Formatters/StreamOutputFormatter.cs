@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Formatters;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace ThetaFTP.Shared.Formatters
 {
@@ -11,7 +12,7 @@ namespace ThetaFTP.Shared.Formatters
 
         protected override bool CanWriteType(Type? type)
         {
-            return typeof(Stream) == type;
+            return typeof(Stream) == type || typeof(FileStreamResult) == type;
         }
 
         public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
