@@ -19,17 +19,18 @@
                 <img style="height: 20px" src="./images/dots.webp" />
             </button>
             <ul class="dropdown-menu">
-                <li><a class="dropdown-item">Download</a></li>
-                <li><a class="dropdown-item">Rename</a></li>
-                <li><a class="dropdown-item">Move</a></li>
-                <li><a class="dropdown-item">Delete</a></li>
+                <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Details))>Details</a></li>
+                <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Download))>Download</a></li>
+                <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Rename))>Rename</a></li>
+                <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Move))>Move</a></li>
+                <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Delete))>Delete</a></li>
             </ul>
         </div>
 
         @if (directoryItem?.isDirectory == false)
         {
             <p class="directory-item-size">
-                @(((double)directoryItem.size / (double)1048576).ToString("F3") + " MB")
+                @GetSize()
             </p>
         }
     </div>
@@ -37,5 +38,30 @@
 <div class="separator"></div>
 
 @code {
+
+    public enum FileOperation
+    {
+        Details,
+        Download,
+        Rename,
+        Move,
+        Delete
+    }
+
     [Parameter] public DirectoryItem? directoryItem { get; set; }
+
+    public delegate void FileOperationDelegate(FileOperation fileOperation, DirectoryItem? directoryItem);
+
+    [Parameter] public FileOperationDelegate? operationDelegate { get; set; }
+
+    private void FileOperationMethod(FileOperation fileOperation) => operationDelegate?.Invoke(fileOperation, directoryItem);
+
+    private string GetSize()
+    {
+        double size = 0;
+        if (directoryItem != null)
+            size = ((double)directoryItem.size / (double)1048576);
+
+        return $"{size.ToString("F3")} MB";
+    }
 }

@@ -1,0 +1,79 @@
+﻿@using ThetaFTP.Shared.Models;
+
+<FocusPanel>
+    <Component>
+        <div class="jumbotron jumbotron-custom" style="z-index:100; position:absolute">
+            <div class="directory-item-handle">
+                <button class="directory-item-handle-close" @onclick=CloseDetailsPanel>
+                    <img style="height: 25px" src="./images/close_button.webp" />
+                </button>
+            </div>
+
+            <div class="directory-item-details-body">
+                <h5 class="directory-item-details-label">
+                    Details
+                </h5>
+
+                <div class="directory-item-details-section">
+                    <p class="directory-item-details-section-label">
+                        Name:
+                    </p>
+                    <input class="file-item-name file-item-name-details" style="margin-left: 0px;" readonly="readonly" value="@directoryItem?.name" />
+                </div>
+
+                <div>
+
+                    @if (directoryItem?.isDirectory == true)
+                    {
+                        <div class="directory-item-details-section" style="margin-top: 10px; margin-bottom: 10px">
+                            <p class="directory-item-details-section-label">
+                                Type:
+                            </p>
+                            <p class="file-item-property">
+                                Directory
+                            </p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="directory-item-details-section">
+                            <p class="directory-item-details-section-label">
+                                Type:
+                            </p>
+                            <p class="file-item-property">
+                                File
+                            </p>
+                        </div>
+
+                        <div class="directory-item-details-section">
+                            <p class="directory-item-details-section-label">
+                                Size:
+                            </p>
+                            <p class="file-item-property">
+                                @GetSize()
+                            </p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </Component>
+</FocusPanel>
+
+@code {
+    [Parameter] public DirectoryItem? directoryItem { get; set; }
+
+    public delegate void CloseDetails();
+    [Parameter] public CloseDetails? closeDetails { get; set; }
+
+    private void CloseDetailsPanel() => closeDetails?.Invoke();
+
+    private string GetSize()
+    {
+        double size = 0;
+        if (directoryItem != null)
+            size = ((double)directoryItem.size / (double)1048576);
+
+        return $"{size.ToString("F3")} MB";
+    }
+}

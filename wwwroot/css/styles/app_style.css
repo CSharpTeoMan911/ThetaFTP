@@ -48,6 +48,7 @@ div.focus_panel {
     flex-direction: column;
     align-content: center;
     background-color: rgba(80,80,80, 0.7);
+    z-index: 10;
 }
 
 div.notification_panel {
