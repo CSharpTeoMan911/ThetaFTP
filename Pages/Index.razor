@@ -20,6 +20,10 @@
         {
             <ValidationPanel closeAccountValidationPanel="CloseValidationPanel" initiateValidationProcedure="ValidationProcedure" validationType=@validationType validationInputTopic=@validationInputTopic placeholder=@placeholder defaultValue=@defaultValue/>
         }
+        @if (ShowDirectoryItemDetails == true)
+        {
+            <DirectoryItemDetails directoryItem=@currentDirectoryItem closeDetails="CloseDetails"/>
+        }
         <div id="index_panel_inner" class="files_panel">
             <div class="files_panel_control ">
                 <div style="display:inline-block; width:100%;">
@@ -29,23 +33,6 @@
                         <div class="files_panel_file_options">
 
                             <FilterPanel sortedItems="new FilterPanel.SortedItems(Sort)"/>
-
-                            @if (DownloadInProgress == true)
-                            {
-                                <DropdownMenu operation="DropdownMenu.Operation.download">
-                                    <Content>
-                                        @for (int i = 0; i < pending_download_progress_data.Count; i++)
-                                        {
-                                            string? file_name = pending_download_progress_data.Keys.ElementAt(i);
-
-                                            Tuple<string, CancellationTokenSource>? item = null;
-                                            pending_download_progress_data.TryGetValue(file_name, out item);
-
-                                            <DropDownMenuItem file_name=@file_name progress=@item?.Item1 source=@item?.Item2 />
-                                        }
-                                    </Content>
-                                </DropdownMenu>
-                            }
 
                             @if (UploadInProgress == true)
                             {
@@ -93,7 +80,7 @@
                 <div style="width:100%; height:fit-content; display:flex; flex-direction:column;">
                     @for (int i = 0; i < items.Count; i++)
                     {
-                        <DirectoryItemComponent directoryItem="@items.ElementAt(i)"/>
+                        <DirectoryItemComponent directoryItem="@items.ElementAt(i)" operationDelegate=FileOperation/>
                     }
                 </div>
             </div>
@@ -117,7 +104,6 @@
     private bool InvalidLogInSessionKey { get; set; }
 
     private bool UploadInProgress { get; set; }
-    private bool DownloadInProgress { get; set; }
 
     private ValidationPanel.ValidationType validationType { get; set; }
     private string? validationInputTopic { get; set; }
@@ -135,6 +121,9 @@
     private ConcurrentDictionary<string, Tuple<string, CancellationTokenSource>> pending_download_progress_data = new ConcurrentDictionary<string, Tuple<string, CancellationTokenSource>>();
 
     private List<DirectoryItem> items = new List<DirectoryItem>();
+
+    private bool ShowDirectoryItemDetails { get; set; }
+    private DirectoryItem? currentDirectoryItem { get; set; }
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -162,6 +151,7 @@
 
             HttpClient client = HttpClientGen.Generate();
             client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
 
             HttpResponseMessage result = await client.GetAsync(url_builder.ToString());
             string result_string = await result.Content.ReadAsStringAsync();
@@ -500,5 +490,56 @@
     public void Search()
     {
 
+    }
+
+    public void FileOperation(DirectoryItemComponent.FileOperation fileOperation, DirectoryItem item)
+    {
+        switch (fileOperation)
+        {
+            case DirectoryItemComponent.FileOperation.Details:
+                ShowDetails(item);
+                break;
+            case DirectoryItemComponent.FileOperation.Download:
+                DownloadFile(item);
+                break;
+        }
+    }
+
+    public void ShowDetails(DirectoryItem? item)
+    {
+        currentDirectoryItem = item;
+        ShowDirectoryItemDetails = true;
+        StateHasChanged();
+    }
+
+    private void CloseDetails()
+    {
+        ShowDirectoryItemDetails = false;
+        StateHasChanged();
+    }
+
+    private async void DownloadFile(DirectoryItem item)
+    {
+        try
+        {
+
+            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+            string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+
+            string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
+            {
+                key = log_in_session_key,
+                file_name = item.name,
+                path = Path,
+                file_length = item.size,
+            });
+
+            string formatted_url = new StringBuilder("/files/get?").Append(formated_query_content).ToString();
+
+            await module.InvokeVoidAsync("BrowserManagedFileDownload", formatted_url, item.name);
+
+            await module.DisposeAsync();
+        }
+        catch { }
     }
 }

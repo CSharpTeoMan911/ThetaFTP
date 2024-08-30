@@ -156,6 +156,25 @@ div.directory-item-control-div{
     width: 60%;
 }
 
+div.directory-item-handle{
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+div.directory-item-details-body{
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    padding: 5px 10px 15px 10px;
+}
+
+div.directory-item-details-section{
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    align-self: center;
+}
+
 ul.custom_upload_dropdown {
     border-radius: 3px;
     padding-bottom: 0px;
@@ -295,6 +314,14 @@ button.item-menu-button{
     border-color: transparent;
 }
 
+button.directory-item-handle-close {
+    margin:0px;
+    padding: 0px;
+    width: fit-content;
+    height: fit-content;
+    border: 0px solid transparent;
+}
+
 img.control_image {
     height: 30px;
     align-self: center;
@@ -391,6 +418,21 @@ p.directory-item-size {
     font-weight: 500;
 }
 
+p.file-item-property {
+    margin: 0px;
+    padding: 0px;
+    align-self: center;
+    font-size: 16px;
+}
+
+p.directory-item-details-section-label {
+    align-self: center;
+    margin: 0px 10px 0px 10px;
+    padding: 0px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
 input.path_input {
     width: 92%;
     align-self: center;
@@ -407,4 +449,16 @@ input.file-item-name {
     border-width: 0px;
     background-color: transparent;
     max-height: 30px;
+}
+
+input.file-item-name-details {
+    margin-left: 10px;
+    margin-right: 10px;
+    width: calc(100px + 30vw);
+    max-width: 300px;
+}
+
+h5.directory-item-details-label{
+    align-self: center;
+    margin-bottom: 25px;
 }

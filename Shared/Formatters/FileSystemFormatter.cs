@@ -59,5 +59,7 @@ namespace ThetaFTP.Shared.Formatters
 
             return true;
         }
+
+        public static void CreateLogsDir() => Directory.CreateDirectory(new StringBuilder(Environment.CurrentDirectory).Append(PathSeparator()).Append("ServerLogs").ToString());
     }
 }
