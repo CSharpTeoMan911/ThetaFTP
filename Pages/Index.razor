@@ -158,6 +158,7 @@
 
             if (result_string == "Invalid log in session key" || result_string == "Log in session key expired" || result_string == "Log in session not approved" || result_string == "Invalid file path" || result_string == "Internal server error")
             {
+                InvalidLogInSessionKey = true;
                 ShowNotification = true;
                 notificationMessage = result_string;
                 notificationType = Notifications.NotificationType.Error;
@@ -176,6 +177,7 @@
 
                     if (result_string == "Invalid log in session key" || result_string == "Log in session key expired" || result_string == "Log in session not approved" || result_string == "Invalid file path" || result_string == "Internal server error")
                     {
+                        InvalidLogInSessionKey = true;
                         ShowNotification = true;
                         notificationMessage = result_string;
                         notificationType = Notifications.NotificationType.Error;
@@ -543,6 +545,8 @@
             await module.InvokeVoidAsync("BrowserManagedFileDownload", formatted_url, item.name);
 
             await module.DisposeAsync();
+
+            GetDirectoryInfo(false);
         }
         catch { }
     }

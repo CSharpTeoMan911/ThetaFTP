@@ -1,5 +1,5 @@
 ﻿using HallRentalSystem.Classes.StructuralAndBehavioralElements.Formaters;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 using System.Data.Common;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
@@ -30,7 +30,7 @@ namespace ThetaFTP.Shared.Controllers
                             MySqlCommand validation_command = connection.CreateCommand();
                             try
                             {
-                                validation_command.CommandText = "SELECT Email FROM Accounts_Waiting_For_Approval WHERE Account_Validation_Code = @Account_Validation_Code";
+                                validation_command.CommandText = "SELECT Email FROM accounts_waiting_for_approval WHERE Account_Validation_Code = @Account_Validation_Code";
                                 validation_command.Parameters.AddWithValue("Account_Validation_Code", hashed_key.Item1);
 
                                 DbDataReader reader = await validation_command.ExecuteReaderAsync();
@@ -46,7 +46,7 @@ namespace ThetaFTP.Shared.Controllers
                                             MySqlCommand approval_command = connection.CreateCommand();
                                             try
                                             {
-                                                approval_command.CommandText = "DELETE FROM Accounts_Waiting_For_Approval WHERE Account_Validation_Code = @Account_Validation_Code";
+                                                approval_command.CommandText = "DELETE FROM accounts_waiting_for_approval WHERE Account_Validation_Code = @Account_Validation_Code";
                                                 approval_command.Parameters.AddWithValue("Account_Validation_Code", hashed_key.Item1);
                                                 await approval_command.ExecuteNonQueryAsync();
 
@@ -59,7 +59,7 @@ namespace ThetaFTP.Shared.Controllers
                                                     try
                                                     {
 
-                                                        insert_log_in_key_command.CommandText = "INSERT INTO Log_In_Sessions VALUES(@Log_In_Session_Key, @Email, @Expiration_Date)";
+                                                        insert_log_in_key_command.CommandText = "INSERT INTO log_in_sessions VALUES(@Log_In_Session_Key, @Email, @Expiration_Date)";
                                                         insert_log_in_key_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_log_in_session_key.Item1);
                                                         insert_log_in_key_command.Parameters.AddWithValue("Email", value.email);
                                                         insert_log_in_key_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddDays(2));
@@ -150,7 +150,7 @@ namespace ThetaFTP.Shared.Controllers
                             MySqlCommand validation_command = connection.CreateCommand();
                             try
                             {
-                                validation_command.CommandText = "SELECT Log_In_Code FROM Log_In_Sessions_Waiting_For_Approval WHERE Log_In_Code = @Log_In_Code";
+                                validation_command.CommandText = "SELECT Log_In_Code FROM log_in_sessions_waiting_for_approval WHERE Log_In_Code = @Log_In_Code";
                                 validation_command.Parameters.AddWithValue("Log_In_Code", hashed_key.Item1);
 
                                 DbDataReader reader = await validation_command.ExecuteReaderAsync();
@@ -162,7 +162,7 @@ namespace ThetaFTP.Shared.Controllers
                                         MySqlCommand approval_command = connection.CreateCommand();
                                         try
                                         {
-                                            approval_command.CommandText = "DELETE FROM Log_In_Sessions_Waiting_For_Approval WHERE Log_In_Code = @Log_In_Code";
+                                            approval_command.CommandText = "DELETE FROM log_in_sessions_waiting_for_approval WHERE Log_In_Code = @Log_In_Code";
                                             approval_command.Parameters.AddWithValue("Log_In_Code", hashed_key.Item1);
                                             await approval_command.ExecuteNonQueryAsync();
                                             serverPayload.response_message = "Authentication successful";
@@ -228,7 +228,7 @@ namespace ThetaFTP.Shared.Controllers
                         MySqlCommand log_in_session_key_validation = connection.CreateCommand();
                         try
                         {
-                            log_in_session_key_validation.CommandText = "SELECT Expiration_Date, Email FROM Log_In_Sessions WHERE Log_In_Session_Key = @Log_In_Session_Key";
+                            log_in_session_key_validation.CommandText = "SELECT Expiration_Date, Email FROM log_in_sessions WHERE Log_In_Session_Key = @Log_In_Session_Key";
                             log_in_session_key_validation.Parameters.AddWithValue("Log_In_Session_Key", hashed_key.Item1);
 
                             DbDataReader log_in_session_key_validation_reader = await log_in_session_key_validation.ExecuteReaderAsync();
@@ -247,7 +247,7 @@ namespace ThetaFTP.Shared.Controllers
                                         {
 
                                             MySqlCommand log_in_session_key_is_validated = connection.CreateCommand();
-                                            log_in_session_key_is_validated.CommandText = "SELECT Log_In_Code FROM Log_In_Sessions_Waiting_For_Approval WHERE Log_In_Session_Key = @Log_In_Session_Key";
+                                            log_in_session_key_is_validated.CommandText = "SELECT Log_In_Code FROM log_in_sessions_waiting_for_approval WHERE Log_In_Session_Key = @Log_In_Session_Key";
                                             log_in_session_key_is_validated.Parameters.AddWithValue("Log_In_Session_Key", hashed_key.Item1);
 
                                             try
@@ -334,7 +334,7 @@ namespace ThetaFTP.Shared.Controllers
                         MySqlCommand delete_key_command = connection.CreateCommand();
                         try
                         {
-                            delete_key_command.CommandText = "DELETE FROM Log_In_Sessions WHERE Log_In_Session_Key = @Log_In_Session_Key";
+                            delete_key_command.CommandText = "DELETE FROM log_in_sessions WHERE Log_In_Session_Key = @Log_In_Session_Key";
                             delete_key_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_key.Item1);
                             await delete_key_command.ExecuteNonQueryAsync();
 

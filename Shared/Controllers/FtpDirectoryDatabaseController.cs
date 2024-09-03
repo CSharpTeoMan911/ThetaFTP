@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Text;
@@ -111,7 +111,7 @@ namespace ThetaFTP.Shared.Controllers
                                             MySqlCommand create_directory_command = connection.CreateCommand();
                                             try
                                             {
-                                                create_directory_command.CommandText = "INSERT INTO Directories VALUES(@Directory_Name, @Directory_Path, @Email)";
+                                                create_directory_command.CommandText = "INSERT INTO directories VALUES(@Directory_Name, @Directory_Path, @Email)";
                                                 create_directory_command.Parameters.AddWithValue("Directory_Name", FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.directory_name));
                                                 create_directory_command.Parameters.AddWithValue("Directory_Path", value?.path);
                                                 create_directory_command.Parameters.AddWithValue("Email", value?.email);

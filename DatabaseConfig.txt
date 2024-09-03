@@ -1,0 +1,6 @@
+﻿# Create the database Theta_FTP in MySQL
+CREATE DATABASE Theta_FTP;
+
+# Import the database schema inside the Theta_FTP database using the 'mysql' command line
+[PATH_TO_MYSQL]\mysql -u YOUR_USER_ID -p Theta_FTP < [PATH_TO_THETA_FTP_SCHEMA]\Theta_FTP.sql
+

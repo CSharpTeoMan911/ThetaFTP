@@ -11,9 +11,64 @@ namespace ThetaFTP.Shared.Controllers
     public class FileTransferController : Controller, CRUD_Api_Interface<FileOperationMetadata, Stream, Metadata, string, FileOperationMetadata, Stream, FileOperationMetadata, Stream>
     {
         [HttpDelete("delete")]
-        public Task<ActionResult?> Delete([FromQuery] FileOperationMetadata? query, [FromBody] Stream? body)
+        public async Task<ActionResult?> Delete([FromQuery] FileOperationMetadata? query, [FromBody] Stream? body)
         {
-            throw new NotImplementedException();
+            string? result = "Internal server error";
+
+            string payload = String.Empty;
+
+            string? log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+
+            if (log_in_key_validation_result != "Internal server error")
+            {
+                if (log_in_key_validation_result != "Invalid log in session key")
+                {
+                    if (log_in_key_validation_result != "Log in session key expired")
+                    {
+                        if (log_in_key_validation_result != "Log in session not approved")
+                        {
+                            if (query != null)
+                            {
+                                long file_size = 0;
+                                if (query != null)
+                                    file_size = query.file_length;
+
+                                FtpModel ftpModel = new FtpModel()
+                                {
+                                    email = log_in_key_validation_result,
+                                    file_name = query?.file_name,
+                                    path = query?.path,
+                                    operation_cancellation = HttpContext.RequestAborted,
+                                    size = file_size
+                                };
+
+                                result = await Shared.database_ftp.Delete(ftpModel);
+                                return Ok(result);
+                            }
+                            else
+                            {
+                                return Ok(result);
+                            }
+                        }
+                        else
+                        {
+                            return Ok(log_in_key_validation_result);
+                        }
+                    }
+                    else
+                    {
+                        return Ok(log_in_key_validation_result);
+                    }
+                }
+                else
+                {
+                    return Ok(log_in_key_validation_result);
+                }
+            }
+            else
+            {
+                return Ok(log_in_key_validation_result);
+            }
         }
 
         [HttpGet("get")]
