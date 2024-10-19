@@ -55,29 +55,5 @@ namespace ThetaFTP.Shared.Formatters
 
             return Task.FromResult(return_item);
         }
-
-        public static Task<string?> JsonSerialiser<InsertType>(InsertType? item, string comment)
-        {
-            string? return_item = null;
-
-            try
-            {
-                using (StringWriter tw = new StringWriter())
-                {
-                    using (JsonWriter writer = new JsonTextWriter(tw))
-                    {
-                        writer.WriteComment(comment);
-                        writer.Formatting = Formatting.Indented;
-                        serializer.Serialize(writer, item);
-                        return_item = tw.ToString();
-                    }
-
-                    tw?.Dispose();
-                }
-            }
-            catch { }
-
-            return Task.FromResult(return_item);
-        }
     }
 }

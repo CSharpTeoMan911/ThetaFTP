@@ -1,17 +1,101 @@
-﻿using MySqlConnector;
+﻿using MySql.Data.MySqlClient;
 using System.Data.Common;
 using System.Text;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ThetaFTP.Shared.Controllers
 {
     public class FtpDatabaseController : CRUD_Interface<FtpModel, Metadata, FtpModel, FtpModel, FtpModel>
     {
-        public Task<string?> Delete(FtpModel? value)
+
+        public async Task<string?> Delete(FtpModel? value)
         {
-            throw new NotImplementedException();
+            string result = "Internal server error";
+
+            if(value != null)
+            {
+                if (value.email != null)
+                {
+                    if (value.file_name != null)
+                    {
+                        if (value.path != null)
+                        {
+                            if (value.size <= 524288000)
+                            {
+
+                                string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
+                                string formatted_file_name = FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.file_name);
+                                string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
+
+
+
+                                Console.WriteLine($"converted_path: {full_path}");
+                                bool operation_found = false;
+
+
+                                
+                                if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
+                                {
+                                    MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+                                    try
+                                    {
+
+                                        MySqlCommand delete_file_metadata_command = connection.CreateCommand();
+                                        try
+                                        {
+                                            delete_file_metadata_command.CommandText = "DELETE FROM files WHERE File_Name = @File_Name";
+                                            delete_file_metadata_command.Parameters.AddWithValue("File_Name", formatted_file_name);
+                                            await delete_file_metadata_command.ExecuteNonQueryAsync();
+
+                                            if (value != null)
+                                                FileSystemFormatter.DeleteFile(full_path);
+                                            result = "File deletion successful";
+                                        }
+                                        finally
+                                        {
+                                            await delete_file_metadata_command.DisposeAsync();
+                                        }
+                                    }
+                                    finally
+                                    {
+                                        await connection.DisposeAsync();
+                                    }
+                                }
+                                else
+                                {
+                                    result = "Invalid path";
+                                }
+                                
+                            }
+                            else
+                            {
+                                result = "File size exceeds 500 MB";
+                            }
+                        }
+                        else
+                        {
+                            result = "Invalid path";
+                        }
+                    }
+                    else
+                    {
+                        result = "Invalid file";
+                    }
+                }
+                else
+                {
+                    result = "Internal server error";
+                }
+            }
+            else
+            {
+                result = "Internal server error";
+            }
+
+            return result;
         }
 
         public async Task<string?> Get(FtpModel? value)
@@ -34,8 +118,10 @@ namespace ThetaFTP.Shared.Controllers
                                     MySqlCommand get_file_metadata_command = connection.CreateCommand();
                                     try
                                     {
+                                        
+                                        
                                         string formatted_file_name = FileSystemFormatter.DatabaseKeyBuilder(value.email, value.file_name);
-                                        get_file_metadata_command.CommandText = "SELECT File_Size, File_Path, Email FROM Files WHERE File_Name = @File_Name";
+                                        get_file_metadata_command.CommandText = "SELECT File_Size, File_Path, Email FROM files WHERE File_Name = @File_Name";
                                         get_file_metadata_command.Parameters.AddWithValue("File_Name", formatted_file_name);
 
                                         DbDataReader get_file_metadata_command_reader = await get_file_metadata_command.ExecuteReaderAsync();
@@ -223,7 +309,7 @@ namespace ThetaFTP.Shared.Controllers
 
                                                                         if (file_upload_result == true)
                                                                         {
-                                                                            insert_file_command.CommandText = "INSERT INTO Files VALUES(@File_Name, @File_Size, @File_Path, @Email)";
+                                                                            insert_file_command.CommandText = "INSERT INTO files VALUES(@File_Name, @File_Size, @File_Path, @Email)";
                                                                             insert_file_command.Parameters.AddWithValue("File_Name", formatted_file_name);
                                                                             insert_file_command.Parameters.AddWithValue("File_Size", value?.size);
                                                                             insert_file_command.Parameters.AddWithValue("File_Path", value?.path);
@@ -242,7 +328,7 @@ namespace ThetaFTP.Shared.Controllers
                                                                                 MySqlCommand delete_file_command = connection.CreateCommand();
                                                                                 try
                                                                                 {
-                                                                                    delete_file_command.CommandText = "DELETE FROM Files WHERE File_Name=@File_Name";
+                                                                                    delete_file_command.CommandText = "DELETE FROM files WHERE File_Name=@File_Name";
                                                                                     delete_file_command.Parameters.AddWithValue("File_Name", formatted_file_name);
                                                                                     await delete_file_command.ExecuteNonQueryAsync();
                                                                                 }
@@ -356,6 +442,78 @@ namespace ThetaFTP.Shared.Controllers
             throw new NotImplementedException();
         }
 
+        private enum OperationType
+        {
+            Download,
+            Upload,
+            Delete,
+            Update
+        }
 
+        private async Task<string?> GetPendingFileTransferOperations(string? path, string? file, OperationType operationType)
+        {
+            string? result = "Internal server error";
+
+            if (path != null)
+            {
+                if (file != null)
+                {
+                    MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+                    try
+                    {
+                        MySqlCommand get_pending_file_transffer_operations = connection.CreateCommand();
+                        try
+                        {
+                            get_pending_file_transffer_operations.CommandText = "SELECT Source_Path, Destination_Path FROM file_transfer_operations";
+                            DbDataReader get_pending_file_transffer_operations_reader = await get_pending_file_transffer_operations.ExecuteReaderAsync();
+                            try
+                            {
+                                if (await get_pending_file_transffer_operations_reader.ReadAsync() == true)
+                                {
+                                    string source_path = get_pending_file_transffer_operations_reader.GetString(0);
+                                    string destination_path = get_pending_file_transffer_operations_reader.GetString(1);
+                                }
+                            }
+                            finally
+                            {
+                                await get_pending_file_transffer_operations_reader.DisposeAsync();
+                            }
+
+
+                            switch (operationType)
+                            {
+                                case OperationType.Download:
+                                    result = "File transfer in process";
+                                    break;
+                                case OperationType.Upload:
+                                    break;
+                                case OperationType.Delete:
+                                    break;
+                                case OperationType.Update:
+                                    break;
+                            }
+                        }
+                        finally
+                        {
+                            await get_pending_file_transffer_operations.DisposeAsync();
+                        }
+                    }
+                    finally
+                    {
+                        await connection.DisposeAsync();
+                    }
+                }
+                else
+                {
+                    result = "Invalid file";
+                }
+            }
+            else
+            {
+                result = "Invalid path";
+            }
+
+            return result;
+        }
     }
 }

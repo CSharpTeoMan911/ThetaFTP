@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.OpenApi.Models;
 using ThetaFTP.Data;
 using ThetaFTP.Shared.Classes;
@@ -42,19 +43,21 @@ namespace ThetaFTP
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
             });
 
-
-            List<string>? urls = builder.Configuration[WebHostDefaults.ServerUrlsKey]?.Split(';').ToList();
-            List<string>? config_urls = new List<string>();
-
-            Shared.Shared.config?.http_addresses?.ForEach(element =>
+            if (Shared.Shared.config != null)
             {
-                if (urls?.Contains(element) == false)
-                    config_urls.Add(element);
-            });
+                Shared.Shared.config.http_addresses = Shared.Shared.config.http_addresses.Distinct().ToList();
+                List<string>? urls = builder.Configuration[WebHostDefaults.ServerUrlsKey]?.Split(';').ToList();
+                List<string>? config_urls = new List<string>();
 
-            if (config_urls.Count > 0)
-                builder.WebHost.UseUrls(config_urls.ToArray());
+                Shared.Shared.config?.http_addresses?.ForEach(element =>
+                {
+                    if (urls?.Contains(element) == false)
+                        config_urls.Add(element);
+                });
 
+                if (config_urls.Count > 0)
+                    builder.WebHost.UseUrls(config_urls.ToArray());
+            }
 
 
             //////////////////////////////////////////////
@@ -64,7 +67,7 @@ namespace ThetaFTP
             // COMFIGURE SERVER'S KESTER SERVICE LIMITS //
             //                                          //
             //////////////////////////////////////////////
-            ///
+                ///
 
             int connection_timeout = 600;
             if (Shared.Shared.config != null)

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Text;
@@ -12,9 +12,75 @@ namespace ThetaFTP.Shared.Controllers
 {
     public class FtpDirectoryDatabaseController : CRUD_Interface<FtpDirectoryModel, Metadata,FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel>
     {
-        public Task<string?> Delete(FtpDirectoryModel? value)
+        public async Task<string?> Delete(FtpDirectoryModel? value)
         {
-            throw new NotImplementedException();
+            string result = "Internal server error";
+
+            if (value != null)
+            {
+                if (value.email != null)
+                {
+                    if (value.path != null)
+                    {
+                        if (value.directory_name != null)
+                        {
+                            string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
+                            string formatted_directory_name = FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.directory_name);
+                            string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_name);
+
+                            if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
+                            {
+                                MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+                                try
+                                {
+
+                                    MySqlCommand delete_file_metadata_command = connection.CreateCommand();
+                                    try
+                                    {
+                                        delete_file_metadata_command.CommandText = "DELETE FROM directories WHERE Directory_Name = @Directory_Name";
+                                        delete_file_metadata_command.Parameters.AddWithValue("Directory_Name", formatted_directory_name);
+                                        await delete_file_metadata_command.ExecuteNonQueryAsync();
+
+                                        if (value != null)
+                                            FileSystemFormatter.DeleteDirectory(full_path);
+                                        result = "Directory deletion successful";
+                                    }
+                                    finally
+                                    {
+                                        await delete_file_metadata_command.DisposeAsync();
+                                    }
+                                }
+                                finally
+                                {
+                                    await connection.DisposeAsync();
+                                }
+                            }
+                            else
+                            {
+                                result = "Invalid path";
+                            }
+                        }
+                        else
+                        {
+                            result = "Invalid directory name";
+                        }
+                    }
+                    else
+                    {
+                        result = "Invalid path";
+                    }
+                }
+                else
+                {
+                    result = "Invalid email";
+                }
+            }
+            else
+            {
+                result = "Internal server error";
+            }
+
+            return result;
         }
 
         public Task<string?> Get(FtpDirectoryModel? value)
@@ -111,7 +177,7 @@ namespace ThetaFTP.Shared.Controllers
                                             MySqlCommand create_directory_command = connection.CreateCommand();
                                             try
                                             {
-                                                create_directory_command.CommandText = "INSERT INTO Directories VALUES(@Directory_Name, @Directory_Path, @Email)";
+                                                create_directory_command.CommandText = "INSERT INTO directories VALUES(@Directory_Name, @Directory_Path, @Email)";
                                                 create_directory_command.Parameters.AddWithValue("Directory_Name", FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.directory_name));
                                                 create_directory_command.Parameters.AddWithValue("Directory_Path", value?.path);
                                                 create_directory_command.Parameters.AddWithValue("Email", value?.email);
