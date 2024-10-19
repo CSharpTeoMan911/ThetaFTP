@@ -8,9 +8,59 @@ namespace ThetaFTP.Shared.Controllers
     [ApiController]
     public class FileTransferDirectoryController : Controller, CRUD_Api_Interface<DirectoryOperationMetadata, string, DirectoryOperationMetadata, string, DirectoryOperationMetadata, string, DirectoryOperationMetadata, string>
     {
-        public Task<ActionResult?> Delete(DirectoryOperationMetadata? query, string? body)
+        [HttpDelete("delete")]
+        public async Task<ActionResult?> Delete([FromQuery]DirectoryOperationMetadata? query, [FromBody]string? body)
         {
-            throw new NotImplementedException();
+            string? result = "Internal server error";
+
+            string payload = String.Empty;
+
+            string? log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+
+            if (log_in_key_validation_result != "Internal server error")
+            {
+                if (log_in_key_validation_result != "Invalid log in session key")
+                {
+                    if (log_in_key_validation_result != "Log in session key expired")
+                    {
+                        if (log_in_key_validation_result != "Log in session not approved")
+                        {
+                            if (query != null)
+                            {
+                                FtpDirectoryModel ftpModel = new FtpDirectoryModel()
+                                {
+                                    email = log_in_key_validation_result,
+                                    directory_name = query?.directory_name,
+                                    path = query?.path
+                                };
+
+                                result = await Shared.database_directory_ftp.Delete(ftpModel);
+                                return Ok(result);
+                            }
+                            else
+                            {
+                                return Ok(result);
+                            }
+                        }
+                        else
+                        {
+                            return Ok(log_in_key_validation_result);
+                        }
+                    }
+                    else
+                    {
+                        return Ok(log_in_key_validation_result);
+                    }
+                }
+                else
+                {
+                    return Ok(log_in_key_validation_result);
+                }
+            }
+            else
+            {
+                return Ok(log_in_key_validation_result);
+            }
         }
 
         [HttpGet("get")]
@@ -133,7 +183,14 @@ namespace ThetaFTP.Shared.Controllers
             }
         }
 
+        [HttpPut("relocate")]
         public Task<ActionResult?> Update(DirectoryOperationMetadata? query, string? body)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpPut("rename")]
+        public Task<ActionResult?> UpdateName([FromQuery] FileOperationMetadata? query, string? body)
         {
             throw new NotImplementedException();
         }

@@ -4,11 +4,13 @@ using System.Text;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace ThetaFTP.Shared.Controllers
 {
     public class FtpDatabaseController : CRUD_Interface<FtpModel, Metadata, FtpModel, FtpModel, FtpModel>
     {
+
         public async Task<string?> Delete(FtpModel? value)
         {
             string result = "Internal server error";
@@ -23,23 +25,50 @@ namespace ThetaFTP.Shared.Controllers
                         {
                             if (value.size <= 524288000)
                             {
-                                MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
-                                try
+
+                                string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
+                                string formatted_file_name = FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.file_name);
+                                string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
+
+
+
+                                Console.WriteLine($"converted_path: {full_path}");
+                                bool operation_found = false;
+
+
+                                
+                                if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
                                 {
-                                    MySqlCommand get_file_metadata_command = connection.CreateCommand();
+                                    MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
                                     try
                                     {
 
+                                        MySqlCommand delete_file_metadata_command = connection.CreateCommand();
+                                        try
+                                        {
+                                            delete_file_metadata_command.CommandText = "DELETE FROM files WHERE File_Name = @File_Name";
+                                            delete_file_metadata_command.Parameters.AddWithValue("File_Name", formatted_file_name);
+                                            await delete_file_metadata_command.ExecuteNonQueryAsync();
+
+                                            if (value != null)
+                                                FileSystemFormatter.DeleteFile(full_path);
+                                            result = "File deletion successful";
+                                        }
+                                        finally
+                                        {
+                                            await delete_file_metadata_command.DisposeAsync();
+                                        }
                                     }
                                     finally
                                     {
-
+                                        await connection.DisposeAsync();
                                     }
                                 }
-                                finally
+                                else
                                 {
-                                    await connection.DisposeAsync();
+                                    result = "Invalid path";
                                 }
+                                
                             }
                             else
                             {
@@ -89,6 +118,8 @@ namespace ThetaFTP.Shared.Controllers
                                     MySqlCommand get_file_metadata_command = connection.CreateCommand();
                                     try
                                     {
+                                        
+                                        
                                         string formatted_file_name = FileSystemFormatter.DatabaseKeyBuilder(value.email, value.file_name);
                                         get_file_metadata_command.CommandText = "SELECT File_Size, File_Path, Email FROM files WHERE File_Name = @File_Name";
                                         get_file_metadata_command.Parameters.AddWithValue("File_Name", formatted_file_name);

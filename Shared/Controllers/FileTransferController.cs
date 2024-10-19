@@ -252,8 +252,14 @@ namespace ThetaFTP.Shared.Controllers
             }
         }
 
-        [HttpPut("update")]
+        [HttpPut("relocate")]
         public Task<ActionResult?> Update([FromQuery] FileOperationMetadata? query, [FromBody] Stream? body)
+        {
+            throw new NotImplementedException();
+        }
+
+        [HttpPut("rename")]
+        public Task<ActionResult?> UpdateName([FromQuery] FileOperationMetadata? query, [FromBody] Stream? body)
         {
             throw new NotImplementedException();
         }
