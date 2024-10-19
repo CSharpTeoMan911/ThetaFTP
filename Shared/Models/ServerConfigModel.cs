@@ -3,6 +3,7 @@
     public class ServerConfigModel
     {
         public string? mysql_server_address { get; set; } = "!!! REPLACE WITH MYSQL SERVER'S IP ADDRESS !!!";
+        public int mysql_server_port { get; set; } = 3306;
         public string? mysql_user_id { get; set; } = "!!! REPLACE WITH MYSQL USER ID !!!";
         public string? mysql_user_password { get; set; } = "!!! REPLACE WITH MYSQL USER PASSWORD !!!";
         public string? mysql_database { get; set; } = "!!! REPLACE WITH MYSQL DATABASE NAME!!!";

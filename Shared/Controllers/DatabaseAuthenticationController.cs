@@ -2,7 +2,7 @@
 using ThetaFTP.Shared.Models;
 using System.Data.Common;
 using HallRentalSystem.Classes.StructuralAndBehavioralElements.Formaters;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 using ThetaFTP.Shared.Formatters;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
@@ -47,7 +47,7 @@ namespace ThetaFTP.Shared.Controllers
                             MySqlCommand check_if_account_exists_command = connection.CreateCommand();
                             try
                             {
-                                check_if_account_exists_command.CommandText = "SELECT Password FROM Credentials WHERE Email = @Email";
+                                check_if_account_exists_command.CommandText = "SELECT Password FROM credentials WHERE Email = @Email";
                                 check_if_account_exists_command.Parameters.AddWithValue("Email", value.email);
 
                                 DbDataReader check_if_account_exists_reader = await check_if_account_exists_command.ExecuteReaderAsync();
@@ -68,7 +68,7 @@ namespace ThetaFTP.Shared.Controllers
                                                     MySqlCommand check_if_account_is_approved_command = connection.CreateCommand();
                                                     try
                                                     {
-                                                        check_if_account_is_approved_command.CommandText = "SELECT Account_Validation_Code FROM Accounts_Waiting_For_Approval WHERE Email = @Email";
+                                                        check_if_account_is_approved_command.CommandText = "SELECT Account_Validation_Code FROM accounts_waiting_for_approval WHERE Email = @Email";
                                                         check_if_account_is_approved_command.Parameters.AddWithValue("Email", value.email);
                                                         DbDataReader check_if_account_is_approved_command_reader = await check_if_account_is_approved_command.ExecuteReaderAsync();
                                                         try
@@ -101,7 +101,7 @@ namespace ThetaFTP.Shared.Controllers
                                                     MySqlCommand insert_log_in_key_command = connection.CreateCommand();
                                                     try
                                                     {
-                                                        insert_log_in_key_command.CommandText = "INSERT INTO Log_In_Sessions VALUES(@Log_In_Session_Key, @Email, @Expiration_Date)";
+                                                        insert_log_in_key_command.CommandText = "INSERT INTO log_in_sessions VALUES(@Log_In_Session_Key, @Email, @Expiration_Date)";
                                                         insert_log_in_key_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_log_in_session_key.Item1);
                                                         insert_log_in_key_command.Parameters.AddWithValue("Email", value.email);
                                                         insert_log_in_key_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddDays(2));
@@ -118,7 +118,7 @@ namespace ThetaFTP.Shared.Controllers
                                                                 try
                                                                 {
                                                                     bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Log in authorisation", $"Login code: {log_in_code}");
-                                                                    insert_log_in_code_command.CommandText = "INSERT INTO Log_In_Sessions_Waiting_For_Approval VALUES(@Log_In_Code, @Log_In_Session_Key, @Expiration_Date)";
+                                                                    insert_log_in_code_command.CommandText = "INSERT INTO log_in_sessions_waiting_for_approval VALUES(@Log_In_Code, @Log_In_Session_Key, @Expiration_Date)";
                                                                     insert_log_in_code_command.Parameters.AddWithValue("Log_In_Code", hashed_log_in_code.Item1);
                                                                     insert_log_in_code_command.Parameters.AddWithValue("Log_In_Session_Key", hashed_log_in_session_key.Item1);
                                                                     insert_log_in_code_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddDays(2));
@@ -134,7 +134,7 @@ namespace ThetaFTP.Shared.Controllers
                                                                         MySqlCommand delete_account = connection.CreateCommand();
                                                                         try
                                                                         {
-                                                                            delete_account.CommandText = "DELETE FROM Log_In_Sessions WHERE Log_In_Session_Key = @Log_In_Session_Key";
+                                                                            delete_account.CommandText = "DELETE FROM log_in_sessions WHERE Log_In_Session_Key = @Log_In_Session_Key";
                                                                             delete_account.Parameters.AddWithValue("Log_In_Session_Key", value?.email);
                                                                             await delete_account.ExecuteNonQueryAsync();
                                                                         }
@@ -254,7 +254,7 @@ namespace ThetaFTP.Shared.Controllers
 
                                         try
                                         {
-                                            reader_command.CommandText = "SELECT Password FROM Credentials WHERE Email = @Email";
+                                            reader_command.CommandText = "SELECT Password FROM credentials WHERE Email = @Email";
                                             reader_command.Parameters.AddWithValue("Email", value?.email);
                                             DbDataReader reader = await reader_command.ExecuteReaderAsync();
 
@@ -290,7 +290,7 @@ namespace ThetaFTP.Shared.Controllers
                                                                       
                                                                         if (smtps_operation_result == true)
                                                                         {
-                                                                            account_validation_code_insertion_command.CommandText = "INSERT INTO Accounts_Waiting_For_Approval VALUES(@Account_Validation_Code, @Email, @Expiration_Date)";
+                                                                            account_validation_code_insertion_command.CommandText = "INSERT INTO accounts_waiting_for_approval VALUES(@Account_Validation_Code, @Email, @Expiration_Date)";
                                                                             account_validation_code_insertion_command.Parameters.AddWithValue("Email", value?.email);
                                                                             account_validation_code_insertion_command.Parameters.AddWithValue("Account_Validation_Code", key_hash_result.Item1);
                                                                             account_validation_code_insertion_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddHours(1));
@@ -303,7 +303,7 @@ namespace ThetaFTP.Shared.Controllers
                                                                             MySqlCommand delete_account = connection.CreateCommand();
                                                                             try
                                                                             {
-                                                                                delete_account.CommandText = "DELETE FROM Credentials WHERE Email = @Email";
+                                                                                delete_account.CommandText = "DELETE FROM credentials WHERE Email = @Email";
                                                                                 delete_account.Parameters.AddWithValue("Email", value?.email);
                                                                                 await delete_account.ExecuteNonQueryAsync();
                                                                             }

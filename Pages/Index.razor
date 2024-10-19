@@ -158,6 +158,7 @@
 
             if (result_string == "Invalid log in session key" || result_string == "Log in session key expired" || result_string == "Log in session not approved" || result_string == "Invalid file path" || result_string == "Internal server error")
             {
+                InvalidLogInSessionKey = true;
                 ShowNotification = true;
                 notificationMessage = result_string;
                 notificationType = Notifications.NotificationType.Error;
@@ -176,6 +177,7 @@
 
                     if (result_string == "Invalid log in session key" || result_string == "Log in session key expired" || result_string == "Log in session not approved" || result_string == "Invalid file path" || result_string == "Internal server error")
                     {
+                        InvalidLogInSessionKey = true;
                         ShowNotification = true;
                         notificationMessage = result_string;
                         notificationType = Notifications.NotificationType.Error;
@@ -506,6 +508,13 @@
             case DirectoryItemComponent.FileOperation.Download:
                 DownloadFile(item);
                 break;
+            case DirectoryItemComponent.FileOperation.Delete:
+                DeleteFile(item);
+                break;
+            case DirectoryItemComponent.FileOperation.Move:
+                break;
+            case DirectoryItemComponent.FileOperation.Rename:
+                break;
         }
     }
 
@@ -526,7 +535,6 @@
     {
         try
         {
-
             IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
             string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
 
@@ -543,6 +551,54 @@
             await module.InvokeVoidAsync("BrowserManagedFileDownload", formatted_url, item.name);
 
             await module.DisposeAsync();
+
+            GetDirectoryInfo(false);
+        }
+        catch { }
+    }
+
+    private async void DeleteFile(DirectoryItem item)
+    {
+        try
+        {
+            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+            string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+
+            string formatted_url = String.Empty;
+
+            if (item.isDirectory == false)
+            {
+                string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
+                {
+                    key = log_in_session_key,
+                    file_name = item.name,
+                    path = Path,
+                    file_length = item.size,
+                });
+                formatted_url = new StringBuilder("/files/delete?").Append(formated_query_content).ToString();
+            }
+            else
+            {
+                string formated_query_content = await QueryParsing.QueryParser(new DirectoryOperationMetadata()
+                {
+                    key = log_in_session_key,
+                    directory_name = item.name,
+                    path = Path,
+                });
+                formatted_url = new StringBuilder("/directories/delete?").Append(formated_query_content).ToString();
+            }
+
+            Console.WriteLine(formatted_url);
+
+            HttpClient client = HttpClientGen.Generate();
+            client.BaseAddress = new Uri(NavigationManager.BaseUri);
+            HttpResponseMessage response_message = await client.DeleteAsync(formatted_url);
+
+            string response_string = await response_message.Content.ReadAsStringAsync();
+
+            Console.WriteLine($"response_string: {response_string}");
+
+            GetDirectoryInfo(true);
         }
         catch { }
     }
