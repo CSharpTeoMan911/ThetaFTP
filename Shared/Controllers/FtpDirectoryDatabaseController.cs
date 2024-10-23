@@ -10,7 +10,7 @@ using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class FtpDirectoryDatabaseController : CRUD_Interface<FtpDirectoryModel, Metadata,FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel>
+    public class FtpDirectoryDatabaseController : CRUD_Interface<FtpDirectoryModel, Metadata,FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel>
     {
         public async Task<string?> Delete(FtpDirectoryModel? value)
         {
@@ -241,6 +241,11 @@ namespace ThetaFTP.Shared.Controllers
             }
 
             return result;
+        }
+
+        public Task<string?> Rename(FtpDirectoryModel? value)
+        {
+            throw new NotImplementedException();
         }
 
         public Task<string?> Update(FtpDirectoryModel? value)

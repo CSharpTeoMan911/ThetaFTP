@@ -1,0 +1,102 @@
+﻿@using ThetaFTP.Shared.Models;
+@using ThetaFTP.Shared.Classes;
+@using System.Text;
+@inject NavigationManager NavigationManager;
+@inject IJSRuntime JS;
+
+<FocusPanel style="z-index:5;">
+    <Component>
+        <div class="jumbotron" style="padding:5px; display:flex; flex-direction:column; width:fit-content; align-self:center; margin-top: 300px;">
+            <div style="display:flex; flex-direction:row-reverse;">
+                <button class="close_button" @onclick=Close>
+                    <img src="./images/cancel.webp" style="width:22px;"/>
+                </button>
+            </div>
+            <div class="title_div" style="align-self:center;">
+                <h5 style="font-size:calc(16px + 0.4vw);">
+                    @operation
+                </h5>
+            </div>
+            <div class="generic_div" style="padding-left:5px; padding-right: 5px;">
+                <div class="generic_horizontal_div" style="margin-top:10px; margin-bottom: 15px; align-self:start">
+                    <p class="label">
+                        File:
+                    </p>
+                    <input class="display" readonly="readonly" value="@item?.name"/>
+                </div>
+                <div class="generic_horizontal_div" style="margin-top:0px; margin-bottom: 10px; align-self:start">
+                    <p class="label">
+                        Rename:
+                    </p>
+                    <input class="value" @bind-value=@_new_name/>
+                    <button class="select_button" style="margin-left: 5px;" @onclick=Rename>
+                        <img src="./images/check.webp" style="height:calc(25px + 0.5vw)" />
+                    </button>
+                </div>
+            </div>
+        </div>
+    </Component>
+</FocusPanel>
+
+@code {
+    public enum Operation
+    {
+        Rename,
+        Move
+    }
+
+    private string? _new_name { get; set; }
+
+    [Parameter] public DirectoryItem? item { get; set; }
+
+    public delegate void ClosePanel();
+    [Parameter] public ClosePanel? closePanel { get; set; }
+    public void Close() => closePanel?.Invoke();
+
+    public delegate void FileManipulation(string? result);
+    [Parameter] public FileManipulation? fileManipulation { get; set; }
+    public void Manipulation() => fileManipulation?.Invoke(operation_result);
+
+    [Parameter] public Operation operation { get; set; }
+
+    [Parameter] public string? Path { get; set; }
+
+    private string? operation_result { get; set; }
+
+    public async void Rename()
+    {
+        IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+        string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+
+        string formatted_url = String.Empty;
+
+        if (item?.isDirectory == false)
+        {
+            string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
+                {
+                    key = log_in_session_key,
+                    file_name = item.name,
+                    new_name = _new_name,
+                    path = Path,
+                });
+            formatted_url = new StringBuilder("/files/rename?").Append(formated_query_content).ToString();
+        }
+        else
+        {
+            string formated_query_content = await QueryParsing.QueryParser(new DirectoryOperationMetadata()
+                {
+                    key = log_in_session_key,
+                    directory_name = item?.name,
+                    new_directory_name = _new_name,
+                    path = Path,
+                });
+            formatted_url = new StringBuilder("/directories/rename?").Append(formated_query_content).ToString();
+        }
+
+        HttpClient client = HttpClientGen.Generate();
+        client.BaseAddress = new Uri(NavigationManager.BaseUri);
+        HttpResponseMessage response = await client.PutAsync(formatted_url, null);
+        operation_result = await response.Content.ReadAsStringAsync();
+        Manipulation();
+    }
+}

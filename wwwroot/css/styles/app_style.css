@@ -57,6 +57,18 @@ div.notification_panel {
     transform: translate(-50%, 0)
 }
 
+div.generic_div {
+    display: flex;
+    flex-direction: column;
+    align-self:center;
+}
+
+div.generic_horizontal_div {
+    display: flex;
+    flex-direction: row;
+    align-self: center;
+}
+
 h1.title {
     font-family: 'JetBrains Mono', sans-serif;
     width: fit-content;
@@ -76,12 +88,41 @@ h2.input_title {
     font-size: calc(11px + 0.5vw);
 }
 
+p.label {
+    font-family: sans-serif;
+    color: #3e3e3e;
+    font-weight: 400;
+    font-size: calc(11px + 0.4vw);
+    align-self:center;
+    margin: 0px 5px 0px 0px;
+    padding: 0px 0px 0px 0px;
+}
+
 input.input_style {
     font-size: calc(10px + 0.5vw);
     border-radius: 5px;
     border-width: calc(1px + 0.1vw);
 }
 
+input.display {
+    color: #3e3e3e;
+    font-size: calc(11px + 0.4vw);
+    align-self: center;
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+    border: 0px solid transparent;
+    background-color: transparent;
+    border-width: 0px;
+}
+
+input.value {
+    color: #3e3e3e;
+    font-size: calc(11px + 0.4vw);
+    align-self: center;
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+    width: 60%;
+}
 
 button.close_button {
     display: flex;
@@ -91,6 +132,18 @@ button.close_button {
     padding: 0px;
     border-width: 0px;
     background-color: transparent;
+}
+
+button.select_button {
+    display: flex;
+    flex-direction: column;
+    align-content: center;
+    margin: 0px;
+    padding: 0px;
+    border-width: 0px;
+    background-color: transparent;
+    border-color: transparent;
+    border-radius: 5px;
 }
 
 img.notification_image{

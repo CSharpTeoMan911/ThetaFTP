@@ -8,7 +8,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class FtpDatabaseController : CRUD_Interface<FtpModel, Metadata, FtpModel, FtpModel, FtpModel>
+    public class FtpDatabaseController : CRUD_Interface<FtpModel, Metadata, FtpModel, FtpModel, FtpModel, FtpModel>
     {
 
         public async Task<string?> Delete(FtpModel? value)
@@ -440,6 +440,109 @@ namespace ThetaFTP.Shared.Controllers
         public Task<string?> Update(FtpModel? value)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<string?> Rename(FtpModel? value)
+        {
+            string result = "Internal server error";
+
+            if (value != null)
+            {
+                if (value.email != null)
+                {
+                    if (value.file_name != null)
+                    {
+                        if (value.new_name != null)
+                        {
+                            if (value.path != null)
+                            {
+                                string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
+                                string formatted_file_name = FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.file_name);
+                                string formatted_new_file_name = FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.new_name);
+                                string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
+                                string re_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.new_name);
+
+
+                                Console.WriteLine($"converted_path: {full_path}");
+                                bool operation_found = false;
+
+
+
+                                if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
+                                {
+                                    if (File.Exists(re_path) == false)
+                                    {
+                                        MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+                                        try
+                                        {
+
+                                            MySqlCommand update_file_metadata_command = connection.CreateCommand();
+
+                                            try
+                                            {
+
+                                                try
+                                                {
+                                                    if (value != null)
+                                                        FileSystemFormatter.RenameFile(full_path, re_path);
+                                                    result = "File rename successful";
+
+                                                    update_file_metadata_command.CommandText = "UPDATE files SET File_Name = @New_File_Name WHERE File_Name = @File_Name";
+                                                    update_file_metadata_command.Parameters.AddWithValue("New_File_Name", formatted_new_file_name);
+                                                    update_file_metadata_command.Parameters.AddWithValue("File_Name", formatted_file_name);
+                                                    await update_file_metadata_command.ExecuteNonQueryAsync();
+                                                }
+                                                catch 
+                                                {
+                                                    result = "Invalid file name";
+                                                }
+                                            }
+                                            finally
+                                            {
+                                                await update_file_metadata_command.DisposeAsync();
+                                            }
+                                        }
+                                        finally
+                                        {
+                                            await connection.DisposeAsync();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        result = "Invalid file name";
+                                    }
+                                }
+                                else
+                                {
+                                    result = "Invalid path";
+                                }
+                            }
+                            else
+                            {
+                                result = "Invalid path";
+                            }
+                        }
+                        else
+                        {
+                            result = "Invalid file name";
+                        }
+                    }
+                    else
+                    {
+                        result = "Invalid file";
+                    }
+                }
+                else
+                {
+                    result = "Internal server error";
+                }
+            }
+            else
+            {
+                result = "Internal server error";
+            }
+
+            return result;
         }
 
         private enum OperationType

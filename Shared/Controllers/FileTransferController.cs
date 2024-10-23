@@ -259,9 +259,61 @@ namespace ThetaFTP.Shared.Controllers
         }
 
         [HttpPut("rename")]
-        public Task<ActionResult?> UpdateName([FromQuery] FileOperationMetadata? query, [FromBody] Stream? body)
+        public async Task<ActionResult?> UpdateName([FromQuery] RenameMetadata? query, [FromBody] Stream? body)
         {
-            throw new NotImplementedException();
+            string? result = "Internal server error";
+
+            string payload = String.Empty;
+
+            string? log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+
+            if (query != null)
+            {
+                if (log_in_key_validation_result != "Internal server error")
+                {
+                    if (log_in_key_validation_result != "Invalid log in session key")
+                    {
+                        if (log_in_key_validation_result != "Log in session key expired")
+                        {
+                            if (log_in_key_validation_result != "Log in session not approved")
+                            {
+                                FtpModel ftpModel = new FtpModel()
+                                {
+                                    email = log_in_key_validation_result,
+                                    file_name = query?.file_name,
+                                    new_name = query?.new_name,
+                                    path = query?.path,
+                                    operation_cancellation = HttpContext.RequestAborted,
+                                };
+
+
+                                result = await Shared.database_ftp.Rename(ftpModel);
+                                return Ok(result);
+                            }
+                            else
+                            {
+                                return Ok(log_in_key_validation_result);
+                            }
+                        }
+                        else
+                        {
+                            return Ok(log_in_key_validation_result);
+                        }
+                    }
+                    else
+                    {
+                        return Ok(log_in_key_validation_result);
+                    }
+                }
+                else
+                {
+                    return Ok(log_in_key_validation_result);
+                }
+            }
+            else
+            {
+                return Ok(result);
+            }
         }
     }
 }
