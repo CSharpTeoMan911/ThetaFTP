@@ -1,6 +1,6 @@
 ﻿@if (notificationType == NotificationType.Error)
 {
-    <div class="toast show notification_panel" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast show notification_panel" role="alert" aria-live="assertive" aria-atomic="true" style=@style>
         <div class="toast-header">
             <img src="./images/close.webp" class="rounded me-2 notification_image" alt="...">
             <strong class="me-auto">@notificationType.ToString()</strong>
@@ -13,11 +13,10 @@
 }
 else
 {
-    <div class="toast show notification_panel" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast show notification_panel" role="alert" aria-live="assertive" aria-atomic="true" style=@style>
         <div class="toast-header">
             <img src="./images/notification-bell.webp" class="rounded me-2 notification_image" alt="...">
             <strong class="me-auto">@notificationType.ToString()</strong>
-            <small>11 mins ago</small>
             <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close" @onclick="CloseNotification_"></button>
         </div>
         <div class="toast-body">
@@ -41,6 +40,7 @@ else
     [Parameter] public CloseNotification? closeNotification { get; set; }
     [Parameter] public string? NotificationMessage { get; set; }
     [Parameter] public NotificationType notificationType { get; set; }
+    [Parameter] public string? style { get; set; }
 
     private System.Timers.Timer timer = new System.Timers.Timer();
 
