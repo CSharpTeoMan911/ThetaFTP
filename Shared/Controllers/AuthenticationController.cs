@@ -7,7 +7,7 @@ namespace ThetaFTP.Shared.Controllers
 {
     [Route("/authentication")]
     [ApiController]
-    public class AuthenticationController : Controller, CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, AuthenticationModel>
+    public class AuthenticationController : Controller, CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, AuthenticationModel>
     {
         [HttpDelete("delete")]
         public async Task<string?> Delete([FromQuery] AuthenticationModel? value)
@@ -33,6 +33,11 @@ namespace ThetaFTP.Shared.Controllers
         {
             string? response = await Shared.database_auth.Insert(value);
             return response;
+        }
+
+        public Task<string?> Rename(string? value)
+        {
+            throw new NotImplementedException();
         }
 
         [HttpPut("update")]

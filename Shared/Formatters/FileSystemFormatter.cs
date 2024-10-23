@@ -26,6 +26,13 @@ namespace ThetaFTP.Shared.Formatters
         public static void DeleteDirectory(string path) => new DirectoryInfo(path).Delete();
         public static bool IsFile(string path) => File.Exists(path) == true;
         public static bool IsDirectory(string path) => Directory.Exists(path) == true;
+        public static void RenameFile(string old_file, string new_file) 
+        {
+            FileInfo fileInfo = new FileInfo(old_file);
+            FileInfo newFileInfo = new FileInfo(new_file);
+            if (fileInfo?.Directory?.FullName == newFileInfo?.Directory?.FullName)
+                fileInfo?.MoveTo(new_file);
+        }
         public static string DirectoryNameCharacterReplacement(string? directory_name)
         {
             if (directory_name == null)

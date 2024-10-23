@@ -14,7 +14,7 @@
     <Component>
         @if (ShowNotification == true)
         {
-            <Notifications notificationType=@notificationType NotificationMessage=@notificationMessage closeNotification=@CloseNotification/>
+            <Notifications notificationType=@notificationType NotificationMessage=@notificationMessage closeNotification=@CloseNotification style="z-index:10"/>
         }
         @if(ShowValidationPanel == true)
         {
@@ -23,6 +23,10 @@
         @if (ShowDirectoryItemDetails == true)
         {
             <DirectoryItemDetails directoryItem=@currentDirectoryItem closeDetails="CloseDetails"/>
+        }
+        @if (ShowFileManipulationPanel == true)
+        {
+            <FileManipulationPanel item=@currentDirectoryItem closePanel="CloseFileManipulationPanel" fileManipulation="ProcessFileManipulation" operation=@fileManipulationOperation Path="@Path"/>
         }
         <div id="index_panel_inner" class="files_panel">
             <div class="files_panel_control ">
@@ -40,7 +44,6 @@
                                     <Content>
                                         @for (int i = 0; i < pending_upload_progress_data.Count; i++)
                                         {
-                                            string? progress = null;
                                             string? file_name = pending_upload_progress_data.Keys.ElementAt(i);
 
                                             Tuple<string, CancellationTokenSource>? item = null;
@@ -101,6 +104,7 @@
     private string? DirectoryName { get; set; }
     private bool ShowValidationPanel { get; set; }
     private bool ShowNotification { get; set; }
+    private bool ShowFileManipulationPanel { get; set; }
     private bool InvalidLogInSessionKey { get; set; }
 
     private bool UploadInProgress { get; set; }
@@ -124,6 +128,7 @@
 
     private bool ShowDirectoryItemDetails { get; set; }
     private DirectoryItem? currentDirectoryItem { get; set; }
+    private FileManipulationPanel.Operation fileManipulationOperation { get; set; }
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -316,7 +321,6 @@
 
                     if (response.Contains("File upload successful") == true)
                     {
-                        notificationType = Notifications.NotificationType.Information;
                         GetDirectoryInfo(false);
                     }
                     else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
@@ -498,7 +502,7 @@
 
     }
 
-    public void FileOperation(DirectoryItemComponent.FileOperation fileOperation, DirectoryItem item)
+    public void FileOperation(DirectoryItemComponent.FileOperation fileOperation, DirectoryItem? item)
     {
         switch (fileOperation)
         {
@@ -514,6 +518,7 @@
             case DirectoryItemComponent.FileOperation.Move:
                 break;
             case DirectoryItemComponent.FileOperation.Rename:
+                RenameFile(item);
                 break;
         }
     }
@@ -531,33 +536,68 @@
         StateHasChanged();
     }
 
-    private async void DownloadFile(DirectoryItem item)
+    private void CloseFileManipulationPanel()
+    {
+        ShowFileManipulationPanel = false;
+        StateHasChanged();
+    }
+
+    private void ProcessFileManipulation(string? response)
+    {
+        if (response != null)
+        {
+            if (!response.Contains("File rename successful"))
+            {
+                notificationType = Notifications.NotificationType.Error;
+                notificationMessage = response;
+                ShowNotification = true;
+                StateHasChanged();
+            }
+            else
+            {
+                ShowFileManipulationPanel = false;
+                GetDirectoryInfo(true);
+            }
+        }
+        else
+        {
+            notificationType = Notifications.NotificationType.Error;
+            notificationMessage = "Internal server error";
+            ShowNotification = true;
+            StateHasChanged();
+        }
+    }
+
+    private async void DownloadFile(DirectoryItem? item)
     {
         try
         {
-            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-            string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-
-            string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
+            if (item != null)
             {
-                key = log_in_session_key,
-                file_name = item.name,
-                path = Path,
-                file_length = item.size,
-            });
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
 
-            string formatted_url = new StringBuilder("/files/get?").Append(formated_query_content).ToString();
+                string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
+                    {
+                        key = log_in_session_key,
+                        file_name = item.name,
+                        path = Path,
+                        file_length = item.size,
+                    });
 
-            await module.InvokeVoidAsync("BrowserManagedFileDownload", formatted_url, item.name);
+                string formatted_url = new StringBuilder("/files/get?").Append(formated_query_content).ToString();
 
-            await module.DisposeAsync();
+                await module.InvokeVoidAsync("BrowserManagedFileDownload", formatted_url, item.name);
 
-            GetDirectoryInfo(false);
+                await module.DisposeAsync();
+
+                GetDirectoryInfo(false);
+            }
         }
         catch { }
     }
 
-    private async void DeleteFile(DirectoryItem item)
+    private async void DeleteFile(DirectoryItem? item)
     {
         try
         {
@@ -566,7 +606,7 @@
 
             string formatted_url = String.Empty;
 
-            if (item.isDirectory == false)
+            if (item?.isDirectory == false)
             {
                 string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
                 {
@@ -582,7 +622,7 @@
                 string formated_query_content = await QueryParsing.QueryParser(new DirectoryOperationMetadata()
                 {
                     key = log_in_session_key,
-                    directory_name = item.name,
+                    directory_name = item?.name,
                     path = Path,
                 });
                 formatted_url = new StringBuilder("/directories/delete?").Append(formated_query_content).ToString();
@@ -601,5 +641,13 @@
             GetDirectoryInfo(true);
         }
         catch { }
+    }
+
+    private void RenameFile(DirectoryItem? item)
+    {
+        ShowFileManipulationPanel = true;
+        currentDirectoryItem = item;
+        fileManipulationOperation = FileManipulationPanel.Operation.Rename;
+        StateHasChanged();
     }
 }
