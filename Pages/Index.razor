@@ -546,7 +546,7 @@
     {
         if (response != null)
         {
-            if (!response.Contains("File rename successful"))
+            if (!response.Contains("File rename successful") && !response.Contains("Directory rename successful"))
             {
                 notificationType = Notifications.NotificationType.Error;
                 notificationMessage = response;
