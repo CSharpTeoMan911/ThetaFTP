@@ -33,6 +33,13 @@ namespace ThetaFTP.Shared.Formatters
             if (fileInfo?.Directory?.FullName == newFileInfo?.Directory?.FullName)
                 fileInfo?.MoveTo(new_file);
         }
+        public static void RenameDirectory(string old_directory, string new_directory)
+        {
+            DirectoryInfo fileInfo = new DirectoryInfo(old_directory);
+            DirectoryInfo newFileInfo = new DirectoryInfo(new_directory);
+            if (fileInfo?.Parent?.FullName == newFileInfo?.Parent?.FullName)
+                fileInfo?.MoveTo(new_directory);
+        }
         public static string DirectoryNameCharacterReplacement(string? directory_name)
         {
             if (directory_name == null)
