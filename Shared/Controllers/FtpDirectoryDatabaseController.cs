@@ -243,12 +243,110 @@ namespace ThetaFTP.Shared.Controllers
             return result;
         }
 
-        public Task<string?> Rename(FtpDirectoryModel? value)
+        public async Task<string?> Rename(FtpDirectoryModel? value)
         {
-            throw new NotImplementedException();
+            string result = "Internal server error";
+
+            if (value != null)
+            {
+                if (value.email != null)
+                {
+                    if (value.directory_name != null)
+                    {
+                        if (value.directory_new_name != null)
+                        {
+                            if (value.path != null)
+                            {
+                                string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
+                                string formatted_file_name = FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.directory_name);
+                                string formatted_new_file_name = FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.directory_new_name);
+                                string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_name);
+                                string re_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_new_name);
+
+
+                                Console.WriteLine($"converted_path: {full_path}");
+                                bool operation_found = false;
+
+
+
+                                if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
+                                {
+                                    if (File.Exists(re_path) == false)
+                                    {
+                                        MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+                                        try
+                                        {
+
+                                            MySqlCommand update_file_metadata_command = connection.CreateCommand();
+
+                                            try
+                                            {
+
+                                                try
+                                                {
+                                                    if (value != null)
+                                                        FileSystemFormatter.RenameDirectory(full_path, re_path);
+                                                    result = "Directory rename successful";
+
+                                                    update_file_metadata_command.CommandText = "UPDATE directories SET Directory_Name = @New_Directory_Name WHERE Directory_Name = @Directory_Name";
+                                                    update_file_metadata_command.Parameters.AddWithValue("New_Directory_Name", formatted_new_file_name);
+                                                    update_file_metadata_command.Parameters.AddWithValue("Directory_Name", formatted_file_name);
+                                                    await update_file_metadata_command.ExecuteNonQueryAsync();
+                                                }
+                                                catch
+                                                {
+                                                    result = "Invalid directory name";
+                                                }
+                                            }
+                                            finally
+                                            {
+                                                await update_file_metadata_command.DisposeAsync();
+                                            }
+                                        }
+                                        finally
+                                        {
+                                            await connection.DisposeAsync();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        result = "Invalid directory name";
+                                    }
+                                }
+                                else
+                                {
+                                    result = "Invalid path";
+                                }
+                            }
+                            else
+                            {
+                                result = "Invalid path";
+                            }
+                        }
+                        else
+                        {
+                            result = "Invalid directory name";
+                        }
+                    }
+                    else
+                    {
+                        result = "Invalid directory";
+                    }
+                }
+                else
+                {
+                    result = "Internal server error";
+                }
+            }
+            else
+            {
+                result = "Internal server error";
+            }
+
+            return result;
         }
 
-        public Task<string?> Update(FtpDirectoryModel? value)
+        public async Task<string?> Update(FtpDirectoryModel? value)
         {
             throw new NotImplementedException();
         }
