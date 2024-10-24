@@ -321,7 +321,9 @@
 
                     if (response.Contains("File upload successful") == true)
                     {
-                        GetDirectoryInfo(false);
+                        UploadInProgress = false;
+                        GetDirectoryInfo(true);
+                        goto DoNotRenderNotification;
                     }
                     else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
                     {
