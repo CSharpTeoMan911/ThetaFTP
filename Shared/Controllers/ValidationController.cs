@@ -14,7 +14,16 @@ namespace ThetaFTP.Shared.Controllers
         public async Task<string?> GetAccount([FromQuery] ValidationModel? value)
         {
             string? result = String.Empty;
-            result = await Shared.database_validation.ValidateAccount(value);
+
+            if (Shared.config != null)
+                if (!Shared.config.use_firebase)
+                {
+                    result = await Shared.database_validation.ValidateAccount(value);
+                }
+                else
+                {
+
+                }
             return result;
         }
 
@@ -22,7 +31,16 @@ namespace ThetaFTP.Shared.Controllers
         public async Task<string?> GetLogInCode([FromQuery] ValidationModel? value)
         {
             string? result = String.Empty;
-            result = await Shared.database_validation.ValidateLogInSession(value);
+
+            if (Shared.config != null)
+                if (!Shared.config.use_firebase)
+                {
+                    result = await Shared.database_validation.ValidateLogInSession(value);
+                }
+                else
+                {
+
+                }
             return result;
         }
 
@@ -30,7 +48,16 @@ namespace ThetaFTP.Shared.Controllers
         public async Task<string?> DeleteLogInSession([FromQuery] string? value)
         {
             string? result = String.Empty;
-            result = await Shared.database_validation.DeleteLogInSession(value);
+
+            if (Shared.config != null)
+                if (!Shared.config.use_firebase)
+                {
+                    result = await Shared.database_validation.DeleteLogInSession(value);
+                }
+                else
+                {
+
+                }
             return result;
         }
     }

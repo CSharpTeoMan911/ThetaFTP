@@ -28,6 +28,10 @@
         {
             <FileManipulationPanel item=@currentDirectoryItem closePanel="CloseFileManipulationPanel" fileManipulation="ProcessFileManipulation" operation=@fileManipulationOperation Path="@Path"/>
         }
+        @if (ShowFileRelocationPanel == true)
+        {
+            <FileRelocationPanel/>
+        }
         <div id="index_panel_inner" class="files_panel">
             <div class="files_panel_control ">
                 <div style="display:inline-block; width:100%;">
@@ -129,6 +133,8 @@
     private bool ShowDirectoryItemDetails { get; set; }
     private DirectoryItem? currentDirectoryItem { get; set; }
     private FileManipulationPanel.Operation fileManipulationOperation { get; set; }
+
+    private bool ShowFileRelocationPanel { get; set; }
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -518,6 +524,7 @@
                 DeleteFile(item);
                 break;
             case DirectoryItemComponent.FileOperation.Move:
+                RelocateFile(item);
                 break;
             case DirectoryItemComponent.FileOperation.Rename:
                 RenameFile(item);
@@ -650,6 +657,12 @@
         ShowFileManipulationPanel = true;
         currentDirectoryItem = item;
         fileManipulationOperation = FileManipulationPanel.Operation.Rename;
+        StateHasChanged();
+    }
+
+    private void RelocateFile(DirectoryItem? item)
+    {
+        ShowFileRelocationPanel = true;
         StateHasChanged();
     }
 }
