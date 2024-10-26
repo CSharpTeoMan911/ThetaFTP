@@ -42,7 +42,16 @@ namespace ThetaFTP.Shared.Controllers
                                     size = file_size
                                 };
 
-                                result = await Shared.database_ftp.Delete(ftpModel);
+                                if (Shared.config != null)
+                                    if (!Shared.config.use_firebase)
+                                    {
+                                        result = await Shared.database_ftp.Delete(ftpModel);
+                                    }
+                                    else
+                                    {
+
+                                    }
+
                                 return Ok(result);
                             }
                             else
@@ -74,6 +83,8 @@ namespace ThetaFTP.Shared.Controllers
         [HttpGet("get")]
         public async Task<Stream?> GetFile([FromQuery] FileOperationMetadata? query, string? body)
         {
+            string? result = "Internal server error";
+
             Stream? stream = null;
 
             string? log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
@@ -97,7 +108,15 @@ namespace ThetaFTP.Shared.Controllers
                                     operation_cancellation = HttpContext.RequestAborted
                                 };
 
-                                string? result = await Shared.database_ftp.Get(ftpModel);
+                                if (Shared.config != null)
+                                    if (!Shared.config.use_firebase)
+                                    {
+                                        result = await Shared.database_ftp.Get(ftpModel);
+                                    }
+                                    else
+                                    {
+
+                                    }
 
                                 if (result != null)
                                 {
@@ -144,7 +163,16 @@ namespace ThetaFTP.Shared.Controllers
                             if (query != null)
                             {
                                 query.email = log_in_key_validation_result;
-                                result = await Shared.database_ftp.GetInfo(query);
+
+                                if (Shared.config != null)
+                                    if (!Shared.config.use_firebase)
+                                    {
+                                        result = await Shared.database_ftp.GetInfo(query);
+                                    }
+                                    else
+                                    {
+
+                                    }
 
                                 if (result != "Invalid path" && result != "Internal server error")
                                 {
@@ -217,8 +245,16 @@ namespace ThetaFTP.Shared.Controllers
                                         size = file_size
                                     };
 
+                                    if (Shared.config != null)
+                                        if (!Shared.config.use_firebase)
+                                        {
+                                            result = await Shared.database_ftp.Insert(ftpModel);
+                                        }
+                                        else
+                                        {
 
-                                    result = await Shared.database_ftp.Insert(ftpModel);
+                                        }
+                                    
                                     return Ok(result);
                                 }
                                 else
@@ -286,8 +322,16 @@ namespace ThetaFTP.Shared.Controllers
                                     operation_cancellation = HttpContext.RequestAborted,
                                 };
 
+                                if (Shared.config != null)
+                                    if (!Shared.config.use_firebase)
+                                    {
+                                        result = await Shared.database_ftp.Rename(ftpModel);
+                                    }
+                                    else
+                                    {
 
-                                result = await Shared.database_ftp.Rename(ftpModel);
+                                    }
+                                
                                 return Ok(result);
                             }
                             else

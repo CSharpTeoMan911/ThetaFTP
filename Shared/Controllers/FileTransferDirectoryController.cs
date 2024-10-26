@@ -34,7 +34,16 @@ namespace ThetaFTP.Shared.Controllers
                                     path = query?.path
                                 };
 
-                                result = await Shared.database_directory_ftp.Delete(ftpModel);
+                                if (Shared.config != null)
+                                    if (!Shared.config.use_firebase)
+                                    {
+                                        result = await Shared.database_directory_ftp.Delete(ftpModel);
+                                    }
+                                    else
+                                    {
+
+                                    }
+
                                 return Ok(result);
                             }
                             else
@@ -90,7 +99,16 @@ namespace ThetaFTP.Shared.Controllers
                             if (query != null)
                             {
                                 query.email = log_in_key_validation_result;
-                                result = await Shared.database_directory_ftp.GetInfo(query);
+
+                                if (Shared.config != null)
+                                    if (!Shared.config.use_firebase)
+                                    {
+                                        result = await Shared.database_directory_ftp.GetInfo(query);
+                                    }
+                                    else
+                                    {
+
+                                    }
 
                                 if (result != "Invalid path" && result != "Internal server error")
                                 {
@@ -151,7 +169,15 @@ namespace ThetaFTP.Shared.Controllers
                                 path = query?.path,
                             };
 
-                            result = await Shared.database_directory_ftp.Insert(directoryModel);
+                            if (Shared.config != null)
+                                if (!Shared.config.use_firebase)
+                                {
+                                    result = await Shared.database_directory_ftp.Insert(directoryModel);
+                                }
+                                else
+                                {
+
+                                }
 
                             if (result == "Directory upload successful")
                             {
@@ -216,8 +242,16 @@ namespace ThetaFTP.Shared.Controllers
                                     path = query?.path,
                                 };
 
+                                if (Shared.config != null)
+                                    if (!Shared.config.use_firebase)
+                                    {
+                                        result = await Shared.database_directory_ftp.Rename(directoryModel);
+                                    }
+                                    else
+                                    {
 
-                                result = await Shared.database_directory_ftp.Rename(directoryModel);
+                                    }
+
                                 return Ok(result);
                             }
                             else

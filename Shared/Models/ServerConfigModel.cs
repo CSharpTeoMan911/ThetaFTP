@@ -2,6 +2,12 @@
 {
     public class ServerConfigModel
     {
+        public bool use_firebase { get; set; } = false;
+        public string? firebase__database_url {  get; set; } = "!!! REPLACE WITH FIREBASE DATABASE URL !!!";
+        public string? firebase_email { get; set; } = "!!! REPLACE WITH THE EMAIL ACCOUNT THAT HAS THE REQUIRED ADMIN PRIVILEDGES !!!";
+        public string? firebase_password { get; set; } = "!!! REPLACE WITH THE PASSWORD OF THE EMAIL ACCOUNT !!!";
+        public string? firebase_api_key { get; set; } = "!!! REPLACE WITH THE APP'S API KEY !!!";
+        public string? firebase_auth_domain { get; set; } = "!!! REPLACE WITH THE APP'S AUTH DOMAIN !!!";
         public string? mysql_server_address { get; set; } = "!!! REPLACE WITH MYSQL SERVER'S IP ADDRESS !!!";
         public int mysql_server_port { get; set; } = 3306;
         public string? mysql_user_id { get; set; } = "!!! REPLACE WITH MYSQL USER ID !!!";
