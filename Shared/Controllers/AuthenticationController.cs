@@ -12,14 +12,34 @@ namespace ThetaFTP.Shared.Controllers
         [HttpDelete("delete")]
         public async Task<string?> Delete([FromQuery] AuthenticationModel? value)
         {
-            string? response = await Shared.database_auth.Delete(value);
+            string? response = "Internal server error";
+
+            if (Shared.config != null)
+                if (!Shared.config.use_firebase)
+                {
+                    response = await Shared.database_auth.Delete(value);
+                }
+                else
+                {
+                    //response = await Shared.database_auth.Delete(value);
+                }
             return response;
         }
 
         [HttpGet("get")]
         public async Task<string?> Get([FromQuery] AuthenticationModel? value)
         {
-            string? response = await Shared.database_auth.Get(value);
+            string? response = "Internal server error";
+
+            if (Shared.config != null)
+                if (!Shared.config.use_firebase)
+                {
+                    response = await Shared.database_auth.Get(value);
+                }
+                else
+                {
+                    response = await Shared.firebase_database_auth.Get(value);
+                }
             return response;
         }
 
@@ -31,7 +51,17 @@ namespace ThetaFTP.Shared.Controllers
         [HttpPost("insert")]
         public async Task<string?> Insert([FromQuery] AuthenticationModel? value)
         {
-            string? response = await Shared.database_auth.Insert(value);
+            string? response = "Internal server error";
+
+            if (Shared.config != null)
+                if (!Shared.config.use_firebase)
+                {
+                    response = await Shared.database_auth.Insert(value);
+                }
+                else
+                {
+                    response = await Shared.firebase_database_auth.Insert(value);
+                }
             return response;
         }
 
@@ -41,11 +71,9 @@ namespace ThetaFTP.Shared.Controllers
         }
 
         [HttpPut("update")]
-        public async Task<string?> Update([FromQuery] AuthenticationModel? value)
+        public Task<string?> Update([FromQuery] AuthenticationModel? value)
         {
-            string? response = String.Empty;
-
-            return response;
+            throw new NotImplementedException();
         }
     }
 }
