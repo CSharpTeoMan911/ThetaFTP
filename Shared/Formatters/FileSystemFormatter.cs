@@ -21,7 +21,6 @@ namespace ThetaFTP.Shared.Formatters
         public static string PathConverter(string? path, string? email) => new StringBuilder(Environment.CurrentDirectory).Append(PathSeparator()).Append("FTP_Server").Append(PathSeparator()).Append(email).Append(PathConverter(path)).ToString();
         public static string GetSourcePath(string? email) => new StringBuilder(Environment.CurrentDirectory).Append(PathSeparator()).Append("FTP_Server").Append(PathSeparator()).Append(email).ToString();
         public static string FullPathBuilder(string? path, string? item) => new StringBuilder(path).Append(item).ToString();
-        public static string DatabaseKeyBuilder(string? email, string? item) => new StringBuilder(email).Append('/').Append(item).ToString();
         public static void DeleteFile(string path) => new FileInfo(path).Delete();
         public static void DeleteDirectory(string path) => new DirectoryInfo(path).Delete();
         public static bool IsFile(string path) => File.Exists(path) == true;

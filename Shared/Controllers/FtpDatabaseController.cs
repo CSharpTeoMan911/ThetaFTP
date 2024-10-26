@@ -4,14 +4,13 @@ using System.Text;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace ThetaFTP.Shared.Controllers
 {
     public class FtpDatabaseController : CRUD_Interface<FtpModel, Metadata, FtpModel, FtpModel, FtpModel, FtpModel>
     {
 
-        public async Task<string?> Delete(FtpModel? value)
+        public Task<string?> Delete(FtpModel? value)
         {
             string result = "Internal server error";
 
@@ -27,42 +26,17 @@ namespace ThetaFTP.Shared.Controllers
                             {
 
                                 string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
-                                string formatted_file_name = FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.file_name);
                                 string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
 
-
-
                                 Console.WriteLine($"converted_path: {full_path}");
-                                bool operation_found = false;
-
+                                //bool operation_found = false;
 
                                 
                                 if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
                                 {
-                                    MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
-                                    try
-                                    {
-
-                                        MySqlCommand delete_file_metadata_command = connection.CreateCommand();
-                                        try
-                                        {
-                                            delete_file_metadata_command.CommandText = "DELETE FROM files WHERE File_Name = @File_Name";
-                                            delete_file_metadata_command.Parameters.AddWithValue("File_Name", formatted_file_name);
-                                            await delete_file_metadata_command.ExecuteNonQueryAsync();
-
-                                            if (value != null)
-                                                FileSystemFormatter.DeleteFile(full_path);
-                                            result = "File deletion successful";
-                                        }
-                                        finally
-                                        {
-                                            await delete_file_metadata_command.DisposeAsync();
-                                        }
-                                    }
-                                    finally
-                                    {
-                                        await connection.DisposeAsync();
-                                    }
+                                    if (value != null)
+                                        FileSystemFormatter.DeleteFile(full_path);
+                                    result = "File deletion successful";
                                 }
                                 else
                                 {
@@ -95,10 +69,10 @@ namespace ThetaFTP.Shared.Controllers
                 result = "Internal server error";
             }
 
-            return result;
+            return Task.FromResult<string?>(result);
         }
 
-        public async Task<string?> Get(FtpModel? value)
+        public Task<string?> Get(FtpModel? value)
         {
             string result = "Internal server error";
 
@@ -112,63 +86,15 @@ namespace ThetaFTP.Shared.Controllers
                         {
                             if (value.size <= 524288000)
                             {
-                                MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
-                                try
+                                string converted_path = FileSystemFormatter.PathConverter(value.path, value.email);
+
+                                if (FileSystemFormatter.IsValidDiskPath(converted_path))
                                 {
-                                    MySqlCommand get_file_metadata_command = connection.CreateCommand();
-                                    try
-                                    {
-                                        
-                                        
-                                        string formatted_file_name = FileSystemFormatter.DatabaseKeyBuilder(value.email, value.file_name);
-                                        get_file_metadata_command.CommandText = "SELECT File_Size, File_Path, Email FROM files WHERE File_Name = @File_Name";
-                                        get_file_metadata_command.Parameters.AddWithValue("File_Name", formatted_file_name);
-
-                                        DbDataReader get_file_metadata_command_reader = await get_file_metadata_command.ExecuteReaderAsync();
-                                        try
-                                        {
-                                            if (await get_file_metadata_command_reader.ReadAsync() == true)
-                                            {
-                                                long file_size = (int)get_file_metadata_command_reader.GetValue(0);
-                                                string file_path = get_file_metadata_command_reader.GetString(1);
-                                                string email = get_file_metadata_command_reader.GetString(2);
-
-                                                await get_file_metadata_command_reader.CloseAsync();
-
-                                                if (file_path == value.path || file_size == value.size || email == value.email)
-                                                {
-                                                    string converted_path = FileSystemFormatter.PathConverter(value.path, value.email);
-
-                                                    if (FileSystemFormatter.IsValidDiskPath(converted_path))
-                                                    {
-                                                        result = FileSystemFormatter.FullPathBuilder(converted_path, value.file_name);
-                                                    }
-                                                    else
-                                                    {
-                                                        result = "Invalid path";
-                                                    }
-                                                }
-                                                else
-                                                {
-                                                    result = "Internal server error";
-                                                }
-                                            }
-                                        }
-                                        finally
-                                        {
-                                            await get_file_metadata_command_reader.DisposeAsync();
-                                        }
-
-                                    }
-                                    finally
-                                    {
-                                        await get_file_metadata_command.DisposeAsync();
-                                    }
-
+                                    result = FileSystemFormatter.FullPathBuilder(converted_path, value.file_name);
                                 }
-                                finally
+                                else
                                 {
-                                    await connection.DisposeAsync();
+                                    result = "Invalid path";
                                 }
                             }
                             else
@@ -196,7 +122,7 @@ namespace ThetaFTP.Shared.Controllers
                 result = "Internal server error";
             }
 
-            return result;
+            return Task.FromResult<string?>(result);
         }
 
         public async Task<string?> GetInfo(Metadata? value)
@@ -289,99 +215,46 @@ namespace ThetaFTP.Shared.Controllers
 
                                                 if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
                                                 {
-                                                    MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
-                                                    try
+                                                    string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
+
+                                                    if(value != null)
                                                     {
-                                                        MySqlCommand insert_file_command = connection.CreateCommand();
-                                                        try
+                                                        FileStream file_stream = File.OpenWrite(full_path);
+                                                        bool file_upload_result = await StreamOperations.ReadAsync(value.fileStream, value.size, file_stream, 102400, 3, value.operation_cancellation);
+
+                                                        FileInfo uploaded_file = new FileInfo(full_path);
+
+                                                        if (file_upload_result == true)
                                                         {
-                                                            try
+                                                            if (value?.operation_cancellation.IsCancellationRequested == true)
                                                             {
-                                                                string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
-                                                                FileStream file_stream = File.OpenWrite(full_path);
-                                                                try
+                                                                if (File.Exists(full_path) == true)
                                                                 {
-                                                                    if (value != null)
-                                                                    {
-                                                                        bool file_upload_result = await StreamOperations.ReadAsync(value.fileStream, value.size, file_stream, 102400, 3, value.operation_cancellation);
-                                                                        FileInfo uploaded_file = new FileInfo(full_path);
-                                                                        string formatted_file_name = FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.file_name);
-
-                                                                        if (file_upload_result == true)
-                                                                        {
-                                                                            insert_file_command.CommandText = "INSERT INTO files VALUES(@File_Name, @File_Size, @File_Path, @Email)";
-                                                                            insert_file_command.Parameters.AddWithValue("File_Name", formatted_file_name);
-                                                                            insert_file_command.Parameters.AddWithValue("File_Size", value?.size);
-                                                                            insert_file_command.Parameters.AddWithValue("File_Path", value?.path);
-                                                                            insert_file_command.Parameters.AddWithValue("Email", value?.email);
-
-                                                                            await insert_file_command.ExecuteNonQueryAsync();
-
-                                                                            if (value?.operation_cancellation.IsCancellationRequested == true)
-                                                                            {
-                                                                                if (File.Exists(full_path) == true)
-                                                                                {
-                                                                                    file_stream?.Dispose();
-                                                                                    uploaded_file.Delete();
-                                                                                }
-
-                                                                                MySqlCommand delete_file_command = connection.CreateCommand();
-                                                                                try
-                                                                                {
-                                                                                    delete_file_command.CommandText = "DELETE FROM files WHERE File_Name=@File_Name";
-                                                                                    delete_file_command.Parameters.AddWithValue("File_Name", formatted_file_name);
-                                                                                    await delete_file_command.ExecuteNonQueryAsync();
-                                                                                }
-                                                                                finally
-                                                                                {
-                                                                                    await delete_file_command.DisposeAsync();
-                                                                                }
-
-                                                                                result = "Operation cancelled";
-                                                                            }
-                                                                            else
-                                                                            {
-                                                                                result = "File upload successful";
-                                                                            }
-                                                                        }
-                                                                        else
-                                                                        {
-                                                                            if (File.Exists(full_path) == true)
-                                                                            {
-                                                                                file_stream?.Dispose();
-                                                                                uploaded_file.Delete();
-                                                                            }
-
-                                                                            result = "Operation cancelled";
-                                                                        }
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        result = "Internal server error";
-                                                                    }
+                                                                    file_stream?.Dispose();
+                                                                    uploaded_file.Delete();
                                                                 }
-                                                                catch
-                                                                {
-                                                                    result = "File already exists";
-                                                                }
-                                                                finally
-                                                                {
-                                                                    await file_stream.DisposeAsync();
-                                                                }
+
+                                                                result = "Operation cancelled";
                                                             }
-                                                            catch
+                                                            else
                                                             {
-                                                                result = "Internal server error";
+                                                                result = "File upload successful";
                                                             }
                                                         }
-                                                        finally
+                                                        else
                                                         {
-                                                            await insert_file_command.DisposeAsync();
+                                                            if (File.Exists(full_path) == true)
+                                                            {
+                                                                file_stream?.Dispose();
+                                                                uploaded_file.Delete();
+                                                            }
+
+                                                            result = "Operation cancelled";
                                                         }
                                                     }
-                                                    finally
+                                                    else
                                                     {
-                                                        await connection.DisposeAsync();
+                                                        result = "Internal server error";
                                                     }
                                                 }
                                                 else
@@ -442,9 +315,9 @@ namespace ThetaFTP.Shared.Controllers
             throw new NotImplementedException();
         }
 
-        public async Task<string?> Rename(FtpModel? value)
+        public Task<string?> Rename(FtpModel? value)
         {
-            string result = "Internal server error";
+            string? result = "Internal server error";
 
             if (value != null)
             {
@@ -457,14 +330,12 @@ namespace ThetaFTP.Shared.Controllers
                             if (value.path != null)
                             {
                                 string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
-                                string formatted_file_name = FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.file_name);
-                                string formatted_new_file_name = FileSystemFormatter.DatabaseKeyBuilder(value?.email, value?.new_name);
                                 string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
                                 string re_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.new_name);
 
 
                                 Console.WriteLine($"converted_path: {full_path}");
-                                bool operation_found = false;
+                                //bool operation_found = false;
 
 
 
@@ -472,39 +343,15 @@ namespace ThetaFTP.Shared.Controllers
                                 {
                                     if (File.Exists(re_path) == false)
                                     {
-                                        MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
                                         try
                                         {
-
-                                            MySqlCommand update_file_metadata_command = connection.CreateCommand();
-
-                                            try
-                                            {
-
-                                                try
-                                                {
-                                                    if (value != null)
-                                                        FileSystemFormatter.RenameFile(full_path, re_path);
-                                                    result = "File rename successful";
-
-                                                    update_file_metadata_command.CommandText = "UPDATE files SET File_Name = @New_File_Name WHERE File_Name = @File_Name";
-                                                    update_file_metadata_command.Parameters.AddWithValue("New_File_Name", formatted_new_file_name);
-                                                    update_file_metadata_command.Parameters.AddWithValue("File_Name", formatted_file_name);
-                                                    await update_file_metadata_command.ExecuteNonQueryAsync();
-                                                }
-                                                catch 
-                                                {
-                                                    result = "Invalid file name";
-                                                }
-                                            }
-                                            finally
-                                            {
-                                                await update_file_metadata_command.DisposeAsync();
-                                            }
+                                            if (value != null)
+                                                FileSystemFormatter.RenameFile(full_path, re_path);
+                                            result = "File rename successful";
                                         }
-                                        finally
+                                        catch
                                         {
-                                            await connection.DisposeAsync();
+                                            result = "Invalid file name";
                                         }
                                     }
                                     else
@@ -542,81 +389,7 @@ namespace ThetaFTP.Shared.Controllers
                 result = "Internal server error";
             }
 
-            return result;
-        }
-
-        private enum OperationType
-        {
-            Download,
-            Upload,
-            Delete,
-            Update
-        }
-
-        private async Task<string?> GetPendingFileTransferOperations(string? path, string? file, OperationType operationType)
-        {
-            string? result = "Internal server error";
-
-            if (path != null)
-            {
-                if (file != null)
-                {
-                    MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
-                    try
-                    {
-                        MySqlCommand get_pending_file_transffer_operations = connection.CreateCommand();
-                        try
-                        {
-                            get_pending_file_transffer_operations.CommandText = "SELECT Source_Path, Destination_Path FROM file_transfer_operations";
-                            DbDataReader get_pending_file_transffer_operations_reader = await get_pending_file_transffer_operations.ExecuteReaderAsync();
-                            try
-                            {
-                                if (await get_pending_file_transffer_operations_reader.ReadAsync() == true)
-                                {
-                                    string source_path = get_pending_file_transffer_operations_reader.GetString(0);
-                                    string destination_path = get_pending_file_transffer_operations_reader.GetString(1);
-                                }
-                            }
-                            finally
-                            {
-                                await get_pending_file_transffer_operations_reader.DisposeAsync();
-                            }
-
-
-                            switch (operationType)
-                            {
-                                case OperationType.Download:
-                                    result = "File transfer in process";
-                                    break;
-                                case OperationType.Upload:
-                                    break;
-                                case OperationType.Delete:
-                                    break;
-                                case OperationType.Update:
-                                    break;
-                            }
-                        }
-                        finally
-                        {
-                            await get_pending_file_transffer_operations.DisposeAsync();
-                        }
-                    }
-                    finally
-                    {
-                        await connection.DisposeAsync();
-                    }
-                }
-                else
-                {
-                    result = "Invalid file";
-                }
-            }
-            else
-            {
-                result = "Invalid path";
-            }
-
-            return result;
+            return Task.FromResult<string?>(result);
         }
     }
 }
