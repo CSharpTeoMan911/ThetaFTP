@@ -27,8 +27,6 @@ namespace ThetaFTP.Shared.Controllers
 
                                 string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
                                 string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
-
-                                Console.WriteLine($"converted_path: {full_path}");
                                 //bool operation_found = false;
 
                                 
@@ -333,8 +331,6 @@ namespace ThetaFTP.Shared.Controllers
                                 string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
                                 string re_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.new_name);
 
-
-                                Console.WriteLine($"converted_path: {full_path}");
                                 //bool operation_found = false;
 
 

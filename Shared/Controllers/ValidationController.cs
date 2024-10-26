@@ -22,7 +22,7 @@ namespace ThetaFTP.Shared.Controllers
                 }
                 else
                 {
-
+                    result = await Shared.firebase_database_validation.ValidateAccount(value);
                 }
             return result;
         }
@@ -39,7 +39,7 @@ namespace ThetaFTP.Shared.Controllers
                 }
                 else
                 {
-
+                    result = await Shared.firebase_database_validation.ValidateLogInSession(value);
                 }
             return result;
         }
@@ -56,7 +56,7 @@ namespace ThetaFTP.Shared.Controllers
                 }
                 else
                 {
-
+                    result = await Shared.firebase_database_validation.DeleteLogInSession(value);
                 }
             return result;
         }
