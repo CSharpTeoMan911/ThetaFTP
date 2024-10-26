@@ -92,59 +92,6 @@ LOCK TABLES `credentials` WRITE;
 UNLOCK TABLES;
 
 --
--- Table structure for table `directories`
---
-
-DROP TABLE IF EXISTS `directories`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `directories` (
-  `Directory_Name` varchar(201) NOT NULL,
-  `Directory_Path` longtext NOT NULL,
-  `Email` varchar(100) NOT NULL,
-  UNIQUE KEY `Directory_Name` (`Directory_Name`),
-  KEY `Email` (`Email`),
-  CONSTRAINT `directories_ibfk_1` FOREIGN KEY (`Email`) REFERENCES `credentials` (`Email`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `directories`
---
-
-LOCK TABLES `directories` WRITE;
-/*!40000 ALTER TABLE `directories` DISABLE KEYS */;
-/*!40000 ALTER TABLE `directories` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `files`
---
-
-DROP TABLE IF EXISTS `files`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `files` (
-  `File_Name` varchar(201) NOT NULL,
-  `File_Size` int NOT NULL,
-  `File_Path` longtext NOT NULL,
-  `Email` varchar(100) NOT NULL,
-  UNIQUE KEY `File_Name` (`File_Name`),
-  KEY `Email` (`Email`),
-  CONSTRAINT `files_ibfk_1` FOREIGN KEY (`Email`) REFERENCES `credentials` (`Email`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `files`
---
-
-LOCK TABLES `files` WRITE;
-/*!40000 ALTER TABLE `files` DISABLE KEYS */;
-/*!40000 ALTER TABLE `files` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `log_in_sessions`
 --
 
@@ -205,4 +152,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-09-18 20:48:48
+-- Dump completed on 2024-10-26 10:53:17

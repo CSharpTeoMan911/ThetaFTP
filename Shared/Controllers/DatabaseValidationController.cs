@@ -91,7 +91,7 @@ namespace ThetaFTP.Shared.Controllers
                                     }
                                     else
                                     {
-                                        serverPayload.response_message = "Internal server error";
+                                        serverPayload.response_message = "Invalid code";
                                     }
                                 }
                                 finally

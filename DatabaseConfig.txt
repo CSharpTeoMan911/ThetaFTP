@@ -1,6 +1,7 @@
-﻿# Create the database Theta_FTP in MySQL
-CREATE DATABASE Theta_FTP;
+﻿# Create and import the database schema inside the Theta_FTP database using the 'mysql' command line
 
-# Import the database schema inside the Theta_FTP database using the 'mysql' command line
-[PATH_TO_MYSQL]\mysql -u YOUR_USER_ID -p Theta_FTP < [PATH_TO_THETA_FTP_SCHEMA]\Theta_FTP.sql
+[PATH_TO_MYSQL]\mysql -u YOUR_USER_ID -p -e 'CREATE DATABASE [DATABASE_NAME];USE [DATABASE_NAME];SOURCE [DATABASE_NAME_PATH];'
+
+# USE '/' AS THE PATH SEPARATOR CHARACTER WITHIN THE SOURCE QUERY ON ALL OPERATING SYSTEMS
+(e.g.) C:\Program` Files\MySQL\MySQL` Workbench` 8.0\mysql.exe -u root -p -e "CREATE DATABASE Theta_FTP;USE Theta_FTP;SOURCE C:/Users/teodo/Desktop/Theta_FTP.sql;"
 

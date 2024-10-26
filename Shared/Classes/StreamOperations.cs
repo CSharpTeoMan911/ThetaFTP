@@ -54,7 +54,7 @@ namespace ThetaFTP.Shared.Classes
 
                 result = true;
             }
-            catch (Exception E)
+            catch
             {
                 result = false;
             }
