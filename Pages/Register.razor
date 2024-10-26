@@ -62,22 +62,23 @@
 
     private async void SignUp()
     {
-        AuthenticationModel authentication = new AuthenticationModel();
-        authentication.email = Email;
-        authentication.password = Password;
-
-        string query_parameters = await QueryParsing.QueryParser<AuthenticationModel>(authentication);
-
-        StringBuilder builder = new StringBuilder(NavigationManager.BaseUri);
-        builder.Append("authentication/insert?");
-        builder.Append(query_parameters);
-
-        HttpClient client = HttpClientGen.Generate();
-        HttpResponseMessage message = await client.PostAsync(builder.ToString(), null);
-        string message_string = await message.Content.ReadAsStringAsync();
-
         if (Password == Re_Password)
         {
+            AuthenticationModel authentication = new AuthenticationModel();
+            authentication.email = Email;
+            authentication.password = Password;
+
+            string query_parameters = await QueryParsing.QueryParser<AuthenticationModel>(authentication);
+
+            StringBuilder builder = new StringBuilder(NavigationManager.BaseUri);
+            builder.Append("authentication/insert?");
+            builder.Append(query_parameters);
+
+            HttpClient client = HttpClientGen.Generate();
+            HttpResponseMessage message = await client.PostAsync(builder.ToString(), null);
+            string message_string = await message.Content.ReadAsStringAsync();
+
+
             if (message_string.Contains("Registration successful") == true)
             {
                 NotificationType = Notifications.NotificationType.Information;

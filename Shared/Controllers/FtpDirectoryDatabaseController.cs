@@ -34,7 +34,7 @@ namespace ThetaFTP.Shared.Controllers
                                         FileSystemFormatter.DeleteDirectory(full_path);
                                     result = "Directory deletion successful";
                                 }
-                                finally
+                                catch
                                 {
                                     result = "Internal server error";
                                 }
@@ -219,8 +219,6 @@ namespace ThetaFTP.Shared.Controllers
                                 string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
                                 string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_name);
                                 string re_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_new_name);
-
-                                Console.WriteLine($"converted_path: {full_path}");
                                 //bool operation_found = false;
 
                                 if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
