@@ -15,9 +15,9 @@
         {
             <ValidationPanel validationInputTopic=@validationInputTopic closeAccountValidationPanel="CloseAccountValidation" initiateValidationProcedure=ValidationProcedure validationType="ValidationPanel.ValidationType.AccountAuthorisation" />
         }
-        else if (ShowLogInSessionValidationPanel)
+        else if (ShowLogInSessionValidationPanel == true)
         {
-            <ValidationPanel validationInputTopic=@validationInputTopic closeAccountValidationPanel="CloseAccountValidation" initiateValidationProcedure=ValidationProcedure validationType="ValidationPanel.ValidationType.LogInSessionAuthorisation" />
+            <ValidationPanel validationInputTopic=@validationInputTopic closeAccountValidationPanel="CloseLogInSessionValidation" initiateValidationProcedure=ValidationProcedure validationType="ValidationPanel.ValidationType.LogInSessionAuthorisation" />
         }
 
         @if(ShowNotification == true){
@@ -220,6 +220,8 @@
                 NotificationType = Notifications.NotificationType.Information;
                 NotificationMessage = "Authentication successful.";
                 NavigateToMainPageOnClose = true;
+
+                await module.DisposeAsync();
 
             }
             else if (serverPayload.response_message?.Contains("Authentication successful") == true)

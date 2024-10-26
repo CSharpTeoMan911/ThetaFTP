@@ -17,7 +17,14 @@ namespace ThetaFTP.Shared.Controllers
 
             string payload = String.Empty;
 
-            string? log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+            string? log_in_key_validation_result = "Internal server error";
+
+            if(Shared.config != null)
+                if (!Shared.config.use_firebase)
+                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+                else
+                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
+
 
             if (log_in_key_validation_result != "Internal server error")
             {
@@ -42,15 +49,7 @@ namespace ThetaFTP.Shared.Controllers
                                     size = file_size
                                 };
 
-                                if (Shared.config != null)
-                                    if (!Shared.config.use_firebase)
-                                    {
-                                        result = await Shared.database_ftp.Delete(ftpModel);
-                                    }
-                                    else
-                                    {
-
-                                    }
+                                result = await Shared.database_ftp.Delete(ftpModel);
 
                                 return Ok(result);
                             }
@@ -87,7 +86,13 @@ namespace ThetaFTP.Shared.Controllers
 
             Stream? stream = null;
 
-            string? log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+            string? log_in_key_validation_result = "Internal server error";
+
+            if (Shared.config != null)
+                if (!Shared.config.use_firebase)
+                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+                else
+                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
 
             if (log_in_key_validation_result != "Internal server error")
             {
@@ -108,15 +113,7 @@ namespace ThetaFTP.Shared.Controllers
                                     operation_cancellation = HttpContext.RequestAborted
                                 };
 
-                                if (Shared.config != null)
-                                    if (!Shared.config.use_firebase)
-                                    {
-                                        result = await Shared.database_ftp.Get(ftpModel);
-                                    }
-                                    else
-                                    {
-
-                                    }
+                                result = await Shared.database_ftp.Get(ftpModel);
 
                                 if (result != null)
                                 {
@@ -150,7 +147,13 @@ namespace ThetaFTP.Shared.Controllers
 
             string payload = String.Empty;
 
-            string? log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+            string? log_in_key_validation_result = "Internal server error";
+
+            if (Shared.config != null)
+                if (!Shared.config.use_firebase)
+                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+                else
+                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
 
             if (log_in_key_validation_result != "Internal server error")
             {
@@ -164,24 +167,9 @@ namespace ThetaFTP.Shared.Controllers
                             {
                                 query.email = log_in_key_validation_result;
 
-                                if (Shared.config != null)
-                                    if (!Shared.config.use_firebase)
-                                    {
-                                        result = await Shared.database_ftp.GetInfo(query);
-                                    }
-                                    else
-                                    {
+                                result = await Shared.database_ftp.GetInfo(query);
 
-                                    }
-
-                                if (result != "Invalid path" && result != "Internal server error")
-                                {
-                                    return Ok(result);
-                                }
-                                else
-                                {
-                                    return Ok(result);
-                                }
+                                return Ok(result);
                             }
                             else
                             {
@@ -217,7 +205,13 @@ namespace ThetaFTP.Shared.Controllers
 
             string payload = String.Empty;
 
-            string? log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+            string? log_in_key_validation_result = "Internal server error";
+
+            if (Shared.config != null)
+                if (!Shared.config.use_firebase)
+                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+                else
+                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
 
             if (body != null)
             {
@@ -245,16 +239,8 @@ namespace ThetaFTP.Shared.Controllers
                                         size = file_size
                                     };
 
-                                    if (Shared.config != null)
-                                        if (!Shared.config.use_firebase)
-                                        {
-                                            result = await Shared.database_ftp.Insert(ftpModel);
-                                        }
-                                        else
-                                        {
+                                    result = await Shared.database_ftp.Insert(ftpModel);
 
-                                        }
-                                    
                                     return Ok(result);
                                 }
                                 else
@@ -301,7 +287,13 @@ namespace ThetaFTP.Shared.Controllers
 
             string payload = String.Empty;
 
-            string? log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+            string? log_in_key_validation_result = "Internal server error";
+
+            if (Shared.config != null)
+                if (!Shared.config.use_firebase)
+                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+                else
+                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
 
             if (query != null)
             {
@@ -322,16 +314,8 @@ namespace ThetaFTP.Shared.Controllers
                                     operation_cancellation = HttpContext.RequestAborted,
                                 };
 
-                                if (Shared.config != null)
-                                    if (!Shared.config.use_firebase)
-                                    {
-                                        result = await Shared.database_ftp.Rename(ftpModel);
-                                    }
-                                    else
-                                    {
+                                result = await Shared.database_ftp.Rename(ftpModel);
 
-                                    }
-                                
                                 return Ok(result);
                             }
                             else
