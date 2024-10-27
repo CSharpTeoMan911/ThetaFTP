@@ -1,11 +1,76 @@
-﻿<FocusPanel>
-    <Component>
-        <div>
+﻿@using ThetaFTP.Shared.Formatters;
+@using ThetaFTP.Shared.Models;
+@using ThetaFTP.Shared.Classes;
+@using System.Text;
+@inject IJSRuntime JS;
+@inject NavigationManager NavigationManager;
 
+<FocusPanel style="z-index:5;">
+    <Component>
+        <div class="jumbotron" style="padding:5px; display:flex; flex-direction:column; width:fit-content; align-self:center; margin-top: 300px;">
+            <div style="display:flex; flex-direction:row-reverse">
+                <button class="close_button">
+                    <img src="./images/close.webp" style="width:15px;" @onclick="@Close"/>
+                </button>
+            </div>
+
+            <div>
+                <div style="display:flex; flex-direction:column; overflow-y:auto; width:calc(220px + 20vw); height:300px;">
+                    @for (int i = 0; i < directories?.Count; i++)
+                    {
+                        <div style="display: flex; flex-direction: row;">
+                            <img src="./images/folder.webp" style="width:40px; height:40px"/>
+                            <input class="display" value=" @directories.ElementAt(i).name" />
+                        </div>
+                    }
+                </div>
+            </div>
         </div>
     </Component>
 </FocusPanel>
 
 @code {
+    private List<DirectoryItem>? directories { get; set; }
+
+    [Parameter] public string? Path { get; set; }
+
+    public delegate void ClosePanel();
+    [Parameter] public ClosePanel? closePanel { get; set; }
+
+    private void Close() => closePanel?.Invoke();
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+
+        if(firstRender == true)
+            GetDirectories();
+    }
+
+    private async void GetDirectories()
+    {
+        IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+        string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+
+        Metadata metadata = new Metadata()
+        {
+            path = Path,
+            key = log_in_session_key
+        };
+
+        string? url = new StringBuilder().Append("/directories/get-directories?").Append(await QueryParsing.QueryParser(metadata)).ToString();
+
+        HttpClient client = HttpClientGen.Generate();
+        client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
+        HttpResponseMessage httpResponse = await client.GetAsync(url);
+        string result = await httpResponse.Content.ReadAsStringAsync();
+
+        Console.WriteLine(result);
+
+        directories = await JsonFormatter.JsonDeserialiser<List<DirectoryItem>?>(result);
+        StateHasChanged();
+    }
+
 
 }

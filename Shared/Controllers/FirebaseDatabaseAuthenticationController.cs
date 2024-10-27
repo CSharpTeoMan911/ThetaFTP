@@ -34,7 +34,7 @@ namespace ThetaFTP.Shared.Controllers
 
                         if (client != null)
                         {
-                            string base64_email = Base64Formatter.FromUtf8ToBase64(value.email);
+                            string base64_email = await Base64Formatter.FromUtf8ToBase64(value.email);
 
                             string extracted_credentials = await client.Child("Credentials").OrderBy("email").EqualTo(base64_email).OnceAsJsonAsync();
                             Dictionary<string, FirebaseCredentialModel>? deserialised_credentials = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseCredentialModel>?>(extracted_credentials);
@@ -45,7 +45,7 @@ namespace ThetaFTP.Shared.Controllers
 
                                 if (hashed_password.Item2 != typeof(Exception))
                                 {
-                                    string base64_hashed_password = Base64Formatter.FromUtf8ToBase64(hashed_password.Item1);
+                                    string base64_hashed_password = await Base64Formatter.FromUtf8ToBase64(hashed_password.Item1);
 
                                     if (deserialised_credentials.Values.ElementAt(0).password == base64_hashed_password)
                                     {
@@ -76,7 +76,7 @@ namespace ThetaFTP.Shared.Controllers
 
                                 if (hashed_log_in_session_key.Item2 != typeof(Exception))
                                 {
-                                    string base64_hashed_log_in_session_key = Base64Formatter.FromUtf8ToBase64(hashed_log_in_session_key.Item1);
+                                    string base64_hashed_log_in_session_key = await Base64Formatter.FromUtf8ToBase64(hashed_log_in_session_key.Item1);
 
                                     FirebaseLogInSessionModel firebaseLogInSessionModel = new FirebaseLogInSessionModel()
                                     {
@@ -90,7 +90,7 @@ namespace ThetaFTP.Shared.Controllers
                                     {
                                         string log_in_code = await CodeGenerator.GenerateKey(10);
                                         Tuple<string, Type> hashed_log_in_code = await Sha512Hasher.Hash(log_in_code);
-                                        string base64_hashed_log_in_code = Base64Formatter.FromUtf8ToBase64(hashed_log_in_code.Item1);
+                                        string base64_hashed_log_in_code = await Base64Formatter.FromUtf8ToBase64(hashed_log_in_code.Item1);
 
                                         if (hashed_log_in_code.Item2 != typeof(Exception))
                                         {
@@ -185,14 +185,14 @@ namespace ThetaFTP.Shared.Controllers
 
                         if (client != null)
                         {
-                            string base64_email = Base64Formatter.FromUtf8ToBase64(value.email);
+                            string base64_email = await Base64Formatter.FromUtf8ToBase64(value.email);
 
                             string? exctracted_credentials = await client.Child("Credentials").OrderBy("email").EqualTo(base64_email).OnceAsJsonAsync();
                             Dictionary<string, FirebaseCredentialModel>? deserialised_credentials = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseCredentialModel>>(exctracted_credentials);
                             if (deserialised_credentials?.Keys.Count == 0)
                             {
                                 Tuple<string,Type> hashed_password = await Sha512Hasher.Hash(value.password);
-                                string base64_hashed_password = Base64Formatter.FromUtf8ToBase64(hashed_password.Item1);
+                                string base64_hashed_password = await Base64Formatter.FromUtf8ToBase64(hashed_password.Item1);
 
                                 if (hashed_password.Item2 != typeof(Exception))
                                 {
@@ -213,7 +213,7 @@ namespace ThetaFTP.Shared.Controllers
 
                                         if (key_hash_result.Item2 != typeof(Exception))
                                         {
-                                            string base64_key_hash = Base64Formatter.FromUtf8ToBase64(key_hash_result.Item1);
+                                            string base64_key_hash = await Base64Formatter.FromUtf8ToBase64(key_hash_result.Item1);
 
                                             bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Account approval", $"Account approval key: {key}");
 

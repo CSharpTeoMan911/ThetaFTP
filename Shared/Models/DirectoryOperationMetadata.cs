@@ -6,5 +6,6 @@
         public string? directory_name { get; set; }
         public string? new_directory_name { get; set; }
         public string? path { get; set; }
+        public string? new_path { get; set; }
     }
 }
