@@ -276,7 +276,80 @@ namespace ThetaFTP.Shared.Controllers
 
         public Task<string?> Update(FtpDirectoryModel? value)
         {
-            throw new NotImplementedException();
+            string? result = "Internal server error";
+
+            if (value?.directory_name != null)
+            {
+                if (value?.path != null)
+                {
+                    if (value?.new_path != null)
+                    {
+                        if (FileSystemFormatter.IsValidFileName(value.directory_name) == true)
+                        {
+                            if (FileSystemFormatter.IsValidPath(value.path) == true)
+                            {
+                                if (FileSystemFormatter.IsValidPath(value.new_path) == true)
+                                {
+                                    if (FileSystemFormatter.CreateUserRootDir(value?.email))
+                                    {
+                                        string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
+                                        string converted_new_path = FileSystemFormatter.PathConverter(value?.new_path, value?.email);
+
+                                        if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
+                                        {
+                                            if (FileSystemFormatter.IsValidDiskPath(converted_new_path) == true)
+                                            {
+                                                string old_full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_name);
+                                                string new_full_path = FileSystemFormatter.FullPathBuilder(converted_new_path, value?.directory_name);
+
+                                                FileSystemFormatter.MoveFile(old_full_path, new_full_path);
+                                            }
+                                            else
+                                            {
+                                                result = "Invalid path";
+                                            }
+                                        }
+                                        else
+                                        {
+                                            result = "Invalid path";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        result = "Internal server error";
+                                    }
+                                }
+                                else
+                                {
+
+                                }
+                            }
+                            else
+                            {
+                                result = "Invalid path";
+                            }
+                        }
+                        else
+                        {
+                            result = "Invalid file name. Use only numbers, letters, '-', '/', '_', ' ', and '.'";
+                        }
+                    }
+                    else
+                    {
+                        result = "Invalid path";
+                    }
+                }
+                else
+                {
+                    result = "Invalid path";
+                }
+            }
+            else
+            {
+                result = "Invalid file name";
+            }
+
+            return Task.FromResult<string?>(result);
         }
     }
 }

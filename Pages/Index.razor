@@ -26,11 +26,11 @@
         }
         @if (ShowFileManipulationPanel == true)
         {
-            <FileManipulationPanel item=@currentDirectoryItem closePanel="CloseFileManipulationPanel" fileManipulation="ProcessFileManipulation" operation=@fileManipulationOperation Path="@Path"/>
+            <FileManipulationPanel item=@currentDirectoryItem closePanel="CloseFileManipulationPanel" fileManipulation="ProcessFileManipulation" Path="@Path"/>
         }
         @if (ShowFileRelocationPanel == true)
         {
-            <FileRelocationPanel/>
+            <FileRelocationPanel closePanel="CloseFileRelocationPanel" Path="@Path"/>
         }
         <div id="index_panel_inner" class="files_panel">
             <div class="files_panel_control ">
@@ -132,7 +132,6 @@
 
     private bool ShowDirectoryItemDetails { get; set; }
     private DirectoryItem? currentDirectoryItem { get; set; }
-    private FileManipulationPanel.Operation fileManipulationOperation { get; set; }
 
     private bool ShowFileRelocationPanel { get; set; }
 
@@ -550,6 +549,11 @@
         StateHasChanged();
     }
 
+    private void CloseFileRelocationPanel(){
+        ShowFileRelocationPanel = false;
+        StateHasChanged();
+    }
+
     private void ProcessFileManipulation(string? response)
     {
         if (response != null)
@@ -651,7 +655,6 @@
     {
         ShowFileManipulationPanel = true;
         currentDirectoryItem = item;
-        fileManipulationOperation = FileManipulationPanel.Operation.Rename;
         StateHasChanged();
     }
 

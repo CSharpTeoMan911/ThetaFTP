@@ -4,19 +4,24 @@
     using Firebase.Auth;
     using Firebase.Auth.Providers;
     using MySqlX.XDevAPI;
+    using Newtonsoft.Json;
 
     public class FirebaseDatabase
     {
+        private FirebaseClient? firebaseClient;
+
         public Task<FirebaseClient?> Firebase()
         {
             if (Shared.config != null)
             {
-                FirebaseClient? client = new FirebaseClient(Shared.config.firebase__database_url, new FirebaseOptions()
-                {
-                    AuthTokenAsyncFactory = () => Authenticate()
-                });
+                if (firebaseClient == null)
+                    firebaseClient = new FirebaseClient(Shared.config.firebase__database_url, new FirebaseOptions()
+                    {
+                        AuthTokenAsyncFactory = () => Authenticate(),
+                        
+                    });
 
-                return Task.FromResult((FirebaseClient?)client);
+                return Task.FromResult((FirebaseClient?)firebaseClient);
             }
             else
             {

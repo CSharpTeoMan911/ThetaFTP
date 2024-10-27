@@ -14,7 +14,7 @@
             </div>
             <div class="title_div" style="align-self:center;">
                 <h5 style="font-size:calc(16px + 0.4vw);">
-                    @operation
+                    Rename
                 </h5>
             </div>
             <div class="generic_div" style="padding-left:5px; padding-right: 5px;">
@@ -39,12 +39,6 @@
 </FocusPanel>
 
 @code {
-    public enum Operation
-    {
-        Rename,
-        Move
-    }
-
     private string? _new_name { get; set; }
 
     [Parameter] public DirectoryItem? item { get; set; }
@@ -56,8 +50,6 @@
     public delegate void FileManipulation(string? result);
     [Parameter] public FileManipulation? fileManipulation { get; set; }
     public void Manipulation() => fileManipulation?.Invoke(operation_result);
-
-    [Parameter] public Operation operation { get; set; }
 
     [Parameter] public string? Path { get; set; }
 

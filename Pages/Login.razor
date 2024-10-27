@@ -87,6 +87,8 @@
 
         ServerPayloadModel? serverPayload = await JsonFormatter.JsonDeserialiser<ServerPayloadModel>(response);
 
+        Console.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(serverPayload));
+
         if (serverPayload != null)
         {
             if (serverPayload.response_message?.Contains("Account not approved") == true)
