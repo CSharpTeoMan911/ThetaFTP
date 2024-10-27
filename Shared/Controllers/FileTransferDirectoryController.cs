@@ -189,9 +189,67 @@ namespace ThetaFTP.Shared.Controllers
         }
 
         [HttpPut("relocate")]
-        public Task<ActionResult?> Update(DirectoryOperationMetadata? query, string? body)
+        public async Task<ActionResult?> Update(DirectoryOperationMetadata? query, string? body)
         {
-            throw new NotImplementedException();
+            string? result = "Internal server error";
+
+            string payload = String.Empty;
+
+            string? log_in_key_validation_result = "Internal server error";
+
+            if (Shared.config != null)
+                if (!Shared.config.use_firebase)
+                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+                else
+                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
+
+            if (query != null)
+            {
+                if (log_in_key_validation_result != "Internal server error")
+                {
+                    if (log_in_key_validation_result != "Invalid log in session key")
+                    {
+                        if (log_in_key_validation_result != "Log in session key expired")
+                        {
+                            if (log_in_key_validation_result != "Log in session not approved")
+                            {
+                                FtpDirectoryModel directoryModel = new FtpDirectoryModel()
+                                {
+                                    email = log_in_key_validation_result,
+                                    directory_name = query?.directory_name,
+                                    directory_new_name = query?.new_directory_name,
+                                    path = query?.path,
+                                    new_path = query?.new_path
+                                };
+
+                                result = await Shared.database_directory_ftp.Update(directoryModel);
+
+                                return Ok(result);
+                            }
+                            else
+                            {
+                                return Ok(log_in_key_validation_result);
+                            }
+                        }
+                        else
+                        {
+                            return Ok(log_in_key_validation_result);
+                        }
+                    }
+                    else
+                    {
+                        return Ok(log_in_key_validation_result);
+                    }
+                }
+                else
+                {
+                    return Ok(log_in_key_validation_result);
+                }
+            }
+            else
+            {
+                return Ok(result);
+            }
         }
 
         [HttpPut("rename")]

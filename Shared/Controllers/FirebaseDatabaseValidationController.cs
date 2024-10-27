@@ -27,8 +27,8 @@ namespace ThetaFTP.Shared.Controllers
 
                     if (hashed_key.Item2 != typeof(Exception))
                     {
-                        string base64_email = Base64Formatter.FromUtf8ToBase64(value.email);
-                        string base64_hashed_key = Base64Formatter.FromUtf8ToBase64(hashed_key.Item1);
+                        string base64_email = await Base64Formatter.FromUtf8ToBase64(value.email);
+                        string base64_hashed_key = await Base64Formatter.FromUtf8ToBase64(hashed_key.Item1);
 
                         FirebaseClient? client = await Shared.firebase.Firebase();
 
@@ -40,7 +40,7 @@ namespace ThetaFTP.Shared.Controllers
 
                             if (firebaseApprovalModel?.Keys.Count() > 0)
                             {
-                                if (Base64Formatter.FromBase64ToUtf8(firebaseApprovalModel.Values.ElementAt(0).email) == value?.email)
+                                if (await Base64Formatter.FromBase64ToUtf8(firebaseApprovalModel.Values.ElementAt(0).email) == value?.email)
                                 {
                                     await client.Child("Accounts_Waiting_For_Approval").Child(firebaseApprovalModel?.Keys.ElementAt(0)).DeleteAsync();
 
@@ -49,7 +49,7 @@ namespace ThetaFTP.Shared.Controllers
 
                                     if (hashed_log_in_session_key.Item2 != typeof(Exception))
                                     {
-                                        string base64_hashed_log_in_session_key = Base64Formatter.FromUtf8ToBase64(hashed_log_in_session_key.Item1);
+                                        string base64_hashed_log_in_session_key = await Base64Formatter.FromUtf8ToBase64(hashed_log_in_session_key.Item1);
 
                                         FirebaseLogInSessionModel firebaseLogInSessionModel = new FirebaseLogInSessionModel()
                                         {
@@ -116,7 +116,7 @@ namespace ThetaFTP.Shared.Controllers
 
                     if (hashed_key.Item2 != typeof(Exception))
                     {
-                        string base64_hashed_key = Base64Formatter.FromUtf8ToBase64(hashed_key.Item1);
+                        string base64_hashed_key = await Base64Formatter.FromUtf8ToBase64(hashed_key.Item1);
 
                         FirebaseClient? client = await Shared.firebase.Firebase();
 
@@ -170,14 +170,15 @@ namespace ThetaFTP.Shared.Controllers
 
                 if (hashed_key.Item2 != typeof(Exception))
                 {
-                    string base64_hashed_key = Base64Formatter.FromUtf8ToBase64(hashed_key.Item1);
+                    string base64_hashed_key = await Base64Formatter.FromUtf8ToBase64(hashed_key.Item1);
 
+                    
                     FirebaseClient? client = await Shared.firebase.Firebase();
                     if (client != null)
                     {
                         string extracted_log_in_session = await client.Child("Log_In_Sessions").OrderBy("key").EqualTo(base64_hashed_key).OnceAsJsonAsync();
                         Dictionary<string, FirebaseLogInSessionModel>? deserialised_log_in_session = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseLogInSessionModel>?>(extracted_log_in_session);
-                        string utf8_email = Base64Formatter.FromBase64ToUtf8(deserialised_log_in_session?.Values.ElementAt(0).email);
+                        string utf8_email = await Base64Formatter.FromBase64ToUtf8(deserialised_log_in_session?.Values.ElementAt(0).email);
 
                         if (deserialised_log_in_session?.Keys.Count() > 0)
                         {
@@ -241,7 +242,7 @@ namespace ThetaFTP.Shared.Controllers
 
                 if (hashed_key.Item2 != typeof(Exception))
                 {
-                    string base64_hashed_key = Base64Formatter.FromUtf8ToBase64(hashed_key.Item1);
+                    string base64_hashed_key = await Base64Formatter.FromUtf8ToBase64(hashed_key.Item1);
 
                     FirebaseClient? client = await Shared.firebase.Firebase();
 
