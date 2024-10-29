@@ -189,7 +189,7 @@ namespace ThetaFTP.Shared.Controllers
         }
 
         [HttpPut("relocate")]
-        public async Task<ActionResult?> Update(DirectoryOperationMetadata? query, string? body)
+        public async Task<ActionResult?> Update([FromQuery]DirectoryOperationMetadata? query, [FromBody]string? body)
         {
             string? result = "Internal server error";
 
@@ -217,9 +217,8 @@ namespace ThetaFTP.Shared.Controllers
                                 {
                                     email = log_in_key_validation_result,
                                     directory_name = query?.directory_name,
-                                    directory_new_name = query?.new_directory_name,
                                     path = query?.path,
-                                    new_path = query?.new_path
+                                    new_path = query?.new_path,
                                 };
 
                                 result = await Shared.database_directory_ftp.Update(directoryModel);
