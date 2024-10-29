@@ -10,18 +10,52 @@
         <div class="jumbotron" style="padding:5px; display:flex; flex-direction:column; width:fit-content; align-self:center; margin-top: 300px;">
             <div style="display:flex; flex-direction:row-reverse">
                 <button class="close_button">
-                    <img src="./images/close.webp" style="width:15px;" @onclick="@Close"/>
+                    <img src="./images/close.webp" style="width:20px;" @onclick="@Close"/>
                 </button>
             </div>
 
-            <div>
+            <div style="display:flex; flex-direction:column">
+                <div style="display: flex; flex-direction:row">
+                    @if(ShowBackButton == true){
+                        <div style="display: flex; align-self:center; align-content:center">
+                            <button style="display: flex; align-self:center; align-content:center; border-color: transparent" @onclick=Back>
+                                <img src="./images/left-arrow.webp" style="height: 15px; align-self:center" />
+                            </button>
+                            <p style="align-self:center; padding: 0px 0px 0px 0px; margin: 0px 0px 0px 20px">
+                                @last_dir
+                            </p>
+                        </div>
+                    }
+                </div>
                 <div style="display:flex; flex-direction:column; overflow-y:auto; width:calc(220px + 20vw); height:300px;">
                     @for (int i = 0; i < directories?.Count; i++)
                     {
-                        <div style="display: flex; flex-direction: row;">
-                            <img src="./images/folder.webp" style="width:40px; height:40px"/>
-                            <input class="display" value=" @directories.ElementAt(i).name" />
-                        </div>
+                        bool show = false;
+                        DirectoryItem? item = directories?.ElementAt(i);
+
+                        if (selected_item?.name != item?.name)
+                            show = true;
+                        else
+                            if(Path != SrcPath)
+                                show = true;
+
+                        if (show == true)
+                        {
+                            <div style="display: flex; flex-direction: row; padding: 20px;">
+                                <div style="display: flex; flex-direction: row; width: 50%">
+                                    <img src="./images/folder.webp" style="width:40px; height:40px" />
+                                    <input class="display" value=" @item?.name" readonly="readonly" />
+                                </div>
+                                <div style="display:flex; flex-direction:row-reverse; width: 50%">
+                                    <button @onclick=@(()=>Open(item)) class="file_relocation" style="margin-left:30px; background-color: black; color: white; border-color: black;">
+                                        Open
+                                    </button>
+                                    <button @onclick=@(()=>Select(item)) class="file_relocation" style="">
+                                        Select
+                                    </button>
+                                </div>
+                            </div>
+                        }
                     }
                 </div>
             </div>
@@ -30,12 +64,18 @@
 </FocusPanel>
 
 @code {
+    private bool ShowBackButton{ get; set; }
+    private string? last_dir { get; set; }
+
     private List<DirectoryItem>? directories { get; set; }
 
     [Parameter] public string? Path { get; set; }
+    private string? SrcPath { get; set; }
 
     public delegate void ClosePanel();
     [Parameter] public ClosePanel? closePanel { get; set; }
+
+    [Parameter] public DirectoryItem? selected_item {get;set;}
 
     private void Close() => closePanel?.Invoke();
 
@@ -43,12 +83,16 @@
     {
         base.OnAfterRender(firstRender);
 
-        if(firstRender == true)
+        if (firstRender == true)
+        {
+            SrcPath = Path;
             GetDirectories();
+        }
     }
 
     private async void GetDirectories()
     {
+        await GetLastDir();
         IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
         string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
 
@@ -66,11 +110,109 @@
         HttpResponseMessage httpResponse = await client.GetAsync(url);
         string result = await httpResponse.Content.ReadAsStringAsync();
 
-        Console.WriteLine(result);
-
         directories = await JsonFormatter.JsonDeserialiser<List<DirectoryItem>?>(result);
         StateHasChanged();
     }
 
+    private Task GetLastDir()
+    {
+        if (Path != null)
+        {
+            if (Path != SrcPath)
+            {
+                StringBuilder builder = new StringBuilder("/");
+                int index = Path.LastIndexOf('/');
+                if (index != 0)
+                {
+                    int start = 0;
+                    for (start = index - 1; start > 0; start--)
+                        if (Path[start] == '/')
+                            break;
+                    for (int i = start + 1; i < index; i++)
+                        builder.Append(Path[i]);
+                }
 
+                ShowBackButton = true;
+                last_dir = builder.ToString();
+            }
+            else
+            {
+                ShowBackButton = false;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private void Back()
+    {
+        if (Path != null && last_dir != null)
+        {
+            directories?.Clear();
+            StringBuilder builder = new StringBuilder();
+            int end = Path.LastIndexOf("/");
+
+            if (end > 0)
+            {
+                for (int start = 0; start < end; start++)
+                    builder.Append(Path[start]);
+                Path = builder.ToString();
+            }
+            else
+                Path = "/";
+        }
+
+        GetDirectories();
+    }
+
+    private void Open(DirectoryItem? item)
+    {
+        directories?.Clear();
+
+        if (Path?[Path.Length - 1] != '/')
+            Path = new StringBuilder(Path).Append("/").Append(item?.name).ToString();
+        else
+            Path = new StringBuilder(Path).Append(item?.name).ToString();
+
+        GetDirectories();
+    }
+
+    private async void Select(DirectoryItem? item)
+    {
+        IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+        string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+        await module.DisposeAsync();
+
+        string? selected_path = new StringBuilder(Path).Append(item?.name).ToString();
+        StringBuilder? request_url = new StringBuilder();
+
+        if (selected_item?.isDirectory == false)
+        {
+            FileOperationMetadata fileOperationMetadata = new FileOperationMetadata()
+            {
+                key = log_in_session_key,
+                file_name = selected_item?.name,
+                path = Path,
+                new_path = selected_path
+            };
+            request_url.Append("/files/relocate?").Append(await QueryParsing.QueryParser(fileOperationMetadata));
+        }
+        else
+        {
+            DirectoryOperationMetadata directoryOperationMetadata = new DirectoryOperationMetadata()
+            {
+                key = log_in_session_key,
+                directory_name = selected_item?.name,
+                path = Path,
+                new_path = selected_path
+            };
+            request_url.Append("/directories/relocate?").Append(await QueryParsing.QueryParser(directoryOperationMetadata));
+        }
+
+        HttpClient client = HttpClientGen.Generate();
+        client.BaseAddress = new Uri(NavigationManager.BaseUri);
+        HttpResponseMessage responseMessage = await client.PutAsync(request_url.ToString(), null);
+
+        string response = await responseMessage.Content.ReadAsStringAsync();
+    }
 }

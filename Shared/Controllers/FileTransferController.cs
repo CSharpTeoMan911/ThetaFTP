@@ -304,7 +304,7 @@ namespace ThetaFTP.Shared.Controllers
                                     email = log_in_key_validation_result,
                                     file_name = query?.file_name,
                                     path = query?.path,
-                                    operation_cancellation = HttpContext.RequestAborted,
+                                    new_path = query?.new_path,
                                 };
 
                                 result = await Shared.database_ftp.Update(ftpModel);
