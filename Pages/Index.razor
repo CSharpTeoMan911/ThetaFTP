@@ -30,7 +30,7 @@
         }
         @if (ShowFileRelocationPanel == true)
         {
-            <FileRelocationPanel closePanel="CloseFileRelocationPanel" Path="@Path"/>
+            <FileRelocationPanel selected_item="@currentDirectoryItem" closePanel="CloseFileRelocationPanel" Path="@Path"/>
         }
         <div id="index_panel_inner" class="files_panel">
             <div class="files_panel_control ">
@@ -661,6 +661,7 @@
     private void RelocateFile(DirectoryItem? item)
     {
         ShowFileRelocationPanel = true;
+        currentDirectoryItem = item;
         StateHasChanged();
     }
 }

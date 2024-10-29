@@ -8,18 +8,15 @@
 
     public class FirebaseDatabase
     {
-        private FirebaseClient? firebaseClient;
-
         public Task<FirebaseClient?> Firebase()
         {
             if (Shared.config != null)
             {
-                if (firebaseClient == null)
-                    firebaseClient = new FirebaseClient(Shared.config.firebase__database_url, new FirebaseOptions()
-                    {
-                        AuthTokenAsyncFactory = () => Authenticate(),
-                        
-                    });
+                FirebaseClient? firebaseClient = new FirebaseClient(Shared.config.firebase__database_url, new FirebaseOptions()
+                {
+                    AuthTokenAsyncFactory = () => Authenticate(),
+
+                });
 
                 return Task.FromResult((FirebaseClient?)firebaseClient);
             }

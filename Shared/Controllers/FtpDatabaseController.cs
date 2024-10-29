@@ -314,38 +314,32 @@ namespace ThetaFTP.Shared.Controllers
             string? result = "Internal server error";
 
 
-            if (value?.fileStream != null)
+            if (value?.file_name != null)
             {
-                if (value?.file_name != null)
+                if (value?.path != null)
                 {
-                    if (value?.path != null)
+                    if (value?.new_path != null)
                     {
-                        if (value?.new_path != null)
+                        if (FileSystemFormatter.IsValidFileName(value.file_name) == true)
                         {
-                            if (FileSystemFormatter.IsValidFileName(value.file_name) == true)
+                            if (FileSystemFormatter.IsValidPath(value.path) == true)
                             {
-                                if (FileSystemFormatter.IsValidPath(value.path) == true)
+                                if (FileSystemFormatter.IsValidPath(value.new_path) == true)
                                 {
-                                    if (FileSystemFormatter.IsValidPath(value.new_path) == true)
+                                    if (FileSystemFormatter.CreateUserRootDir(value?.email))
                                     {
-                                        if (FileSystemFormatter.CreateUserRootDir(value?.email))
+                                        string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
+                                        string converted_new_path = FileSystemFormatter.PathConverter(value?.new_path, value?.email);
+
+                                        if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
                                         {
-                                            string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
-                                            string converted_new_path = FileSystemFormatter.PathConverter(value?.new_path, value?.email);
-
-                                            if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
+                                            if (FileSystemFormatter.IsValidDiskPath(converted_new_path) == true)
                                             {
-                                                if (FileSystemFormatter.IsValidDiskPath(converted_new_path) == true)
-                                                {
-                                                    string old_full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
-                                                    string new_full_path = FileSystemFormatter.FullPathBuilder(converted_new_path, value?.file_name);
+                                                string old_full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
+                                                string new_full_path = FileSystemFormatter.FullPathBuilder(converted_new_path, value?.file_name);
 
-                                                    FileSystemFormatter.MoveFile(old_full_path, new_full_path);
-                                                }
-                                                else
-                                                {
-                                                    result = "Invalid path";
-                                                }
+                                                FileSystemFormatter.MoveFile(old_full_path, new_full_path);
+                                                result = "File relocation successful";
                                             }
                                             else
                                             {
@@ -354,12 +348,12 @@ namespace ThetaFTP.Shared.Controllers
                                         }
                                         else
                                         {
-                                            result = "Internal server error";
+                                            result = "Invalid path";
                                         }
                                     }
                                     else
                                     {
-
+                                        result = "Internal server error";
                                     }
                                 }
                                 else
@@ -369,12 +363,12 @@ namespace ThetaFTP.Shared.Controllers
                             }
                             else
                             {
-                                result = "Invalid file name. Use only numbers, letters, '-', '/', '_', ' ', and '.'";
+                                result = "Invalid path";
                             }
                         }
                         else
                         {
-                            result = "Invalid path";
+                            result = "Invalid file name. Use only numbers, letters, '-', '/', '_', ' ', and '.'";
                         }
                     }
                     else
@@ -384,12 +378,12 @@ namespace ThetaFTP.Shared.Controllers
                 }
                 else
                 {
-                    result = "Invalid file name";
+                    result = "Invalid path";
                 }
             }
             else
             {
-                result = "Cannot read file content";
+                result = "Invalid file name";
             }
 
             return Task.FromResult<string?>(result);
