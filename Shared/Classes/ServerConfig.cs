@@ -29,10 +29,14 @@ namespace ThetaFTP.Shared.Classes
             catch { }
 
 
-            ServerConfigModel? model = await JsonFormatter.JsonDeserialiser<ServerConfigModel>(serialised_json);
+            ServerConfigModel? model = await JsonFormatter.JsonDeserialiser<ServerConfigModel?>(serialised_json);
 
             if (model == null)
-                model = await CreateServerConfig(new ServerConfigModel());
+            {
+                await CreateServerConfig(new ServerConfigModel());
+                Console.WriteLine(new StringBuilder("\n\n\n\tGenerated app config file at: ").Append(Environment.CurrentDirectory).Append(FileSystemFormatter.PathSeparator()).Append(json_file).Append("\n\n\n"));
+            }
+
             return model;
         }
 
