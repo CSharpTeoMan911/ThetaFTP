@@ -26,7 +26,7 @@
                 }
                 else
                 {
-                    <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Download))>Open</a></li>
+                    <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Open))>Open</a></li>
                 }
                 <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Rename))>Rename</a></li>
                 <li><a class="dropdown-item" href="" @onclick=@(()=>FileOperationMethod(FileOperation.Move))>Move</a></li>
@@ -52,7 +52,8 @@
         Download,
         Rename,
         Move,
-        Delete
+        Delete,
+        Open
     }
 
     [Parameter] public DirectoryItem? directoryItem { get; set; }
