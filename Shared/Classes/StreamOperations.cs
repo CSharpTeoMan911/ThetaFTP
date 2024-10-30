@@ -12,7 +12,7 @@ namespace ThetaFTP.Shared.Classes
 
             IMemoryOwner<byte> contingent_memory_buffer = MemoryPool<byte>.Shared.Rent(buffer_size);
 
-            DateTime start = DateTime.Now;
+            DateTime start = DateTime.UtcNow;
 
             try
             {
@@ -22,9 +22,9 @@ namespace ThetaFTP.Shared.Classes
 
                     if (cancellation.IsCancellationRequested == false)
                     {
-                        if ((DateTime.Now - start) >= TimeSpan.FromMicroseconds(timeout))
+                        if ((DateTime.UtcNow - start) >= TimeSpan.FromMicroseconds(timeout))
                         {
-                            start = DateTime.Now;
+                            start = DateTime.UtcNow;
 
                             int bytes_read = await input_stream.ReadAsync(contingent_memory_buffer.Memory.Slice(0, buffer_size));
                             if (bytes_read > 0)

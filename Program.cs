@@ -18,6 +18,8 @@ namespace ThetaFTP
 
             if (Shared.Shared.config != null)
                 ThreadPool.SetMinThreads(Shared.Shared.config.min_worker_threads, Shared.Shared.config.min_input_output_threads);
+            else
+                Environment.Exit(0);
 
             System.Timers.Timer server_utility_timer = new System.Timers.Timer();
             server_utility_timer.Elapsed += Server_utility_timer_Elapsed;

@@ -166,6 +166,8 @@
             HttpResponseMessage result = await client.GetAsync(url_builder.ToString());
             string result_string = await result.Content.ReadAsStringAsync();
 
+            Console.WriteLine($"result_string {result_string}");
+
             if (result_string == "Invalid log in session key" || result_string == "Log in session key expired" || result_string == "Log in session not approved" || result_string == "Invalid file path" || result_string == "Internal server error")
             {
                 InvalidLogInSessionKey = true;
@@ -184,6 +186,8 @@
 
                     result = await client.GetAsync(url_builder.ToString());
                     result_string = await result.Content.ReadAsStringAsync();
+
+                    Console.WriteLine($"result_string : {result_string}");
 
                     if (result_string == "Invalid log in session key" || result_string == "Log in session key expired" || result_string == "Log in session not approved" || result_string == "Invalid file path" || result_string == "Internal server error")
                     {
@@ -527,6 +531,9 @@
             case DirectoryItemComponent.FileOperation.Rename:
                 RenameFile(item);
                 break;
+            case DirectoryItemComponent.FileOperation.Open:
+                Open(item?.name);
+                break;
         }
     }
 
@@ -663,5 +670,19 @@
         ShowFileRelocationPanel = true;
         currentDirectoryItem = item;
         StateHasChanged();
+    }
+
+    private void Open(string? item)
+    {
+        if (Path?[Path.Length - 1] != '/')
+        {
+            Path = new StringBuilder(Path).Append('/').Append(item).ToString();
+        }
+        else
+        {
+            Path = new StringBuilder(Path).Append(item).ToString();
+        }
+
+        GetDirectoryInfo(true);
     }
 }

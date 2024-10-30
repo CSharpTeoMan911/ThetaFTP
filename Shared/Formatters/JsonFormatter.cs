@@ -11,25 +11,26 @@ namespace ThetaFTP.Shared.Formatters
             ContractResolver = contractResolver
         };
 
-        public static Task<ReturnType?> JsonDeserialiser<ReturnType>(string json)
+        public static Task<ReturnType?> JsonDeserialiser<ReturnType>(string? json)
         {
-            ReturnType? return_item = default;
+            object? return_item = null;
 
             try
             {
-                using (StringReader sr = new StringReader(json))
-                {
-                    using (JsonReader reader = new JsonTextReader(sr))
+                if (json != null)
+                    using (StringReader sr = new StringReader(json))
                     {
-                        return_item = serializer.Deserialize<ReturnType>(reader);
-                    }
+                        using (JsonReader reader = new JsonTextReader(sr))
+                        {
+                            return_item = serializer.Deserialize<ReturnType>(reader);
+                        }
 
-                    sr?.Dispose();
-                }
+                        sr?.Dispose();
+                    }
             }
             catch { }
 
-            return Task.FromResult((ReturnType?)(object?)return_item);
+            return Task.FromResult((ReturnType?)return_item);
         }
 
 
