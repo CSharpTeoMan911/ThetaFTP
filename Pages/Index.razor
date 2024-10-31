@@ -7,6 +7,7 @@
 @using System.Collections.Concurrent;
 @inject NavigationManager NavigationManager;
 @inject IJSRuntime JS;
+@inject IHttpClientFactory httpFactory;
 @page "/"
 
 
@@ -82,33 +83,41 @@
                 </div>
            </div>
 
-
+           
             <div class="directory_file_items">
                 <div style="width:100%; height:fit-content; display:flex; flex-direction:column;">
+                    @if (ShowBackButton == true)
+                    {
+                        <div style="display: flex; position:sticky; top:0px; flex-direction:row; background-color:white; width: 100%; padding: 10px 5px 25px 5px; z-index: 2">
+                            <div style="display: flex; align-self:center; align-content:center">
+                                <button style="display: flex; align-self:center; align-content:center; border-color: transparent; background-color: transparent; margin-left: 12px" @onclick=Back>
+                                    <img src="./images/left-arrow.webp" style="height: 15px; align-self:center" />
+                                </button>
+                                <p style="align-self:center; padding: 0px 0px 0px 0px; margin: 0px 0px 0px 20px">
+                                    @last_dir
+                                </p>
+                            </div>
+                        </div>
+                    }
                     @for (int i = 0; i < items.Count; i++)
                     {
                         <DirectoryItemComponent directoryItem="@items.ElementAt(i)" operationDelegate=FileOperation/>
                     }
                 </div>
             </div>
-@*             <div class="path_display">
-                <p class="path_label">
-                    Path
-                </p>
-                <input class="path_input" />
-            </div> *@
-
         </div>
     </Component>
 </PanelComponent>
 
 
 @code{
+    private string? last_dir { get; set; }
     private string? Path { get; set; } = "/";
     private string? DirectoryName { get; set; }
     private bool ShowValidationPanel { get; set; }
     private bool ShowNotification { get; set; }
     private bool ShowFileManipulationPanel { get; set; }
+    private bool ShowBackButton{ get; set; }
     private bool InvalidLogInSessionKey { get; set; }
 
     private bool UploadInProgress { get; set; }
@@ -149,6 +158,13 @@
     {
         try
         {
+            Tuple<bool, string?> last_dir_ = await FileSystemFormatter.GetLastDir(Path);
+            ShowBackButton = last_dir_.Item1;
+            last_dir = last_dir_.Item2;
+
+            if(ShowBackButton == true)
+                items.Clear();
+
             IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
             string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
 
@@ -159,14 +175,13 @@
             StringBuilder url_builder = new StringBuilder("/files/get-files?");
             url_builder.Append(await QueryParsing.QueryParser(metadata));
 
-            HttpClient client = HttpClientGen.Generate();
+            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
             client.BaseAddress = new Uri(NavigationManager.BaseUri);
 
 
             HttpResponseMessage result = await client.GetAsync(url_builder.ToString());
             string result_string = await result.Content.ReadAsStringAsync();
 
-            Console.WriteLine($"result_string {result_string}");
 
             if (result_string == "Invalid log in session key" || result_string == "Log in session key expired" || result_string == "Log in session not approved" || result_string == "Invalid file path" || result_string == "Internal server error")
             {
@@ -186,8 +201,6 @@
 
                     result = await client.GetAsync(url_builder.ToString());
                     result_string = await result.Content.ReadAsStringAsync();
-
-                    Console.WriteLine($"result_string : {result_string}");
 
                     if (result_string == "Invalid log in session key" || result_string == "Log in session key expired" || result_string == "Log in session not approved" || result_string == "Invalid file path" || result_string == "Internal server error")
                     {
@@ -269,7 +282,7 @@
                     UploadInProgress = true;
                     double progress = 0;
 
-                    HttpClient client = client = HttpClientGen.Generate();
+                    HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
                     client.BaseAddress = new Uri(NavigationManager.BaseUri);
 
                     pending_upload_progress_data.TryAdd(e.File.Name, new Tuple<string, CancellationTokenSource>("0", source));
@@ -329,7 +342,8 @@
 
                     if (response.Contains("File upload successful") == true)
                     {
-                        UploadInProgress = false;
+                        if (pending_upload_progress_data.Count == 0)
+                            UploadInProgress = false;
                         GetDirectoryInfo(true);
                         goto DoNotRenderNotification;
                     }
@@ -422,7 +436,7 @@
             IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
             string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
 
-            HttpClient client = HttpClientGen.Generate();
+            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
             try
             {
                 client.BaseAddress = new Uri(NavigationManager.BaseUri);
@@ -436,17 +450,18 @@
 
                     if (response.Contains("Directory upload successful") == true)
                     {
-                        notificationType = Notifications.NotificationType.Information;
-                        GetDirectoryInfo(false);
+                        GetDirectoryInfo(true);
                     }
                     else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
                     {
                         notificationType = Notifications.NotificationType.Error;
                         InvalidLogInSessionKey = true;
+                        ShowNotification = true;
                     }
                     else
                     {
                         notificationType = Notifications.NotificationType.Error;
+                        ShowNotification = true;
                     }
                 }
             }
@@ -460,7 +475,6 @@
         catch{}
 
         ShowValidationPanel = false;
-        ShowNotification = true;
         StateHasChanged();
     }
 
@@ -489,7 +503,7 @@
             StringBuilder builder = new StringBuilder("/validation/delete-session?value=");
             builder.Append(System.Web.HttpUtility.UrlEncode(key));
 
-            HttpClient client = HttpClientGen.Generate();
+            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
             client.BaseAddress = new Uri(NavigationManager.BaseUri);
             HttpResponseMessage responseMessage = await client.DeleteAsync(builder.ToString());
 
@@ -647,7 +661,7 @@
                 formatted_url = new StringBuilder("/directories/delete?").Append(formated_query_content).ToString();
             }
 
-            HttpClient client = HttpClientGen.Generate();
+            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
             client.BaseAddress = new Uri(NavigationManager.BaseUri);
             HttpResponseMessage response_message = await client.DeleteAsync(formatted_url);
 
@@ -674,15 +688,15 @@
 
     private void Open(string? item)
     {
-        if (Path?[Path.Length - 1] != '/')
-        {
-            Path = new StringBuilder(Path).Append('/').Append(item).ToString();
-        }
-        else
-        {
-            Path = new StringBuilder(Path).Append(item).ToString();
-        }
+        items.Clear();
+        Path = FileSystemFormatter.NavigateForward(Path, item);
+        GetDirectoryInfo(true);
+    }
 
+    private void Back()
+    {
+        items.Clear();
+        Path = FileSystemFormatter.NavigateBackward(Path);
         GetDirectoryInfo(true);
     }
 }

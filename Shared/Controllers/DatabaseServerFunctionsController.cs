@@ -48,7 +48,7 @@ namespace ThetaFTP.Shared.Controllers
                         MySqlCommand delete_expired_account_command = connection.CreateCommand();
                         try
                         {
-                            delete_expired_account_command.CommandText = "DELETE FROM Credentials WHERE Email = @Email";
+                            delete_expired_account_command.CommandText = "DELETE FROM credentials WHERE Email = @Email";
                             delete_expired_account_command.Parameters.AddWithValue("Email", expired_accounts.ElementAt(i));
                             await delete_expired_account_command.ExecuteNonQueryAsync();
                         }

@@ -234,8 +234,68 @@ namespace ThetaFTP.Shared.Formatters
             return found;
         }
 
+        public static string NavigateBackward(string? Path)
+        {
+            if (Path != null)
+            {
+                StringBuilder builder = new StringBuilder();
+                int end = Path.LastIndexOf("/");
 
+                if (end > 0)
+                {
+                    for (int start = 0; start < end; start++)
+                        builder.Append(Path[start]);
+                    return builder.ToString();
+                }
+                else
+                    return "/";
+            }
+            else
+            {
+                return "/";
+            }
+        }
 
+        public static Task<Tuple<bool, string?>> GetLastDir(string? Path)
+        {
+            bool result = false;
+            string? last_dir = null;
+
+            if (Path != null)
+            {
+                if (Path != "/")
+                {
+                    StringBuilder builder = new StringBuilder("/");
+                    int index = Path.LastIndexOf('/');
+                    if (index != 0)
+                    {
+                        int start = 0;
+                        for (start = index - 1; start > 0; start--)
+                            if (Path[start] == '/')
+                                break;
+                        for (int i = start + 1; i < index; i++)
+                            builder.Append(Path[i]);
+                    }
+
+                    result = true;
+                    last_dir = builder.ToString();
+                }
+                else
+                {
+                    result = false;
+                }
+            }
+
+            return Task.FromResult(new Tuple<bool, string?>(result, last_dir));
+        }
+
+        public static string NavigateForward(string? Path, string? name)
+        {
+            if (Path?[Path.Length - 1] != '/')
+                return new StringBuilder(Path).Append("/").Append(name).ToString();
+            else
+                return new StringBuilder(Path).Append(name).ToString();
+        }
 
         public static void CreateLogsDir() => Directory.CreateDirectory(new StringBuilder(Environment.CurrentDirectory).Append(PathSeparator()).Append("ServerLogs").ToString());
     }
