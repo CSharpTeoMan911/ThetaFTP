@@ -21,7 +21,7 @@ namespace ThetaFTP.Shared.Controllers
                 }
                 else
                 {
-                    //response = await Shared.database_auth.Delete(value);
+                    response = await Shared.firebase_database_auth.Delete(value);
                 }
             return response;
         }
@@ -43,6 +43,7 @@ namespace ThetaFTP.Shared.Controllers
             return response;
         }
 
+        [HttpGet("get-info")]
         public Task<string?> GetInfo(string? value)
         {
             throw new NotImplementedException();
@@ -65,6 +66,7 @@ namespace ThetaFTP.Shared.Controllers
             return response;
         }
 
+        [HttpPut("rename")]
         public Task<string?> Rename(string? value)
         {
             throw new NotImplementedException();

@@ -2,10 +2,9 @@
 {
     public class ServerConfigModel
     {
-        public bool use_firebase { get; set; } = false;
-        public string? firebase__database_url {  get; set; } = "!!! REPLACE WITH FIREBASE DATABASE URL !!!";
-        public string? firebase_email { get; set; } = "!!! REPLACE WITH THE EMAIL ACCOUNT THAT HAS THE REQUIRED ADMIN PRIVILEDGES !!!";
-        public string? firebase_password { get; set; } = "!!! REPLACE WITH THE PASSWORD OF THE EMAIL ACCOUNT !!!";
+        public bool use_firebase { get; set; } = true;
+        public string firebase_admin_token { get; set; } = "!!! REPLACE WITH FIREBASE DATABASE ADMIN TOKEN !!!";
+        public string? firebase_database_url {  get; set; } = "!!! REPLACE WITH FIREBASE DATABASE URL !!!";
         public string? firebase_api_key { get; set; } = "!!! REPLACE WITH THE APP'S API KEY !!!";
         public string? firebase_auth_domain { get; set; } = "!!! REPLACE WITH THE APP'S AUTH DOMAIN !!!";
         public string? mysql_server_address { get; set; } = "!!! REPLACE WITH MYSQL SERVER'S IP ADDRESS !!!";
@@ -20,7 +19,7 @@
         public bool smtp_use_ssl { get; set; } = false;
         public bool two_step_auth { get; set; } = false;
         public bool validate_ssl_certificates { get; set; } = false;
-        public int ReadAndWriteOperationsPerSecond { get; set; } = 1250;
+        public int ReadAndWriteOperationsPerSecond { get; set; } = 1200;
         public int ConnectionTimeoutSeconds { get; set; } = 600;
         public List<string> http_addresses { get; set; } = new List<string>()
         {

@@ -8,17 +8,19 @@
 
     public class FirebaseDatabase
     {
+        private FirebaseClient? firebaseClient { get; set; }
+
         public Task<FirebaseClient?> Firebase()
         {
             if (Shared.config != null)
             {
-                FirebaseClient? firebaseClient = new FirebaseClient(Shared.config.firebase__database_url, new FirebaseOptions()
-                {
-                    AuthTokenAsyncFactory = () => Authenticate(),
+                if (firebaseClient == null)
+                    firebaseClient = new FirebaseClient(Shared.config.firebase_database_url, new FirebaseOptions()
+                    {
+                        AuthTokenAsyncFactory = ()=> AdminAuth(),
+                    });
 
-                });
-
-                return Task.FromResult((FirebaseClient?)firebaseClient);
+               return Task.FromResult((FirebaseClient?)firebaseClient);
             }
             else
             {
@@ -26,38 +28,6 @@
             }
         }
 
-
-
-
-        private async Task<string> Authenticate()
-        {
-            string? result = "Authentication error";
-
-            if (Shared.config != null)
-            {
-                FirebaseAuthClient client = new FirebaseAuthClient(new FirebaseAuthConfig()
-                {
-                    ApiKey = Shared.config.firebase_api_key,
-                    AuthDomain = Shared.config.firebase_auth_domain,
-                    Providers = new FirebaseAuthProvider[]
-                    {
-                        new EmailProvider()
-                    }
-                });
-
-                try
-                {
-                    UserCredential credentials = await client.SignInWithEmailAndPasswordAsync(Shared.config.firebase_email, Shared.config.firebase_password);
-                    result = credentials.User.Credential.IdToken;
-                }
-                catch(Exception)
-                {
-                    if (typeof(Exception) == typeof(FirebaseAuthException))
-                        result = "Invalid credentials";
-                }
-            }
-
-            return result;
-        }
+        private Task<string> AdminAuth() => Shared.config == null ? Task.FromResult(String.Empty) : Task.FromResult(Shared.config.firebase_admin_token);
     }
 }

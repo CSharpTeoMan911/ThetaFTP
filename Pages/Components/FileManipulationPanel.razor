@@ -3,6 +3,7 @@
 @using System.Text;
 @inject NavigationManager NavigationManager;
 @inject IJSRuntime JS;
+@inject IHttpClientFactory httpFactory;
 
 <FocusPanel style="z-index:5;">
     <Component>
@@ -85,7 +86,7 @@
             formatted_url = new StringBuilder("/directories/rename?").Append(formated_query_content).ToString();
         }
 
-        HttpClient client = HttpClientGen.Generate();
+        HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
         client.BaseAddress = new Uri(NavigationManager.BaseUri);
         HttpResponseMessage response = await client.PutAsync(formatted_url, null);
         operation_result = await response.Content.ReadAsStringAsync();
