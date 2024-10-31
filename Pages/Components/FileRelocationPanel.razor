@@ -3,6 +3,7 @@
 @using ThetaFTP.Shared.Classes;
 @using System.Text;
 @inject IJSRuntime JS;
+@inject IHttpClientFactory httpFactory;
 @inject NavigationManager NavigationManager;
 
 <FocusPanel style="z-index:5;">
@@ -92,7 +93,11 @@
 
     private async void GetDirectories()
     {
-        await GetLastDir();
+        Tuple<bool, string?> last_dir_ = await FileSystemFormatter.GetLastDir(Path);
+
+        ShowBackButton = last_dir_.Item1;
+        last_dir = last_dir_.Item2;
+
         IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
         string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
 
@@ -104,7 +109,7 @@
 
         string? url = new StringBuilder().Append("/directories/get-directories?").Append(await QueryParsing.QueryParser(metadata)).ToString();
 
-        HttpClient client = HttpClientGen.Generate();
+        HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
         client.BaseAddress = new Uri(NavigationManager.BaseUri);
 
         HttpResponseMessage httpResponse = await client.GetAsync(url);
@@ -114,66 +119,18 @@
         StateHasChanged();
     }
 
-    private Task GetLastDir()
-    {
-        if (Path != null)
-        {
-            if (Path != SrcPath)
-            {
-                StringBuilder builder = new StringBuilder("/");
-                int index = Path.LastIndexOf('/');
-                if (index != 0)
-                {
-                    int start = 0;
-                    for (start = index - 1; start > 0; start--)
-                        if (Path[start] == '/')
-                            break;
-                    for (int i = start + 1; i < index; i++)
-                        builder.Append(Path[i]);
-                }
-
-                ShowBackButton = true;
-                last_dir = builder.ToString();
-            }
-            else
-            {
-                ShowBackButton = false;
-            }
-        }
-
-        return Task.CompletedTask;
-    }
 
     private void Back()
     {
-        if (Path != null && last_dir != null)
-        {
-            directories?.Clear();
-            StringBuilder builder = new StringBuilder();
-            int end = Path.LastIndexOf("/");
-
-            if (end > 0)
-            {
-                for (int start = 0; start < end; start++)
-                    builder.Append(Path[start]);
-                Path = builder.ToString();
-            }
-            else
-                Path = "/";
-        }
-
+        directories?.Clear();
+        Path = FileSystemFormatter.NavigateBackward(Path);
         GetDirectories();
     }
 
     private void Open(DirectoryItem? item)
     {
         directories?.Clear();
-
-        if (Path?[Path.Length - 1] != '/')
-            Path = new StringBuilder(Path).Append("/").Append(item?.name).ToString();
-        else
-            Path = new StringBuilder(Path).Append(item?.name).ToString();
-
+        Path = FileSystemFormatter.NavigateForward(Path, item?.name);
         GetDirectories();
     }
 
@@ -209,7 +166,7 @@
             request_url.Append("/directories/relocate?").Append(await QueryParsing.QueryParser(directoryOperationMetadata));
         }
 
-        HttpClient client = HttpClientGen.Generate();
+        HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
         client.BaseAddress = new Uri(NavigationManager.BaseUri);
         HttpResponseMessage responseMessage = await client.PutAsync(request_url.ToString(), null);
 

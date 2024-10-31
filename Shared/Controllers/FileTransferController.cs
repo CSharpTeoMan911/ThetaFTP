@@ -240,7 +240,6 @@ namespace ThetaFTP.Shared.Controllers
                                     };
 
                                     result = await Shared.database_ftp.Insert(ftpModel);
-
                                     return Ok(result);
                                 }
                                 else

@@ -3,6 +3,7 @@
 @using ThetaFTP.Shared.Models;
 @using System.Text;
 @inject NavigationManager NavigationManager;
+@inject IHttpClientFactory httpFactory;
 @page "/register";
 
 <PanelComponent style="padding:calc(46px + 0.5vw)">
@@ -74,7 +75,7 @@
             builder.Append("authentication/insert?");
             builder.Append(query_parameters);
 
-            HttpClient client = HttpClientGen.Generate();
+            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
             HttpResponseMessage message = await client.PostAsync(builder.ToString(), null);
             string message_string = await message.Content.ReadAsStringAsync();
 

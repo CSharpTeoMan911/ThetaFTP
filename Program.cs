@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.OpenApi.Models;
+using System.Net;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 
@@ -28,7 +29,22 @@ namespace ThetaFTP
 
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            builder.Services.AddHttpClient(Shared.Shared.HttpClientConfig, client => {
+                int timeout = 600;
+                if (Shared.Shared.config != null)
+                    timeout = Shared.Shared.config.ConnectionTimeoutSeconds;
+                client.Timeout = TimeSpan.FromSeconds(timeout);
+
+            }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler()
+            {
+                ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) =>
+                {
+                    if (Shared.Shared.config != null)
+                        return !Shared.Shared.config.validate_ssl_certificates;
+                    return true;
+                }
+            }).SetHandlerLifetime(TimeSpan.FromSeconds(Shared.Shared.config.ConnectionTimeoutSeconds));
+
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
             builder.Services.AddMvc();
@@ -80,10 +96,8 @@ namespace ThetaFTP
                 c.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(connection_timeout);
                 c.Limits.MinResponseDataRate = null;
                 c.Limits.MaxConcurrentConnections = null;
-                c.Limits.MinResponseDataRate = null;
                 c.Limits.MinRequestBodyDataRate = null;
                 c.Limits.MaxRequestBodySize = null;
-                c.Limits.MaxConcurrentConnections = null;
                 c.Limits.MaxConcurrentUpgradedConnections = null;
             });
             //////////////////////////////////////////////
@@ -135,7 +149,10 @@ namespace ThetaFTP
 
         private static async void Server_utility_timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
-            await Shared.Shared.databaseServerFunctions.DeleteDatabaseCache();
+            if (Shared.Shared.config?.use_firebase == true)
+                await Shared.Shared.databaseServerFunctions.DeleteDatabaseCache();
+            else
+                await Shared.Shared.databaseServerFunctions.DeleteDatabaseCache();
         }
     }
 }

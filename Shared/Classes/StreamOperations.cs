@@ -1,5 +1,7 @@
-﻿using Org.BouncyCastle.Utilities.Zlib;
+﻿using MySqlX.XDevAPI.Common;
+using Org.BouncyCastle.Utilities.Zlib;
 using System.Buffers;
+using System.Threading;
 
 namespace ThetaFTP.Shared.Classes
 {
@@ -22,7 +24,7 @@ namespace ThetaFTP.Shared.Classes
 
                     if (cancellation.IsCancellationRequested == false)
                     {
-                        if ((DateTime.UtcNow - start) >= TimeSpan.FromMicroseconds(timeout))
+                        if ((DateTime.UtcNow - start).TotalMicroseconds >= 1000 * timeout)
                         {
                             start = DateTime.UtcNow;
 
@@ -45,7 +47,8 @@ namespace ThetaFTP.Shared.Classes
                     }
                     else
                     {
-                        return false;
+                        result = false;
+                        break;
                     }
                 }
 
@@ -63,17 +66,15 @@ namespace ThetaFTP.Shared.Classes
                 contingent_memory_buffer.Dispose();
             }
 
+            GC.Collect();
             return result;
         }
         
 
         private static double GetTimeout()
         {
-            double divider = 1000;
-            double? timeout = divider / (Shared.config?.ReadAndWriteOperationsPerSecond / divider);
-            if (timeout == null)
-                timeout = 2500;
-            return (double)timeout;
+            double? timeout = 1000 / Shared.config?.ReadAndWriteOperationsPerSecond;
+            return timeout == null ? 2500 : (double)timeout;
         }
     }
 }

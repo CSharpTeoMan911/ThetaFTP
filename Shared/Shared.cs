@@ -7,6 +7,7 @@ namespace ThetaFTP.Shared
 {
     public class Shared
     {
+        public const string HttpClientConfig = "Default";
         public static ServerConfigModel? config;
         public static Classes.MySql mysql= new Classes.MySql();
         public static FirebaseDatabase firebase = new FirebaseDatabase();
