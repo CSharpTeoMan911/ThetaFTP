@@ -16,9 +16,9 @@ namespace ThetaFTP.Shared.Classes
             });
         }
 
-        public void MergeSortBySize(List<DirectoryItem> items, bool ascending)
+        public void MergeSortBySize(List<DirectoryItem>? items, bool ascending)
         {
-            if (items.Count > 1)
+            if (items?.Count > 1)
             {
                 int middle = items.Count / 2;
 
@@ -91,9 +91,9 @@ namespace ThetaFTP.Shared.Classes
             }
         }
 
-        public void MergeSortByName(List<DirectoryItem> items, bool ascending)
+        public void MergeSortByName(List<DirectoryItem>? items, bool ascending)
         {
-            if (items.Count > 1)
+            if (items?.Count > 1)
             {
                 int middle = items.Count / 2;
 

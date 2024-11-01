@@ -1,0 +1,50 @@
+﻿<FocusPanel style="@style">
+    <Component>
+        <div class="jumbotron-custom" style="border-radius:5px">
+            <div style="display: flex; flex-direction:row-reverse">
+                <button class="close_button" @onclick=Close>
+                    <img src="./images/close.webp" style="height:20px;"/>
+                </button>
+            </div>
+
+            <div>
+                <h5>
+                    Profile
+                </h5>
+            </div>
+
+            <div>
+                <p>
+                    Email
+                </p>
+                <input/>
+            </div>
+
+            <div>
+                <p>
+                    New password
+                </p>
+                <input/>
+            </div>
+
+            <div>
+                <button>
+                    Update password
+                </button>
+                <button>
+                    Delete account
+                </button>
+            </div>
+        </div>
+    </Component>
+</FocusPanel>
+
+@code {
+    [Parameter] public string? style { get; set; }
+    public delegate void ClosePanel();
+    [Parameter] public ClosePanel? closePanel { get; set; }
+
+    public void Close() => closePanel?.Invoke();
+
+
+}
