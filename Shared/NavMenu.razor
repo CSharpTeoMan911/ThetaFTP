@@ -3,6 +3,7 @@
 @inject IHttpClientFactory httpFactory;
 @using System.Text;
 @using ThetaFTP.Shared.Classes;
+@using ThetaFTP.Pages.Components;
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
@@ -15,23 +16,31 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link menu_label" style=@(new StringBuilder("margin-left:15px;color:").Append(first_menu_item_state).ToString()) aria-current="page" href="#" @onclick=@(()=>Navigate("/", false))>Files</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link menu_label" style=@(new StringBuilder("margin-top:16px;margin-left:15px;color:").Append(second_menu_item_state).ToString()) href="#" @onclick=@(()=>Navigate("/log-in", true))>@AuthState</a>
-                </li>
+                @if(AuthState == "Log out")
+                {
+                    <li class="nav-item">
+                        <a class="nav-link menu_label" style=@(new StringBuilder("margin-left:15px;color:").Append(first_menu_item_state).ToString()) aria-current="page" href="" @onclick=ActivateProfilePanel>Profile</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link menu_label" style=@(new StringBuilder("margin-top:16px;margin-left:15px;color:").Append(second_menu_item_state).ToString()) href="" @onclick=@(()=>Navigate("/log-in", true))>@AuthState</a>
+                    </li>
+                }
             </ul>
         </div>
     </div>
+
+    @if (ShowProfilePanel == true)
+    {
+        <ProfilePanel style="z-index:10" closePanel="new ProfilePanel.ClosePanel(CloseProfilePanel)">
+
+        </ProfilePanel>
+    }
 </nav>
 
 @code {
+    private bool ShowProfilePanel { get; set; }
+
     private string AuthState { get; set; } = "Log out";
-
-    //private string active { get; set; } = "#066FC4";
-
-    //private string inactive { get; set; } = "#044275";
 
     private string first_menu_item_state { get; set; } = "#066FC4";
 
@@ -111,5 +120,19 @@
         }
 
         NavigationManager.NavigateTo(partial_uri, true);
+    }
+
+    private void ActivateProfilePanel()
+    {
+        ShowProfilePanel = true;
+
+        StateHasChanged();
+    }
+
+    private void CloseProfilePanel()
+    {
+        ShowProfilePanel = false;
+
+        StateHasChanged();
     }
 }

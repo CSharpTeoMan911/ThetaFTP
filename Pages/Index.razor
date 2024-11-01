@@ -73,7 +73,10 @@
                     <div class="panel_control_section">
                         <div class="files_panel_file_search">
                             <div class="files_panel_file_search_control">
-                                <input style="margin-left: 20px"  placeholder="Search" />
+                                <button class="control_button">
+                                    <img class="control_image" src="./images/update.webp" @onclick=ClearSearchFilter/>
+                                </button>
+                                <input style="margin-left: 10px" @bind=SearchContent placeholder="Search" />
                                 <button class="control_button" @onclick=Search>
                                     <img class="control_image" src="./images/search.webp" />
                                 </button>
@@ -99,7 +102,7 @@
                             </div>
                         </div>
                     }
-                    @for (int i = 0; i < items.Count; i++)
+                    @for (int i = 0; i < items?.Count; i++)
                     {
                         <DirectoryItemComponent directoryItem="@items.ElementAt(i)" operationDelegate=FileOperation/>
                     }
@@ -137,12 +140,16 @@
 
     private ConcurrentDictionary<string, Tuple<string, CancellationTokenSource>> pending_download_progress_data = new ConcurrentDictionary<string, Tuple<string, CancellationTokenSource>>();
 
-    private List<DirectoryItem> items = new List<DirectoryItem>();
+    private List<DirectoryItem>? items = new List<DirectoryItem>();
 
     private bool ShowDirectoryItemDetails { get; set; }
     private DirectoryItem? currentDirectoryItem { get; set; }
 
     private bool ShowFileRelocationPanel { get; set; }
+
+    private string? SearchContent { get; set; }
+
+    private bool SearchFilterEnabled { get; set; }
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -163,7 +170,7 @@
             last_dir = last_dir_.Item2;
 
             if(ShowBackButton == true)
-                items.Clear();
+                items?.Clear();
 
             IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
             string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
@@ -217,9 +224,12 @@
                         {
                             SortUtility sortUtility = new SortUtility();
 
-                            files.AddRange(directories);
+                            files?.AddRange(directories);
 
                             items = files;
+
+                            if (SearchFilterEnabled == true)
+                                items = await SearchFilter(items);
 
                             bool ascending = false;
 
@@ -229,10 +239,10 @@
                             switch (type)
                             {
                                 case FilterPanel.Type.Name:
-                                    sortUtility.MergeSortByName(files, ascending);
+                                    sortUtility.MergeSortByName(items, ascending);
                                     break;
                                 case FilterPanel.Type.Size:
-                                    sortUtility.MergeSortBySize(files, ascending);
+                                    sortUtility.MergeSortBySize(items, ascending);
                                     break;
                             }
                         }
@@ -523,7 +533,9 @@
 
     public void Search()
     {
-
+        SearchFilterEnabled = true;
+        Console.WriteLine($"Search: {SearchContent}");
+        GetDirectoryInfo(true);
     }
 
     public void FileOperation(DirectoryItemComponent.FileOperation fileOperation, DirectoryItem? item)
@@ -688,15 +700,29 @@
 
     private void Open(string? item)
     {
-        items.Clear();
+        items?.Clear();
         Path = FileSystemFormatter.NavigateForward(Path, item);
         GetDirectoryInfo(true);
     }
 
     private void Back()
     {
-        items.Clear();
+        items?.Clear();
         Path = FileSystemFormatter.NavigateBackward(Path);
+        GetDirectoryInfo(true);
+    }
+
+    private Task<List<DirectoryItem>?> SearchFilter(List<DirectoryItem>? items)
+    {
+        if(SearchContent != null && SearchContent != String.Empty)
+            items?.RemoveAll(items => items?.name?.Contains(SearchContent) == false);
+        return Task.FromResult(items);
+    }
+
+    private void ClearSearchFilter()
+    {
+        SearchFilterEnabled = false;
+        SearchContent = null;
         GetDirectoryInfo(true);
     }
 }
