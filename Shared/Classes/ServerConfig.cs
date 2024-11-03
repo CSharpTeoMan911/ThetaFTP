@@ -5,10 +5,10 @@ using System.Text;
 
 namespace ThetaFTP.Shared.Classes
 {
-    public class ServerConfig
+    public class ServerConfig:Shared
     {
         private static string json_file = "server_settings.json";
-        public static async Task<ServerConfigModel?> GetServerConfig()
+        public static async Task GetServerConfig()
         {
             string? serialised_json = null;
 
@@ -28,7 +28,6 @@ namespace ThetaFTP.Shared.Classes
             }
             catch { }
 
-
             ServerConfigModel? model = await JsonFormatter.JsonDeserialiser<ServerConfigModel?>(serialised_json);
 
             if (model == null)
@@ -36,11 +35,14 @@ namespace ThetaFTP.Shared.Classes
                 await CreateServerConfig(new ServerConfigModel());
                 Console.WriteLine(new StringBuilder("\n\n\n\tGenerated app config file at: ").Append(Environment.CurrentDirectory).Append(FileSystemFormatter.PathSeparator()).Append(json_file).Append("\n\n\n"));
             }
-
-            return model;
+            else
+            {
+                credentials = new ServerCredentials(model);
+                configurations = new ServerConfigurations(model);
+            }
         }
 
-        private static async Task<ServerConfigModel> CreateServerConfig(ServerConfigModel model)
+        private static async Task CreateServerConfig(ServerConfigModel model)
         {
             FileStream fileStream = File.OpenWrite(json_file);
             try
@@ -58,8 +60,6 @@ namespace ThetaFTP.Shared.Classes
             {
                 await fileStream.DisposeAsync();
             }
-
-            return model;
         }
     }
 }

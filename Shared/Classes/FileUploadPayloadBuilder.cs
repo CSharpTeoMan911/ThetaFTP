@@ -35,7 +35,7 @@ namespace ThetaFTP.Shared.Classes
                     content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
                 }
             }
-            catch(Exception E) 
+            catch
             {
             }
 

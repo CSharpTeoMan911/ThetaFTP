@@ -9,7 +9,7 @@
         private static char[] letters = new char[26] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
 
 
-        public static Task<string> GenerateKey(int length)
+        public static Task<string?> GenerateKey(int length)
         {
             StringBuilder key = new StringBuilder();
 
@@ -33,7 +33,7 @@
                 }
             }
 
-            return Task.FromResult(key.ToString());
+            return Task.FromResult(key?.ToString());
         }
     }
 }

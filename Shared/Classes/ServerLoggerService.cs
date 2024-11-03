@@ -44,7 +44,7 @@
             catch { }
         }
 
-        public static async Task DeleteErrorLogFile()
+        public static Task DeleteErrorLogFile()
         {
             try
             {
@@ -55,6 +55,8 @@
             {
 
             }
+
+            return Task.CompletedTask;
         }
     }
 }

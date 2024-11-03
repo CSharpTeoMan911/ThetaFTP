@@ -4,6 +4,10 @@
 @using System.Text;
 @using ThetaFTP.Shared.Classes;
 @using ThetaFTP.Pages.Components;
+@using ThetaFTP.Shared;
+
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+@inject ProtectedLocalStorage protectedLocalStorage;
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
@@ -54,7 +58,16 @@
         try
         {
             IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-            AuthCache = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+
+            if(Shared.configurations?.use_secure_local_storage == true)
+            {
+                ProtectedBrowserStorageResult<string> AuthCacheResult = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                AuthCache = AuthCacheResult.Value;
+            }
+            else
+            {
+                AuthCache = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+            }
 
             if (firstRender == true)
             {
@@ -62,7 +75,6 @@
                 await animation_module.InvokeVoidAsync("InitBackgroundGradientFluctuation");
                 await animation_module.InvokeVoidAsync("InitMainPanelGeometry");
                 await animation_module.InvokeVoidAsync("InitAuthPanelGeometry");
-
             }
 
             await module.DisposeAsync();
@@ -102,9 +114,19 @@
         {
             if (AuthState == "Log out")
             {
+                string? key = null;
+
                 IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "././js/functions.js");
 
-                string? key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                if (Shared.configurations?.use_secure_local_storage == true)
+                {
+                    ProtectedBrowserStorageResult<string> AuthCacheResult = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                    key = AuthCacheResult.Value;
+                }
+                else
+                {
+                    key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                }
 
                 StringBuilder builder = new StringBuilder("/validation/delete-session?value=");
                 builder.Append(System.Web.HttpUtility.UrlEncode(key));
@@ -113,7 +135,15 @@
                 client.BaseAddress = new Uri(NavigationManager.BaseUri);
                 HttpResponseMessage responseMessage = await client.DeleteAsync(builder.ToString());
 
-                await module.InvokeVoidAsync("Delete_Cache", "auth", "AuthCache");
+
+                if (Shared.configurations?.use_secure_local_storage == true)
+                {
+                    await protectedLocalStorage.DeleteAsync("AuthCache");
+                }
+                else
+                {
+                    await module.InvokeVoidAsync("Delete_Cache", "auth", "AuthCache");
+                }
 
                 await module.DisposeAsync();
             }

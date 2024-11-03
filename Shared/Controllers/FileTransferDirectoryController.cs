@@ -17,8 +17,8 @@ namespace ThetaFTP.Shared.Controllers
 
             string? log_in_key_validation_result = "Internal server error";
 
-            if (Shared.config != null)
-                if (!Shared.config.use_firebase)
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
                     log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
                 else
                     log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
@@ -85,8 +85,8 @@ namespace ThetaFTP.Shared.Controllers
 
             string? log_in_key_validation_result = "Internal server error";
 
-            if (Shared.config != null)
-                if (!Shared.config.use_firebase)
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
                     log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
                 else
                     log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
@@ -142,8 +142,8 @@ namespace ThetaFTP.Shared.Controllers
 
             string? log_in_key_validation_result = "Internal server error";
 
-            if (Shared.config != null)
-                if (!Shared.config.use_firebase)
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
                     log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
                 else
                     log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
@@ -197,8 +197,8 @@ namespace ThetaFTP.Shared.Controllers
 
             string? log_in_key_validation_result = "Internal server error";
 
-            if (Shared.config != null)
-                if (!Shared.config.use_firebase)
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
                     log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
                 else
                     log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
@@ -260,8 +260,8 @@ namespace ThetaFTP.Shared.Controllers
 
             string? log_in_key_validation_result = "Internal server error";
 
-            if (Shared.config != null)
-                if (!Shared.config.use_firebase)
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
                     log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
                 else
                     log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);

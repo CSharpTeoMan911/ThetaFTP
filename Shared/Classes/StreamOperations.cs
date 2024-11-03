@@ -73,7 +73,7 @@ namespace ThetaFTP.Shared.Classes
 
         private static double GetTimeout()
         {
-            double? timeout = 1000 / Shared.config?.ReadAndWriteOperationsPerSecond;
+            double? timeout = 1000 / Shared.configurations?.ReadAndWriteOperationsPerSecond;
             return timeout == null ? 2500 : (double)timeout;
         }
     }
