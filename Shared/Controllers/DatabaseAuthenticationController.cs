@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class DatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, string>
+    public class DatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, AuthenticationModel>
     {
-        public async Task<string?> Delete(string? value)
+        public async Task<string?> Delete(AuthenticationModel? value)
         {
             MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
 
