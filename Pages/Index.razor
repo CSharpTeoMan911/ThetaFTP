@@ -292,7 +292,7 @@
         {
             string? log_in_session_key = null;
 
-            if (Shared.configurations?.use_secure_local_storage == false)
+            if (Shared.configurations?.use_secure_local_storage == true)
             {
                 ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
                 log_in_session_key = log_in_session_key_result.Value;

@@ -40,7 +40,7 @@
                 <button>
                     Update password
                 </button>
-                <button>
+                <button @onclick="DeleteAccount">
                     Delete account
                 </button>
             </div>
@@ -56,22 +56,30 @@
 
     public void Close() => closePanel?.Invoke();
 
+
+    private async Task<string?> GetCache()
+    {
+        string? log_in_session_key = null;
+        if (Shared.configurations?.use_secure_local_storage == true)
+        {
+            ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+            log_in_session_key = log_in_session_key_result.Value;
+        }
+        else
+        {
+            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+            log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+            await module.DisposeAsync();
+        }
+        return log_in_session_key;
+    }
+
+
     protected override async void OnAfterRender(bool firstRender)
     {
         if (firstRender == true)
         {
-            string? log_in_session_key = null;
-            if (Shared.configurations?.use_secure_local_storage == true)
-            {
-                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-                log_in_session_key = log_in_session_key_result.Value;
-            }
-            else
-            {
-                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-                await module.DisposeAsync();
-            }
+            string? log_in_session_key = await GetCache();
 
             HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig);
             client.BaseAddress = new Uri(NavigationManager.BaseUri);
@@ -101,39 +109,23 @@
 
     public async void UpdatePassword()
     {
-        string? log_in_session_key = null;
-        if (Shared.configurations?.use_secure_local_storage == true)
-        {
-            ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-            log_in_session_key = log_in_session_key_result.Value;
-        }
-        else
-        {
-            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-            log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-            await module.DisposeAsync();
-        }
+        string? log_in_session_key = await GetCache();
 
         HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig);
         client.BaseAddress = new Uri(NavigationManager.BaseUri);
+        HttpResponseMessage responseMessage = await client.GetAsync(new StringBuilder("/authentication/get-info?").Append("value=").Append(System.Net.WebUtility.UrlEncode(log_in_session_key)).ToString());
+        string? response = await responseMessage.Content.ReadAsStringAsync();
     }
 
     public async void DeleteAccount()
     {
-        string? log_in_session_key = null;
-        if (Shared.configurations?.use_secure_local_storage == true)
-        {
-            ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-            log_in_session_key = log_in_session_key_result.Value;
-        }
-        else
-        {
-            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-            log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-            await module.DisposeAsync();
-        }
+        string? log_in_session_key = await GetCache();
 
         HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig);
         client.BaseAddress = new Uri(NavigationManager.BaseUri);
+        HttpResponseMessage responseMessage = await client.DeleteAsync(new StringBuilder("/authentication/delete?").Append("value=").Append(System.Net.WebUtility.UrlEncode(log_in_session_key)).ToString());
+        string? response = await responseMessage.Content.ReadAsStringAsync();
+
+        Console.WriteLine(response);
     }
 }
