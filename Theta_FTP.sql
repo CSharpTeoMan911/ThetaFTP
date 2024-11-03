@@ -68,6 +68,32 @@ LOCK TABLES `accounts_waiting_for_deletion` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `accounts_waiting_for_password_change`
+--
+
+DROP TABLE IF EXISTS `accounts_waiting_for_password_change`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `accounts_waiting_for_password_change` (
+  `Account_Password_Change_Code` varchar(100) NOT NULL,
+  `Email` varchar(100) NOT NULL,
+  `Expiration_Date` datetime NOT NULL,
+  UNIQUE KEY `Account_Password_Change_Code` (`Account_Password_Change_Code`),
+  KEY `Email` (`Email`),
+  CONSTRAINT `accounts_waiting_for_password_change_ibfk_1` FOREIGN KEY (`Email`) REFERENCES `credentials` (`Email`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `accounts_waiting_for_password_change`
+--
+
+LOCK TABLES `accounts_waiting_for_password_change` WRITE;
+/*!40000 ALTER TABLE `accounts_waiting_for_password_change` DISABLE KEYS */;
+/*!40000 ALTER TABLE `accounts_waiting_for_password_change` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `credentials`
 --
 
@@ -152,4 +178,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-10-26 10:53:17
+-- Dump completed on 2024-11-03 23:53:29

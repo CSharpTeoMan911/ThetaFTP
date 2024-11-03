@@ -75,6 +75,8 @@
                 await animation_module.InvokeVoidAsync("InitBackgroundGradientFluctuation");
                 await animation_module.InvokeVoidAsync("InitMainPanelGeometry");
                 await animation_module.InvokeVoidAsync("InitAuthPanelGeometry");
+                await animation_module.DisposeAsync();
+                StateHasChanged();
             }
 
             await module.DisposeAsync();

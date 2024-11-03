@@ -331,6 +331,33 @@ button.file_relocation{
     border-width: 2px;
 }
 
+button.profile_function{
+    padding: 3px 6px 3px 6px;
+    margin: 10px 0px 0px 0px;
+    align-self: center;
+    border-width: 0px;
+}
+
+button.profile_function_delete {
+    background-color: transparent;
+    border: solid 0px transparent;
+    color: red;
+    margin-top: 18px;
+    font-size: calc(9px + 0.2vw);
+    font-family: "Roboto" sans-serif;
+    font-weight: 500;
+}
+
+button.profile_function_upload {
+    background-color: black;
+    color: white;
+    margin-top: 35px;
+    border-radius: 5px;
+    font-size: calc(10px + 0.2vw);
+    font-family: "Roboto" sans-serif;
+}
+
+
 img.control_image {
     height: 30px;
     align-self: center;
@@ -469,7 +496,16 @@ input.file-item-name-details {
     outline: 0px;
 }
 
-h5.directory-item-details-label{
+input.profile_input {
+    background-color: #303030;
+    color: white;
+    border-radius: 5px;
+    padding: 0px;
+    font-size: calc(10px + 0.2vw);
+    border-width: 1px;
+}
+
+h5.directory-item-details-label {
     align-self: center;
     margin-bottom: 20px;
 }
