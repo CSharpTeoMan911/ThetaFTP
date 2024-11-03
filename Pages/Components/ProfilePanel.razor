@@ -7,52 +7,81 @@
 @inject IHttpClientFactory clientFactory;
 @inject IJSRuntime JS;
 
-<FocusPanel style="@style">
-    <Component>
-        <div class="jumbotron-custom" style="border-radius:5px">
-            <div style="display: flex; flex-direction:row-reverse">
-                <button class="close_button" @onclick=Close>
-                    <img src="./images/close.webp" style="height:20px;"/>
-                </button>
-            </div>
 
-            <div>
-                <h5>
-                    Profile
-                </h5>
-            </div>
+@if (ShowValidationPanel == false)
+{
+    <FocusPanel style="@style">
+        <Component>
+            <div class="jumbotron-custom" style="border-radius:5px; padding: 5px 5px 10px 5px; margin-top: 150px;">
+                <div style="display: flex; flex-direction:row-reverse">
+                    <button class="close_button" @onclick=Close>
+                        <img src="./images/close.webp" style="height:18px;" />
+                    </button>
+                </div>
 
-            <div>
-                <p>
-                    Email
-                </p>
-                <input readonly="readonly" @bind-value=email/>
-            </div>
+                <div style="display: flex; width: 100%; align-content: center; flex-direction: column">
+                    <h4 style="align-self: center; margin-bottom: 15px;">
+                        Profile
+                    </h4>
+                </div>
 
-            <div>
-                <p>
-                    New password
-                </p>
-                <input/>
-            </div>
+                <div style="padding: 0px 23px 0px 23px;">
+                    <h6 style="padding: 0px 0px 0px 0px; margin: 0px 0px 2px 0px">
+                        Email
+                    </h6>
+                    <input class="profile_input" readonly="readonly" @bind-value=email />
+                </div>
 
-            <div>
-                <button>
-                    Update password
-                </button>
-                <button @onclick="DeleteAccount">
-                    Delete account
-                </button>
+                <div style="padding: 0px 23px 0px 23px; margin-top: 20px; margin-bottom: 10px;">
+                    <h6 style="padding: 0px 0px 0px 0px; margin: 0px 0px 2px 0px">
+                        New password
+                    </h6>
+                    <div style="display:flex; flex-direction:row;">
+                        @if (ShowPassword == true)
+                        {
+                            <input class="profile_input" @bind=password />
+                        }
+                        else
+                        {
+                            <input class="profile_input" @bind=password type="password" />
+                        }
+                        <button class="control_button" @onclick=ShowOrHidePassword>
+                            <img src=@password_visibility_button_img style="height:18px">
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column">
+                    <button class="profile_function profile_function_upload" @onclick=UpdatePassword>
+                        Update password
+                    </button>
+                    <button class="profile_function profile_function_delete" @onclick="DeleteAccount">
+                        Delete account
+                    </button>
+                </div>
             </div>
-        </div>
-    </Component>
-</FocusPanel>
+        </Component>
+    </FocusPanel>
+}
+else
+{
+    <ValidationPanel closeAccountValidationPanel="CloseValidationPanel" initiateValidationProcedure="ValidationProcedure" validationType=@validationType validationInputTopic=@validationInputTopic placeholder=@placeholder />
+}
 
 @code {
     [Parameter] public string? style { get; set; }
     public delegate void ClosePanel();
     [Parameter] public ClosePanel? closePanel { get; set; }
     private string? email { get; set; }
+    private string? password { get; set; }
+    private bool ShowPassword { get; set; }
+    private string password_visibility_button_img = "./images/visible.webp";
+
+    private ValidationPanel.ValidationType validationType { get; set; }
+    private string? validationInputTopic { get; set; }
+    private string? placeholder { get; set; }
+
+    private bool ShowValidationPanel { get; set; }
 
     public void Close() => closePanel?.Invoke();
 
@@ -86,7 +115,6 @@
             HttpResponseMessage responseMessage = await client.GetAsync(new StringBuilder("/authentication/get-info?").Append("value=").Append(System.Net.WebUtility.UrlEncode(log_in_session_key)).ToString());
             string? response = await responseMessage.Content.ReadAsStringAsync();
 
-            Console.WriteLine(response);
 
             if (response.Contains("Internal server error") == true)
             {
@@ -100,9 +128,13 @@
             else if (response.Contains("Invalid log in session key") == true)
             {
             }
+            else if (response.Contains("Check the code sent to your email to approve the account deletion") == true)
+            {
+            }
             else
             {
                 email = response;
+                StateHasChanged();
             }
         }
     }
@@ -127,5 +159,31 @@
         string? response = await responseMessage.Content.ReadAsStringAsync();
 
         Console.WriteLine(response);
+    }
+
+    public void ShowOrHidePassword()
+    {
+        if (ShowPassword == true)
+        {
+            ShowPassword = false;
+            password_visibility_button_img = @"./images/visible.webp";
+        }
+        else
+        {
+            ShowPassword = true;
+            password_visibility_button_img = @"./images/visibility.webp";
+        }
+
+        StateHasChanged();
+    }
+
+    private void CloseValidationPanel()
+    {
+
+    }
+
+    private void ValidationProcedure(string? code, ValidationPanel.ValidationType validationType)
+    {
+        
     }
 }
