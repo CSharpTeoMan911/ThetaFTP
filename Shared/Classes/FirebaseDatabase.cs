@@ -6,16 +6,16 @@
     using MySqlX.XDevAPI;
     using Newtonsoft.Json;
 
-    public class FirebaseDatabase
+    public class FirebaseDatabase:Shared
     {
         private FirebaseClient? firebaseClient { get; set; }
 
         public Task<FirebaseClient?> Firebase()
         {
-            if (Shared.config != null)
+            if (Shared.configurations != null)
             {
                 if (firebaseClient == null)
-                    firebaseClient = new FirebaseClient(Shared.config.firebase_database_url, new FirebaseOptions()
+                    firebaseClient = new FirebaseClient(configurations.firebase_database_url, new FirebaseOptions()
                     {
                         AuthTokenAsyncFactory = ()=> AdminAuth(),
                     });
@@ -28,6 +28,6 @@
             }
         }
 
-        private Task<string> AdminAuth() => Shared.config == null ? Task.FromResult(String.Empty) : Task.FromResult(Shared.config.firebase_admin_token);
+        private Task<string> AdminAuth() => configurations == null || credentials == null ? Task.FromResult(String.Empty) : Task.FromResult(credentials.firebase_admin_token);
     }
 }

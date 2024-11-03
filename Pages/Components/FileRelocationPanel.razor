@@ -6,6 +6,9 @@
 @inject IHttpClientFactory httpFactory;
 @inject NavigationManager NavigationManager;
 
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+@inject ProtectedLocalStorage protectedLocalStorage;
+
 <FocusPanel style="z-index:5;">
     <Component>
         <div class="jumbotron" style="padding:5px; display:flex; flex-direction:column; width:fit-content; align-self:center; margin-top: 300px;">
@@ -98,8 +101,19 @@
         ShowBackButton = last_dir_.Item1;
         last_dir = last_dir_.Item2;
 
-        IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-        string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+        string? log_in_session_key = null;
+
+        if (Shared.configurations?.use_secure_local_storage == true)
+        {
+            ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+            log_in_session_key = log_in_session_key_result.Value;
+        }
+        else
+        {
+            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+            log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+            await module.DisposeAsync();
+        }
 
         Metadata metadata = new Metadata()
         {
@@ -136,9 +150,19 @@
 
     private async void Select(DirectoryItem? item)
     {
-        IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-        string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-        await module.DisposeAsync();
+        string? log_in_session_key = null;
+
+        if (Shared.configurations?.use_secure_local_storage == true)
+        {
+            ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+            log_in_session_key = log_in_session_key_result.Value;
+        }
+        else
+        {
+            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+            log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+            await module.DisposeAsync();
+        }
 
         string? selected_path = new StringBuilder(Path).Append(item?.name).ToString();
         StringBuilder? request_url = new StringBuilder();

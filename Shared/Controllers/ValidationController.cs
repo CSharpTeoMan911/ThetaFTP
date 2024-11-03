@@ -15,8 +15,8 @@ namespace ThetaFTP.Shared.Controllers
         {
             string? result = String.Empty;
 
-            if (Shared.config != null)
-                if (!Shared.config.use_firebase)
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
                 {
                     result = await Shared.database_validation.ValidateAccount(value);
                 }
@@ -32,8 +32,8 @@ namespace ThetaFTP.Shared.Controllers
         {
             string? result = String.Empty;
 
-            if (Shared.config != null)
-                if (!Shared.config.use_firebase)
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
                 {
                     result = await Shared.database_validation.ValidateLogInSession(value);
                 }
@@ -49,8 +49,8 @@ namespace ThetaFTP.Shared.Controllers
         {
             string? result = String.Empty;
 
-            if (Shared.config != null)
-                if (!Shared.config.use_firebase)
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
                 {
                     result = await Shared.database_validation.DeleteLogInSession(value);
                 }

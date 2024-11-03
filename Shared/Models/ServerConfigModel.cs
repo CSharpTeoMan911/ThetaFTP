@@ -2,6 +2,7 @@
 {
     public class ServerConfigModel
     {
+        public bool use_secure_local_storage { get; set; } = true;
         public bool use_firebase { get; set; } = true;
         public string firebase_admin_token { get; set; } = "!!! REPLACE WITH FIREBASE DATABASE ADMIN TOKEN !!!";
         public string? firebase_database_url {  get; set; } = "!!! REPLACE WITH FIREBASE DATABASE URL !!!";

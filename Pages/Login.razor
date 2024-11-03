@@ -8,6 +8,9 @@
 @inject IHttpClientFactory httpFactory;
 @inject IJSRuntime JS;
 
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+@inject ProtectedLocalStorage protectedLocalStorage;
+
 <PanelComponent Id="auth_panel" style="padding:calc(46px + 0.5vw);">
     <Component>
         @if (ShowAccountsApprovalPanel == true)
@@ -90,38 +93,57 @@
         {
             if (serverPayload.response_message?.Contains("Account not approved") == true)
             {
-                NotificationType = Notifications.NotificationType.Information;
-                NotificationMessage = "Authentication successful.";
-                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
+                if (Shared.configurations?.use_secure_local_storage == true)
+                {
+                    if(serverPayload.content != null)
+                        await protectedLocalStorage.SetAsync("AuthCache", serverPayload.content);
+                }
+                else
+                {
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                    await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
+                    await module.DisposeAsync();
+                }
 
                 NotificationType = Notifications.NotificationType.Information;
                 NotificationMessage = "Account not approved. Verify the inbox of your email address used for this account.";
                 ShowAccountsApprovalPanelOnClose = true;
-
-                await module.DisposeAsync();
             }
             else if (serverPayload.response_message?.Contains("Authentication successful") == true)
             {
-                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
+                if (Shared.configurations?.use_secure_local_storage == true)
+                {
+                    if (serverPayload.content != null)
+                        await protectedLocalStorage.SetAsync("AuthCache", serverPayload.content);
+                }
+                else
+                {
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                    await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
+                    await module.DisposeAsync();
+                }
 
                 NotificationType = Notifications.NotificationType.Information;
                 NotificationMessage = serverPayload.response_message;
                 NavigateToMainPageOnClose = true;
-
-                await module.DisposeAsync();
             }
             else if (serverPayload.response_message?.Contains("Check the code sent to your email address to approve your log in session") == true)
             {
-                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
+                if (Shared.configurations?.use_secure_local_storage == true)
+                {
+                    if (serverPayload.content != null)
+                        await protectedLocalStorage.SetAsync("AuthCache", serverPayload.content);
+                }
+                else
+                {
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                    await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
+                    await module.DisposeAsync();
+                }
 
                 NotificationType = Notifications.NotificationType.Information;
                 NotificationMessage = serverPayload.response_message;
                 ShowLogInSessionValidationPanelOnClose = true;
-
-                await module.DisposeAsync();
             }
             else if (serverPayload.response_message?.Contains("Invalid email") == true || serverPayload.response_message?.Contains("Invalid password") == true || serverPayload.response_message?.Contains("Invalid credentials") == true || serverPayload.response_message?.Contains("Internal server error") == true)
             {
@@ -213,15 +235,21 @@
         {
             if (serverPayload.response_message?.Contains("Account authorised") == true)
             {
-                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
+                if (Shared.configurations?.use_secure_local_storage == true)
+                {
+                    if (serverPayload.content != null)
+                        await protectedLocalStorage.SetAsync("AuthCache", serverPayload.content);
+                }
+                else
+                {
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                    await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
+                    await module.DisposeAsync();
+                }
 
                 NotificationType = Notifications.NotificationType.Information;
                 NotificationMessage = "Authentication successful.";
                 NavigateToMainPageOnClose = true;
-
-                await module.DisposeAsync();
-
             }
             else if (serverPayload.response_message?.Contains("Authentication successful") == true)
             {

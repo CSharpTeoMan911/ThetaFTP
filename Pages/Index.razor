@@ -5,10 +5,14 @@
 @using System.Text;
 @using ThetaFTP.Shared.Models;
 @using System.Collections.Concurrent;
+@using ThetaFTP.Shared;
 @inject NavigationManager NavigationManager;
 @inject IJSRuntime JS;
 @inject IHttpClientFactory httpFactory;
-@page "/"
+@page "/";
+
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+@inject ProtectedLocalStorage protectedLocalStorage;
 
 
 <PanelComponent Id="index_panel" style="background-color: rgb(255,255,255);">
@@ -172,8 +176,19 @@
             if(ShowBackButton == true)
                 items?.Clear();
 
-            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-            string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+            string? log_in_session_key = null;
+
+            if (Shared.configurations?.use_secure_local_storage == true)
+            {
+                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                log_in_session_key = log_in_session_key_result.Value;
+            }
+            else
+            {
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                await module.DisposeAsync();
+            }
 
             Metadata metadata = new Metadata();
             metadata.path = Path;
@@ -262,8 +277,6 @@
                 }
 
             }
-
-            await module.DisposeAsync();
         }
         catch { }
 
@@ -277,8 +290,19 @@
         System.Timers.Timer timer = new System.Timers.Timer();
         try
         {
-            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-            string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+            string? log_in_session_key = null;
+
+            if (Shared.configurations?.use_secure_local_storage == false)
+            {
+                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                log_in_session_key = log_in_session_key_result.Value;
+            }
+            else
+            {
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                await module.DisposeAsync();
+            }
 
             Tuple<string, Stream, StreamContent?> payload =  await FileUploadPayloadBuilder.FileUpload(e.File, Path, log_in_session_key);
 
@@ -400,8 +424,6 @@
                 notificationMessage = "Could not read file";
             }
 
-            await module.DisposeAsync();
-
             if (pending_upload_progress_data.Count == 0)
                 UploadInProgress = false;
 
@@ -443,8 +465,21 @@
     {
         try
         {
-            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-            string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+            string? log_in_session_key = null;
+
+            if (Shared.configurations?.use_secure_local_storage == true)
+            {
+                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                log_in_session_key = log_in_session_key_result.Value;
+            }
+            else
+            {
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                await module.DisposeAsync();
+            }
+
+
 
             HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
             try
@@ -479,8 +514,6 @@
             {
                 client.Dispose();
             }
-
-            await module.DisposeAsync();
         }
         catch{}
 
@@ -506,9 +539,19 @@
     {
         try
         {
+            string? key = null;
             IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "././js/functions.js");
 
-            string? key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+            if (Shared.configurations?.use_secure_local_storage == true)
+            {
+                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                key = log_in_session_key_result.Value;
+            }
+            else
+            {
+                key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                await module.DisposeAsync();
+            }
 
             StringBuilder builder = new StringBuilder("/validation/delete-session?value=");
             builder.Append(System.Web.HttpUtility.UrlEncode(key));
@@ -517,7 +560,14 @@
             client.BaseAddress = new Uri(NavigationManager.BaseUri);
             HttpResponseMessage responseMessage = await client.DeleteAsync(builder.ToString());
 
-            await module.InvokeVoidAsync("Delete_Cache", "auth", "AuthCache");
+            if (Shared.configurations?.use_secure_local_storage == true)
+            {
+                await protectedLocalStorage.DeleteAsync("AuthCache");
+            }
+            else
+            {
+                await module.InvokeVoidAsync("Delete_Cache", "auth", "AuthCache");
+            }
 
             await module.DisposeAsync();
         }
@@ -619,8 +669,18 @@
         {
             if (item != null)
             {
+                string? log_in_session_key = null;
                 IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+
+                if (Shared.configurations?.use_secure_local_storage == true)
+                {
+                    ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                    log_in_session_key = log_in_session_key_result.Value;
+                }
+                else
+                {
+                    log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                }
 
                 string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
                     {
@@ -646,8 +706,20 @@
     {
         try
         {
-            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-            string log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+
+            string? log_in_session_key = null;
+
+            if (Shared.configurations?.use_secure_local_storage == true)
+            {
+                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                log_in_session_key = log_in_session_key_result.Value;
+            }
+            else
+            {
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                await module.DisposeAsync();
+            }
 
             string formatted_url = String.Empty;
 
