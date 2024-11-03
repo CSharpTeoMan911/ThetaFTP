@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LiteDB;
+using Microsoft.AspNetCore.Mvc;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Models;
 
@@ -7,15 +8,15 @@ namespace ThetaFTP.Shared.Controllers
 {
     [Route("/authentication")]
     [ApiController]
-    public class AuthenticationController : Controller, CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, AuthenticationModel>
+    public class AuthenticationController : Controller, CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, string>
     {
         [HttpDelete("delete")]
-        public async Task<string?> Delete([FromQuery] AuthenticationModel? value)
+        public async Task<string?> Delete([FromQuery] string? value)
         {
             string? response = "Internal server error";
 
-            if (Shared.config != null)
-                if (!Shared.config.use_firebase)
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
                 {
                     response = await Shared.database_auth.Delete(value);
                 }
@@ -31,8 +32,8 @@ namespace ThetaFTP.Shared.Controllers
         {
             string? response = "Internal server error";
 
-            if (Shared.config != null)
-                if (!Shared.config.use_firebase)
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
                 {
                     response = await Shared.database_auth.Get(value);
                 }
@@ -44,9 +45,17 @@ namespace ThetaFTP.Shared.Controllers
         }
 
         [HttpGet("get-info")]
-        public Task<string?> GetInfo(string? value)
+        public async Task<string?> GetInfo([FromQuery]string? value)
         {
-            throw new NotImplementedException();
+            string? result = "Internal server error";
+
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
+                    result = await Shared.database_validation.ValidateLogInSessionKey(value);
+                else
+                    result = await Shared.firebase_database_validation.ValidateLogInSessionKey(value);
+
+            return result;
         }
 
         [HttpPost("insert")]
@@ -54,8 +63,8 @@ namespace ThetaFTP.Shared.Controllers
         {
             string? response = "Internal server error";
 
-            if (Shared.config != null)
-                if (!Shared.config.use_firebase)
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
                 {
                     response = await Shared.database_auth.Insert(value);
                 }
@@ -73,9 +82,20 @@ namespace ThetaFTP.Shared.Controllers
         }
 
         [HttpPut("update")]
-        public Task<string?> Update([FromQuery] AuthenticationModel? value)
+        public async Task<string?> Update([FromQuery] AuthenticationModel? value)
         {
-            throw new NotImplementedException();
+            string? response = "Internal server error";
+
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
+                {
+                    response = await Shared.database_auth.Update(value);
+                }
+                else
+                {
+                    response = await Shared.firebase_database_auth.Update(value);
+                }
+            return response;
         }
     }
 }

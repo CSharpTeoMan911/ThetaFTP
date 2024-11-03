@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.DataProtection.KeyManagement;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class DatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, AuthenticationModel>
+    public class DatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, string>
     {
-        public async Task<string?> Delete(AuthenticationModel? value)
+        public async Task<string?> Delete(string? value)
         {
             MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
 
@@ -63,7 +63,7 @@ namespace ThetaFTP.Shared.Controllers
                                             {
                                                 await check_if_account_exists_reader.CloseAsync();
 
-                                                if (Shared.config?.two_step_auth == true)
+                                                if (Shared.configurations?.two_step_auth == true)
                                                 {
                                                     MySqlCommand check_if_account_is_approved_command = connection.CreateCommand();
                                                     try
@@ -93,10 +93,10 @@ namespace ThetaFTP.Shared.Controllers
                                                 }
 
 
-                                                string log_in_session_key = await CodeGenerator.GenerateKey(40);
+                                                string? log_in_session_key = await CodeGenerator.GenerateKey(40);
                                                 Tuple<string, Type> hashed_log_in_session_key = await Sha512Hasher.Hash(log_in_session_key);
 
-                                                if (hashed_log_in_session_key.Item2 != typeof(Exception))
+                                                if (hashed_log_in_session_key.Item2 != typeof(Exception) && log_in_session_key != null)
                                                 {
                                                     MySqlCommand insert_log_in_key_command = connection.CreateCommand();
                                                     try
@@ -107,12 +107,12 @@ namespace ThetaFTP.Shared.Controllers
                                                         insert_log_in_key_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddDays(2));
                                                         await insert_log_in_key_command.ExecuteNonQueryAsync();
 
-                                                        if (Shared.config?.two_step_auth == true)
+                                                        if (Shared.configurations?.two_step_auth == true)
                                                         {
-                                                            string log_in_code = await CodeGenerator.GenerateKey(10);
+                                                            string? log_in_code = await CodeGenerator.GenerateKey(10);
                                                             Tuple<string, Type> hashed_log_in_code = await Sha512Hasher.Hash(log_in_code);
 
-                                                            if (hashed_log_in_code.Item2 != typeof(Exception))
+                                                            if (hashed_log_in_code.Item2 != typeof(Exception) && log_in_code != null)
                                                             {
                                                                 MySqlCommand insert_log_in_code_command = connection.CreateCommand();
                                                                 try
@@ -275,16 +275,16 @@ namespace ThetaFTP.Shared.Controllers
                                                             credentials_insertion_command.Parameters.AddWithValue("Password", hash_result.Item1);
                                                             await credentials_insertion_command.ExecuteNonQueryAsync();
 
-                                                            if (Shared.config?.two_step_auth == true)
+                                                            if (Shared.configurations?.two_step_auth == true)
                                                             {
                                                                 MySqlCommand account_validation_code_insertion_command = connection.CreateCommand();
 
                                                                 try
                                                                 {
-                                                                    string key = await CodeGenerator.GenerateKey(10);
+                                                                    string? key = await CodeGenerator.GenerateKey(10);
                                                                     Tuple<string, Type> key_hash_result = await Sha512Hasher.Hash(key);
 
-                                                                    if (key_hash_result.Item2 != typeof(Exception))
+                                                                    if (key_hash_result.Item2 != typeof(Exception) && key != null)
                                                                     {
                                                                         bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Account approval", $"Account approval key: {key}");
                                                                       

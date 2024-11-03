@@ -1,4 +1,13 @@
-﻿<FocusPanel style="@style">
+﻿@using ThetaFTP.Shared;
+@using System.Text;
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+@using ThetaFTP.Shared.Formatters;
+@inject ProtectedLocalStorage protectedLocalStorage;
+@inject NavigationManager NavigationManager;
+@inject IHttpClientFactory clientFactory;
+@inject IJSRuntime JS;
+
+<FocusPanel style="@style">
     <Component>
         <div class="jumbotron-custom" style="border-radius:5px">
             <div style="display: flex; flex-direction:row-reverse">
@@ -17,7 +26,7 @@
                 <p>
                     Email
                 </p>
-                <input/>
+                <input readonly="readonly" @bind-value=email/>
             </div>
 
             <div>
@@ -43,8 +52,88 @@
     [Parameter] public string? style { get; set; }
     public delegate void ClosePanel();
     [Parameter] public ClosePanel? closePanel { get; set; }
+    private string? email { get; set; }
 
     public void Close() => closePanel?.Invoke();
 
+    protected override async void OnAfterRender(bool firstRender)
+    {
+        if (firstRender == true)
+        {
+            string? log_in_session_key = null;
+            if (Shared.configurations?.use_secure_local_storage == true)
+            {
+                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                log_in_session_key = log_in_session_key_result.Value;
+            }
+            else
+            {
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                await module.DisposeAsync();
+            }
 
+            HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig);
+            client.BaseAddress = new Uri(NavigationManager.BaseUri);
+            HttpResponseMessage responseMessage = await client.GetAsync(new StringBuilder("/authentication/get-info?").Append("value=").Append(System.Net.WebUtility.UrlEncode(log_in_session_key)).ToString());
+            string? response = await responseMessage.Content.ReadAsStringAsync();
+
+            Console.WriteLine(response);
+
+            if (response.Contains("Internal server error") == true)
+            {
+            }
+            else if (response.Contains("Log in session not approved") == true)
+            {
+            }
+            else if (response.Contains("Log in session key expired") == true)
+            {
+            }
+            else if (response.Contains("Invalid log in session key") == true)
+            {
+            }
+            else
+            {
+                email = response;
+            }
+        }
+    }
+
+    public async void UpdatePassword()
+    {
+        string? log_in_session_key = null;
+        if (Shared.configurations?.use_secure_local_storage == true)
+        {
+            ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+            log_in_session_key = log_in_session_key_result.Value;
+        }
+        else
+        {
+            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+            log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+            await module.DisposeAsync();
+        }
+
+        HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig);
+        client.BaseAddress = new Uri(NavigationManager.BaseUri);
+    }
+
+    public async void DeleteAccount()
+    {
+        string? log_in_session_key = null;
+        if (Shared.configurations?.use_secure_local_storage == true)
+        {
+            ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+            log_in_session_key = log_in_session_key_result.Value;
+        }
+        else
+        {
+            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+            log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+            await module.DisposeAsync();
+        }
+
+        HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig);
+        client.BaseAddress = new Uri(NavigationManager.BaseUri);
+    }
 }

@@ -44,10 +44,10 @@ namespace ThetaFTP.Shared.Controllers
                                 {
                                     await client.Child("Accounts_Waiting_For_Approval").Child(firebaseApprovalModel?.Keys.ElementAt(0)).DeleteAsync();
 
-                                    string log_in_session_key = await CodeGenerator.GenerateKey(40);
+                                    string? log_in_session_key = await CodeGenerator.GenerateKey(40);
                                     Tuple<string, Type> hashed_log_in_session_key = await Sha512Hasher.Hash(log_in_session_key);
 
-                                    if (hashed_log_in_session_key.Item2 != typeof(Exception))
+                                    if (hashed_log_in_session_key.Item2 != typeof(Exception) && log_in_session_key != null)
                                     {
                                         string base64_hashed_log_in_session_key = await Base64Formatter.FromUtf8ToBase64(hashed_log_in_session_key.Item1);
 
@@ -184,7 +184,7 @@ namespace ThetaFTP.Shared.Controllers
                         {
                             if (Convert.ToInt64(DateTime.Now.ToString("yyyyMMddHHmm")) < deserialised_log_in_session?.Values.ElementAt(0).expiry_date)
                             {
-                                if (Shared.config?.two_step_auth == true)
+                                if (Shared.configurations?.two_step_auth == true)
                                 {
                                     string extracted_log_in_session_waiting_for_approval = await client.Child("Log_In_Sessions_Waiting_For_Approval").OrderBy("key").EqualTo(base64_hashed_key).OnceAsJsonAsync();
                                     Dictionary<string, FirebaseLogInSessionApprovalModel>? deserialised_log_in_session_waiting_for_approval = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseLogInSessionApprovalModel>?>(extracted_log_in_session_waiting_for_approval);

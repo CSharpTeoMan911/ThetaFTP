@@ -6,7 +6,7 @@ using ThetaFTP.Shared.Formatters;
 
 namespace ThetaFTP
 {
-    public class Program
+    public class Program:Shared.Shared
     {
         public static void Main(string[] args)
         {
@@ -15,10 +15,10 @@ namespace ThetaFTP
 
         private static async Task<bool> Main_OP(string[] args)
         {
-            Shared.Shared.config = await ServerConfig.GetServerConfig();
+            await ServerConfig.GetServerConfig();
 
-            if (Shared.Shared.config != null)
-                ThreadPool.SetMinThreads(Shared.Shared.config.min_worker_threads, Shared.Shared.config.min_input_output_threads);
+            if (configurations != null)
+                ThreadPool.SetMinThreads(configurations.min_worker_threads, configurations.min_input_output_threads);
             else
                 Environment.Exit(0);
 
@@ -31,19 +31,19 @@ namespace ThetaFTP
 
             builder.Services.AddHttpClient(Shared.Shared.HttpClientConfig, client => {
                 int timeout = 600;
-                if (Shared.Shared.config != null)
-                    timeout = Shared.Shared.config.ConnectionTimeoutSeconds;
+                if (configurations != null)
+                    timeout = configurations.ConnectionTimeoutSeconds;
                 client.Timeout = TimeSpan.FromSeconds(timeout);
 
             }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler()
             {
                 ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) =>
                 {
-                    if (Shared.Shared.config != null)
-                        return !Shared.Shared.config.validate_ssl_certificates;
+                    if (configurations != null)
+                        return !configurations.validate_ssl_certificates;
                     return true;
                 }
-            }).SetHandlerLifetime(TimeSpan.FromSeconds(Shared.Shared.config.ConnectionTimeoutSeconds));
+            }).SetHandlerLifetime(TimeSpan.FromSeconds(configurations.ConnectionTimeoutSeconds));
 
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
@@ -59,13 +59,13 @@ namespace ThetaFTP
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
             });
 
-            if (Shared.Shared.config != null)
+            if (configurations != null)
             {
-                Shared.Shared.config.http_addresses = Shared.Shared.config.http_addresses.Distinct().ToList();
+                List<string>? addresses = configurations.http_addresses.Distinct().ToList();
                 List<string>? urls = builder.Configuration[WebHostDefaults.ServerUrlsKey]?.Split(';').ToList();
                 List<string>? config_urls = new List<string>();
 
-                Shared.Shared.config?.http_addresses?.ForEach(element =>
+                addresses?.ForEach(element =>
                 {
                     if (urls?.Contains(element) == false)
                         config_urls.Add(element);
@@ -86,8 +86,8 @@ namespace ThetaFTP
                 ///
 
             int connection_timeout = 600;
-            if (Shared.Shared.config != null)
-                connection_timeout = Shared.Shared.config.ConnectionTimeoutSeconds;
+            if (configurations != null)
+                connection_timeout = configurations.ConnectionTimeoutSeconds;
 
 
             builder.WebHost.ConfigureKestrel(c =>
@@ -149,7 +149,7 @@ namespace ThetaFTP
 
         private static async void Server_utility_timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
-            if (Shared.Shared.config?.use_firebase == true)
+            if (configurations?.use_firebase == true)
                 await Shared.Shared.databaseServerFunctions.DeleteDatabaseCache();
             else
                 await Shared.Shared.databaseServerFunctions.DeleteDatabaseCache();

@@ -50,10 +50,10 @@ namespace ThetaFTP.Shared.Controllers
                                                 approval_command.Parameters.AddWithValue("Account_Validation_Code", hashed_key.Item1);
                                                 await approval_command.ExecuteNonQueryAsync();
 
-                                                string log_in_session_key = await CodeGenerator.GenerateKey(40);
+                                                string? log_in_session_key = await CodeGenerator.GenerateKey(40);
                                                 Tuple<string, Type> hashed_log_in_session_key = await Sha512Hasher.Hash(log_in_session_key);
 
-                                                if (hashed_log_in_session_key.Item2 != typeof(Exception))
+                                                if (hashed_log_in_session_key.Item2 != typeof(Exception) && log_in_session_key != null)
                                                 {
                                                     MySqlCommand insert_log_in_key_command = connection.CreateCommand();
                                                     try
@@ -243,7 +243,7 @@ namespace ThetaFTP.Shared.Controllers
 
                                     if (DateTime.Now < expiration_date)
                                     {
-                                        if (Shared.config?.two_step_auth == true)
+                                        if (Shared.configurations?.two_step_auth == true)
                                         {
 
                                             MySqlCommand log_in_session_key_is_validated = connection.CreateCommand();

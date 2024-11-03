@@ -1,18 +1,15 @@
 ﻿using Firebase.Database;
 using Firebase.Database.Query;
 using HallRentalSystem.Classes.StructuralAndBehavioralElements.Formaters;
-using MySql.Data.MySqlClient;
-using System.Data.Common;
-using System.Net;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class FirebaseDatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, AuthenticationModel>
+    public class FirebaseDatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, string>
     {
-        public Task<string?> Delete(AuthenticationModel? value)
+        public Task<string?> Delete(string? value)
         {
             throw new NotImplementedException();
         }
@@ -49,7 +46,7 @@ namespace ThetaFTP.Shared.Controllers
 
                                     if (deserialised_credentials.Values.ElementAt(0).password == base64_hashed_password)
                                     {
-                                        if (Shared.config?.two_step_auth == true)
+                                        if (Shared.configurations?.two_step_auth == true)
                                         {
                                             string extracted_approval = await client.Child("Accounts_Waiting_For_Approval").OrderBy("email").EqualTo(base64_email).OnceAsJsonAsync();
                                             Dictionary<string, FirebaseApprovalModel>? deserialised_approval = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseApprovalModel>?>(extracted_approval);
@@ -71,10 +68,10 @@ namespace ThetaFTP.Shared.Controllers
                                     serverPayload.response_message = "Internal server error";
                                 }
 
-                                string log_in_session_key = await CodeGenerator.GenerateKey(40);
+                                string? log_in_session_key = await CodeGenerator.GenerateKey(40);
                                 Tuple<string, Type> hashed_log_in_session_key = await Sha512Hasher.Hash(log_in_session_key);
 
-                                if (hashed_log_in_session_key.Item2 != typeof(Exception))
+                                if (hashed_log_in_session_key.Item2 != typeof(Exception) && log_in_session_key != null)
                                 {
                                     string base64_hashed_log_in_session_key = await Base64Formatter.FromUtf8ToBase64(hashed_log_in_session_key.Item1);
 
@@ -86,13 +83,13 @@ namespace ThetaFTP.Shared.Controllers
                                     };
                                     FirebaseObject<FirebaseLogInSessionModel> firebaseLogInSessionResult = await client.Child("Log_In_Sessions").PostAsync(firebaseLogInSessionModel, false);
 
-                                    if (Shared.config?.two_step_auth == true)
+                                    if (Shared.configurations?.two_step_auth == true)
                                     {
-                                        string log_in_code = await CodeGenerator.GenerateKey(10);
+                                        string? log_in_code = await CodeGenerator.GenerateKey(10);
                                         Tuple<string, Type> hashed_log_in_code = await Sha512Hasher.Hash(log_in_code);
                                         string base64_hashed_log_in_code = await Base64Formatter.FromUtf8ToBase64(hashed_log_in_code.Item1);
 
-                                        if (hashed_log_in_code.Item2 != typeof(Exception))
+                                        if (hashed_log_in_code.Item2 != typeof(Exception) && log_in_code != null)
                                         {
 
                                             FirebaseLogInSessionApprovalModel firebaseLogInSessionWaitingForApprovalModel = new FirebaseLogInSessionApprovalModel()
@@ -206,12 +203,12 @@ namespace ThetaFTP.Shared.Controllers
                                     
 
 
-                                    if (Shared.config?.two_step_auth == true)
+                                    if (Shared.configurations?.two_step_auth == true)
                                     {
-                                        string key = await CodeGenerator.GenerateKey(10);
+                                        string? key = await CodeGenerator.GenerateKey(10);
                                         Tuple<string, Type> key_hash_result = await Sha512Hasher.Hash(key);
 
-                                        if (key_hash_result.Item2 != typeof(Exception))
+                                        if (key_hash_result.Item2 != typeof(Exception) && key != null)
                                         {
                                             string base64_key_hash = await Base64Formatter.FromUtf8ToBase64(key_hash_result.Item1);
 

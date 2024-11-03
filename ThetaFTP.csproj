@@ -5,6 +5,16 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
+	
+	
+
+  <ItemGroup>
+    <Content Remove="server_settings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="server_settings.json" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="FirebaseAuthentication.net" Version="4.1.0" />
