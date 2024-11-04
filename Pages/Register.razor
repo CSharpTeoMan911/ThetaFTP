@@ -10,7 +10,7 @@
     <Component>
         @if (ShowNotification == true)
         {
-            <Notifications NotificationMessage="@NotificationMessage" notificationType="@NotificationType" closeNotification="CloseNotification" />
+            <Notifications NotificationMessage="@NotificationMessage" notificationType="@NotificationType" closeNotification="CloseNotification" style="z-index: 10" />
         }
         <TitleSection title="Register" />
         <InputSection inputSectionTitle="Email" placeholder="Email" inputValue="new InputSection.InputValue(OnEmailValue)" isPassword="false" input_with_button="false" />
@@ -108,10 +108,6 @@
         StateHasChanged();
 
         if (NavigateToLogInOnPanelClose == true)
-        {
-            StringBuilder uri_builder = new StringBuilder(NavigationManager.BaseUri);
-            uri_builder.Append("/log-in");
-            NavigationManager.NavigateTo(uri_builder.ToString(), true);
-        }
+            NavigationManager.NavigateTo("/log-in", true);
     }
 }

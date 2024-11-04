@@ -5,25 +5,111 @@ using HallRentalSystem.Classes.StructuralAndBehavioralElements.Formaters;
 using MySql.Data.MySqlClient;
 using ThetaFTP.Shared.Formatters;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Firebase.Database;
+using System.Text;
+using MySqlX.XDevAPI;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class DatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, AuthenticationModel>
+    public class DatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, string>
     {
-        public async Task<string?> Delete(AuthenticationModel? value)
+        public async Task<string?> Delete(string? value)
         {
-            MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+            string? response = "Internal server error";
 
-            try
+            if (value != null)
             {
+                MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
 
+                try
+                {
+                    if (Shared.configurations?.two_step_auth == true)
+                    {
+                        string? key = await CodeGenerator.GenerateKey(10);
+                        Tuple<string, Type> hashed_key = await Sha512Hasher.Hash(key);
+
+                        if (hashed_key.Item2 != typeof(Exception))
+                        {
+                            bool smtps_operation_result = SMTPS_Service.SendSMTPS(value, "Account deletion", $"Account deletion key: {key}");
+
+                            if (smtps_operation_result == true)
+                            {
+                                MySqlCommand account_waiting_for_deletion_command = connection.CreateCommand();
+                                try
+                                {
+                                    account_waiting_for_deletion_command.CommandText = "INSERT INTO accounts_waiting_for_deletion VALUES(@Account_Deletion_Code, @Email, @Expiration_Date)";
+                                    account_waiting_for_deletion_command.Parameters.AddWithValue("Account_Deletion_Code", hashed_key.Item1);
+                                    account_waiting_for_deletion_command.Parameters.AddWithValue("Email", value);
+                                    account_waiting_for_deletion_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddMinutes(2));
+                                    await account_waiting_for_deletion_command.ExecuteNonQueryAsync();
+
+                                    response = "Check the code sent to your email to approve the account deletion";
+                                }
+                                catch
+                                {
+
+                                }
+                                finally
+                                {
+                                    await account_waiting_for_deletion_command.DisposeAsync();
+                                }
+                            }
+                            else
+                            {
+                                response = "Internal server error";
+                            }
+                        }
+                        else
+                        {
+                            response = "Internal server error";
+                        }
+                    }
+                    else
+                    {
+                        MySqlCommand account_deletion_command = connection.CreateCommand();
+                        try
+                        {
+                            StringBuilder builder = new StringBuilder(Environment.CurrentDirectory);
+                            builder.Append(FileSystemFormatter.PathSeparator());
+                            builder.Append("FTP_Server");
+                            builder.Append(FileSystemFormatter.PathSeparator());
+                            builder.Append(value);
+
+                            FileSystemFormatter.DeleteDirectory(builder.ToString());
+
+                            account_deletion_command.CommandText = "DELETE FROM credentials WHERE Email = @Email";
+                            account_deletion_command.Parameters.AddWithValue("Email", value);
+                            await account_deletion_command.ExecuteNonQueryAsync();
+
+                            response = "Account deletion successful";
+                        }
+                        catch (Exception E)
+                        {
+                            Console.WriteLine($"Error: {E.Message}");
+                            response = "Internal server error";
+                        }
+                        finally
+                        {
+                            await account_deletion_command.DisposeAsync();
+                        }
+                    }
+                }
+                catch (Exception E)
+                {
+                    Console.WriteLine($"Error: {E.Message}");
+                    response = "Internal server error";
+                }
+                finally
+                {
+                    await connection.DisposeAsync();
+                }
             }
-            catch
+            else
             {
-
+                response = "Internal server error";
             }
 
-            throw new NotImplementedException();
+            return response;
         }
 
         public async Task<string?> Get(AuthenticationModel? value)

@@ -37,13 +37,8 @@ div.title_div{
 }
 
 div.focus_panel {
-    left: 50vw;
-    transform: translate(-50%, -50%);
-    top: 50vh;
-    margin: 0px;
+    top: 0px;
     position: absolute;
-    height: 100vh;
-    width: 100vw;
     display: flex;
     flex-direction: column;
     align-content: center;
@@ -102,6 +97,13 @@ input.input_style {
     font-size: calc(10px + 0.5vw);
     border-radius: 5px;
     border-width: calc(1px + 0.1vw);
+}
+
+input.input_style_small {
+    font-size: calc(12px + 0.2vw);
+    border-radius: 5px;
+    border-width: calc(1px + 0.1vw);
+    width: calc(230px + 1vw);
 }
 
 input.display {

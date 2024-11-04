@@ -1,6 +1,7 @@
 ﻿let gradient_fluctuation = null;
 let panel_geometry = null;
 let auth_geometry = null;
+let focus_panel_geometry = null;
 let gradient_value = 90;
 let substract = true;
 
@@ -62,5 +63,30 @@ function MainPanelGeometry() {
 export function InitMainPanelGeometry() {
     if (panel_geometry === null) {
         panel_geometry = setInterval(() => { MainPanelGeometry() }, 50);
+    }
+}
+
+
+function FocusPanelGeometry() {
+    let focus_panel_collection = document.getElementsByClassName("focus_panel");
+    let page_collection = document.getElementsByClassName("body");
+
+    if (focus_panel_collection !== null && focus_panel_collection.length === 1) {
+        if (page_collection !== null) {
+            let focus_panel = focus_panel_collection.item(0);
+            let page = page_collection.item(0);
+            if (focus_panel !== null) {
+                if (page !== null) {
+                    focus_panel.style.height = page.offsetHeight + "px";
+                    focus_panel.style.width = page.offsetWidth + "px";
+                }
+            }
+        }
+    }
+}
+
+export function InitFocusPanelGeometry() {
+    if (focus_panel_geometry == null) {
+        focus_panel_geometry = setInterval(() => { FocusPanelGeometry() }, 50);
     }
 }

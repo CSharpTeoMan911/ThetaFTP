@@ -23,7 +23,7 @@
         }
 
         @if(ShowNotification == true){
-            <Notifications NotificationMessage="@NotificationMessage" notificationType="@NotificationType" closeNotification="CloseNotification"/>
+            <Notifications NotificationMessage="@NotificationMessage" notificationType="@NotificationType" closeNotification="CloseNotification" style="z-index: 10"/>
         }
         <TitleSection title="Log In" />
         <InputSection inputSectionTitle="Email" placeholder="Email" inputValue="new InputSection.InputValue(OnEmailValue)" isPassword="false" input_with_button="false" />

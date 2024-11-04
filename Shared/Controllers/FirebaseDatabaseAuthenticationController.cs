@@ -9,61 +9,47 @@ using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class FirebaseDatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, AuthenticationModel>
+    public class FirebaseDatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, string>
     {
 
-        public async Task<string?> Delete(AuthenticationModel? value)
+        public async Task<string?> Delete(string? value)
         {
             string? response = "Internal server error";
 
             if (value != null)
             {
-                if (value.email != null)
+                if (Shared.configurations?.two_step_auth == true)
                 {
-                    if (value.log_in_session_key != null)
+                    FirebaseClient? client = await Shared.firebase.Firebase();
+
+                    if (client != null)
                     {
-                        if (Shared.configurations?.two_step_auth == true)
+                        try
                         {
-                            FirebaseClient? client = await Shared.firebase.Firebase();
+                            string base64_email = await Base64Formatter.FromUtf8ToBase64(value);
 
-                            if (client != null)
+                            string? key = await CodeGenerator.GenerateKey(10);
+                            Tuple<string, Type> hashed_key = await Sha512Hasher.Hash(key);
+
+                            if (hashed_key.Item2 != typeof(Exception))
                             {
-                                try
+                                string base64_key = await Base64Formatter.FromUtf8ToBase64(hashed_key.Item1);
+
+                                FirebaseApprovalModel approvalModel = new FirebaseApprovalModel()
                                 {
-                                    string base64_email = await Base64Formatter.FromUtf8ToBase64(value.email);
+                                    email = base64_email,
+                                    expiry_date = Convert.ToInt64(DateTime.Now.AddMinutes(2).ToString("yyyyMMddHHmm")),
+                                    key = base64_key
+                                };
 
-                                    string? key = await CodeGenerator.GenerateKey(10);
-                                    Tuple<string, Type> hashed_key = await Sha512Hasher.Hash(key);
+                                bool smtps_operation_result = SMTPS_Service.SendSMTPS(value, "Account deletion", $"Account deletion key: {key}");
 
-                                    if (hashed_key.Item2 != typeof(Exception))
-                                    {
-                                        string base64_key = await Base64Formatter.FromUtf8ToBase64(key);
-
-                                        FirebaseApprovalModel approvalModel = new FirebaseApprovalModel()
-                                        {
-                                            email = base64_email,
-                                            expiry_date = Convert.ToInt64(DateTime.Now.AddMinutes(2).ToString("yyyyMMddHHmm")),
-                                            key = base64_key
-                                        };
-
-                                        bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Account approval", $"Account approval key: {key}");
-
-                                        if (smtps_operation_result == true)
-                                        {
-                                            await client.Child("Accounts_Waiting_For_Deletion").PostAsync(approvalModel, false);
-                                            response = "Check the code sent to your email to approve the account deletion";
-                                        }
-                                        else
-                                        {
-                                            response = "Internal server error";
-                                        }
-                                    }
-                                    else
-                                    {
-                                        response = "Internal server error";
-                                    }
+                                if (smtps_operation_result == true)
+                                {
+                                    await client.Child("Accounts_Waiting_For_Deletion").PostAsync(approvalModel, false);
+                                    response = "Check the code sent to your email to approve the account deletion";
                                 }
-                                catch
+                                else
                                 {
                                     response = "Internal server error";
                                 }
@@ -73,19 +59,19 @@ namespace ThetaFTP.Shared.Controllers
                                 response = "Internal server error";
                             }
                         }
-                        else
+                        catch
                         {
-                            response = await DeleteAccount(value.email);
+                            response = "Internal server error";
                         }
                     }
                     else
                     {
-                        response = "Invalid log in session key";
+                        response = "Internal server error";
                     }
                 }
                 else
                 {
-                    response = "Internal server error";
+                    response = await DeleteAccount(value);
                 }
             }
             else
