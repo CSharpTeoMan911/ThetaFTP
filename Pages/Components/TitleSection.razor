@@ -1,5 +1,5 @@
 ﻿<div class="title_div">
-    <h1 class="title">
+    <h1 class="title" style="@style">
         @title
     </h1>
 </div>
@@ -7,4 +7,7 @@
 @code {
     [Parameter]
     public string? title { get; set; }
+
+    [Parameter]
+    public string? style { get; set; }
 }

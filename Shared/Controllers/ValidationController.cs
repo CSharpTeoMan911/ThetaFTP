@@ -60,5 +60,22 @@ namespace ThetaFTP.Shared.Controllers
                 }
             return result;
         }
+
+        [HttpDelete("delete-account")]
+        public async Task<string?> DeleteAccount([FromQuery] string? value)
+        {
+            string? result = String.Empty;
+
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
+                {
+                    result = await Shared.database_validation.ValidateAccountDeletion(value);
+                }
+                else
+                {
+                    result = await Shared.firebase_database_validation.ValidateAccountDeletion(value);
+                }
+            return result;
+        }
     }
 }

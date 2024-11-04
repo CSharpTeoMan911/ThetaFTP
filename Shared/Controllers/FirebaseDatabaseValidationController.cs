@@ -309,7 +309,15 @@ namespace ThetaFTP.Shared.Controllers
                             {
                                 FirebaseApprovalModel account = deserialised_account_deletion.Values.ElementAt(0);
                                 await client.Child("Accounts_Waiting_For_Deletion").Child(deserialised_account_deletion.Keys.ElementAt(0)).DeleteAsync();
-                                response = await DeleteAccount(account?.email);
+
+                                if (Convert.ToInt64(DateTime.Now.ToString("yyyyMMddHHmm")) < account.expiry_date)
+                                {
+                                    response = await DeleteAccount(account?.email);
+                                }
+                                else
+                                {
+                                    response = "Account deletion code expired";
+                                }
                             }
                             else
                             {
