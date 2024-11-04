@@ -11,13 +11,27 @@
             @if (input_with_button == true)
             {
                 <div style="width:100%; display:flex; flex-direction: row; align-content:center">
-                    <input class="input_style" style="align-self:center" type="password" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                    @if (smallInputFont)
+                    {
+                        <input class="input_style_small" style="align-self:center" type="password" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                    }
+                    else
+                    {
+                        <input class="input_style" style="align-self:center" type="password" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                    }
                     @InputButton
                 </div>
             }
             else
             {
-                <input class="input_style" type="password" placeholder=@placeholder value=@defaultValue @oninput =OnInput />
+                @if (smallInputFont)
+                {
+                    <input class="input_style_small" type="password" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                }
+                else
+                {
+                    <input class="input_style" type="password" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                }
             }
         }
         else
@@ -25,13 +39,55 @@
             @if (input_with_button == true)
             {
                 <div style="width:100%; display:flex; flex-direction: row; align-content:center">
-                    <input class="input_style" style="align-self:center;" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                    @if (isReadOnly == true)
+                    {
+                        @if (smallInputFont)
+                        {
+                            <input class="input_style_small" readonly="readonly" style="align-self:center;" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                        }
+                        else
+                        {
+                            <input class="input_style" readonly="readonly" style="align-self:center;" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                        }
+                    }
+                    else
+                    {
+                        @if (smallInputFont)
+                        {
+                            <input class="input_style_small" style="align-self:center;" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                        }
+                        else
+                        {
+                            <input class="input_style" style="align-self:center;" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                        }
+                    }
                     @InputButton
                 </div>
             }
             else
             {
-                <input class="input_style" placeholder=@placeholder value=@defaultValue @oninput =OnInput />
+                @if (isReadOnly == true)
+                {
+                    @if (smallInputFont)
+                    {
+                        <input class="input_style_small" readonly="readonly" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                    }
+                    else
+                    {
+                        <input class="input_style" readonly="readonly" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                    }
+                }
+                else
+                {
+                    @if (smallInputFont)
+                    {
+                        <input class="input_style_small" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                    }
+                    else
+                    {
+                        <input class="input_style" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                    }
+                }
             }
         }
     </div>
@@ -39,7 +95,13 @@
 
 @code {
     [Parameter]
+    public bool smallInputFont { get; set; }
+
+    [Parameter]
     public bool isPassword { get; set; }
+
+    [Parameter]
+    public bool isReadOnly { get; set; }
 
     [Parameter]
     public string? inputSectionTitle { get; set; }

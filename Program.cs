@@ -147,6 +147,15 @@ namespace ThetaFTP
             return true;
         }
 
+        /// <summary>
+        /// !!! TO DO !!!
+        /// </summary>
+        /// 
+        /// CREATE DATABASE CACHE CLEANUP FUNCTIONS
+        /// FOR MySQL DATABASE AND Firebase DATABASE
+        /// 
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static async void Server_utility_timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
             if (configurations?.use_firebase == true)

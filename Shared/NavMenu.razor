@@ -35,9 +35,7 @@
 
     @if (ShowProfilePanel == true)
     {
-        <ProfilePanel style="z-index:10" closePanel="new ProfilePanel.ClosePanel(CloseProfilePanel)">
-
-        </ProfilePanel>
+        <ProfilePanel style="z-index:10" closePanel="new ProfilePanel.ClosePanel(CloseProfilePanel)"/>
     }
 </nav>
 
@@ -57,9 +55,19 @@
 
         try
         {
+            if (firstRender == true)
+            {
+                IJSObjectReference animation_module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/animations.js");
+                await animation_module.InvokeVoidAsync("InitBackgroundGradientFluctuation");
+                await animation_module.InvokeVoidAsync("InitMainPanelGeometry");
+                await animation_module.InvokeVoidAsync("InitFocusPanelGeometry");
+                await animation_module.DisposeAsync();
+                StateHasChanged();
+            }
+
             IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
 
-            if(Shared.configurations?.use_secure_local_storage == true)
+            if (Shared.configurations?.use_secure_local_storage == true)
             {
                 ProtectedBrowserStorageResult<string> AuthCacheResult = await protectedLocalStorage.GetAsync<string>("AuthCache");
                 AuthCache = AuthCacheResult.Value;
@@ -67,21 +75,13 @@
             else
             {
                 AuthCache = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                await module.DisposeAsync();
             }
-
-            if (firstRender == true)
-            {
-                IJSObjectReference animation_module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/animations.js");
-                await animation_module.InvokeVoidAsync("InitBackgroundGradientFluctuation");
-                await animation_module.InvokeVoidAsync("InitMainPanelGeometry");
-                await animation_module.InvokeVoidAsync("InitAuthPanelGeometry");
-                await animation_module.DisposeAsync();
-                StateHasChanged();
-            }
-
-            await module.DisposeAsync();
         }
-        catch{}
+        catch(Exception E)
+        {
+            Console.WriteLine($"Error: {E.Message}");
+        }
 
 
         if (AuthCache == null)

@@ -32,20 +32,15 @@ namespace ThetaFTP.Shared.Controllers
                     {
                         if (log_in_key_validation_result != "Log in session not approved")
                         {
-                            AuthenticationModel model = new AuthenticationModel()
-                            {
-                                email = log_in_key_validation_result,
-                                log_in_session_key = value
-                            };
 
                             if (Shared.configurations != null)
                                 if (!Shared.configurations.use_firebase)
                                 {
-                                    result = await Shared.database_auth.Delete(model);
+                                    result = await Shared.database_auth.Delete(log_in_key_validation_result);
                                 }
                                 else
                                 {
-                                    result = await Shared.firebase_database_auth.Delete(model);
+                                    result = await Shared.firebase_database_auth.Delete(log_in_key_validation_result);
                                 }
 
                             return result;

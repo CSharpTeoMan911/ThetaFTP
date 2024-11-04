@@ -1,6 +1,7 @@
 ﻿using HallRentalSystem.Classes.StructuralAndBehavioralElements.Formaters;
 using MySql.Data.MySqlClient;
 using System.Data.Common;
+using System.Text;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
@@ -343,6 +344,111 @@ namespace ThetaFTP.Shared.Controllers
                         finally
                         {
                             await delete_key_command.DisposeAsync();
+                        }
+                    }
+                    finally
+                    {
+                        await connection.DisposeAsync();
+                    }
+                }
+                else
+                {
+                    response = "Internal server error";
+                }
+            }
+            else
+            {
+                response = "Invalid code";
+            }
+
+            return response;
+        }
+
+        public async Task<string?> ValidateAccountDeletion(string? code)
+        {
+            string? response = "Internal server error";
+
+            if (code != null)
+            {
+                Tuple<string, Type> hashed_key = await Sha512Hasher.Hash(code);
+
+                if (hashed_key.Item2 != typeof(Exception))
+                {
+                    MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+
+                    try
+                    {
+                        MySqlCommand accounts_waiting_for_deletion_command = connection.CreateCommand();
+                        try
+                        {
+                            accounts_waiting_for_deletion_command.CommandText = "SELECT Email, Expiration_Date FROM accounts_waiting_for_deletion WHERE Account_Deletion_Code = @Account_Deletion_Code";
+                            accounts_waiting_for_deletion_command.Parameters.AddWithValue("Account_Deletion_Code", hashed_key.Item1);
+                            DbDataReader reader = await accounts_waiting_for_deletion_command.ExecuteReaderAsync();
+                            try
+                            {
+                                if (await reader.ReadAsync() == true)
+                                {
+                                    DateTime expiration_date = (DateTime)reader.GetValue(1);
+
+                                    if (DateTime.Now < expiration_date)
+                                    {
+                                        string email = reader.GetString(0);
+
+                                        await reader.CloseAsync();
+
+                                        MySqlCommand account_deletion_command = connection.CreateCommand();
+                                        try
+                                        {
+                                            StringBuilder builder = new StringBuilder(Environment.CurrentDirectory);
+                                            builder.Append(FileSystemFormatter.PathSeparator());
+                                            builder.Append("FTP_Server");
+                                            builder.Append(FileSystemFormatter.PathSeparator());
+                                            builder.Append(email);
+
+                                            FileSystemFormatter.DeleteDirectory(builder.ToString());
+
+                                            account_deletion_command.CommandText = "DELETE FROM credentials WHERE Email = @Email";
+                                            account_deletion_command.Parameters.AddWithValue("Email", email);
+                                            await account_deletion_command.ExecuteNonQueryAsync();
+
+                                            response = "Account deletion successful";
+                                        }
+                                        catch
+                                        {
+                                            response = "Internal server error";
+                                        }
+                                        finally
+                                        {
+                                            await account_deletion_command.DisposeAsync();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        response = "Account deletion code expired";
+                                    }
+                                }
+                                else
+                                {
+                                    response = "Invalid code";
+                                }
+                            }
+                            catch
+                            {
+                                response = "Internal server error";
+                            }
+                            finally
+                            {
+                                await reader.DisposeAsync();
+                            }
+                            
+                        }
+                        catch
+                        {
+                            response = "Internal server error";
+                        }
+                        finally
+                        {
+                            await accounts_waiting_for_deletion_command.DisposeAsync();
                         }
                     }
                     finally
