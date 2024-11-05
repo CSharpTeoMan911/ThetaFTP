@@ -2,6 +2,7 @@
 @using System.Text;
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 @using ThetaFTP.Shared.Formatters;
+@using ThetaFTP.Shared.Models
 @inject ProtectedLocalStorage protectedLocalStorage;
 @inject NavigationManager NavigationManager;
 @inject IHttpClientFactory clientFactory;
@@ -28,7 +29,7 @@
                     <TitleSection title="Profile" style="margin-bottom: 30px; font-size: calc(23px + 0.2vw);" />
                     <InputSection smallInputFont="true" style="margin: 0px calc(24px + 0.5vw) 0px calc(24px + 0.5vw)" inputSectionTitle="Email" defaultValue="@email" isReadOnly="true" placeholder="Email" isPassword="false" input_with_button="false" />
                     <br/>
-                    <InputSection smallInputFont="true" style="margin: 0px calc(24px + 0.5vw) 0px calc(24px + 0.5vw)" inputSectionTitle="New password" placeholder="Password" isPassword="true" input_with_button="false" />
+                    <InputSection smallInputFont="true" style="margin: 0px calc(24px + 0.5vw) 0px calc(24px + 0.5vw)" inputValue="OnInput" inputSectionTitle="New password" placeholder="Password"  isPassword="true" input_with_button="false" />
 
                     <div style="display: flex; flex-direction: column">
                         <button class="profile_function profile_function_upload" @onclick=UpdatePassword>
@@ -94,7 +95,7 @@
 }
 else
 {
-    <ValidationPanel closeAccountValidationPanel="CloseValidationPanel" initiateValidationProcedure="ValidationProcedure" validationType=ValidationPanel.ValidationType.DeleteAccount validationInputTopic=@validationInputTopic placeholder=@placeholder />
+    <ValidationPanel closeAccountValidationPanel="CloseValidationPanel" initiateValidationProcedure="ValidationProcedure" validationType=@validationType validationInputTopic=@validationInputTopic placeholder=@placeholder />
 }
 
 
@@ -110,6 +111,7 @@ else
     private bool ShowPassword { get; set; }
     private string password_visibility_button_img = "./images/visible.webp";
 
+    private ValidationPanel.ValidationType validationType { get; set; } = ValidationPanel.ValidationType.DeleteAccount;
     private string? validationInputTopic { get; set; }
     private string? placeholder { get; set; }
 
@@ -188,18 +190,101 @@ else
         }
     }
 
+    public void OnInput(string? _password)
+    {
+        password = _password;
+    }
+
     public async void UpdatePassword()
     {
+        validationType = ValidationPanel.ValidationType.UpdatePassword;
+        validationInputTopic = "Password update";
+        placeholder = "Password update code";
+
         string? log_in_session_key = await GetCache();
+
+        PasswordUpdateModel passwordUpdate = new PasswordUpdateModel()
+        {
+            log_in_session_key = log_in_session_key,
+            new_password = password
+        };
+
+        string query = await QueryParser.QueryParsing.QueryParser(passwordUpdate);
+
 
         HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig);
         client.BaseAddress = new Uri(NavigationManager.BaseUri);
-        HttpResponseMessage responseMessage = await client.GetAsync(new StringBuilder("/authentication/get-info?").Append("value=").Append(System.Net.WebUtility.UrlEncode(log_in_session_key)).ToString());
+        HttpResponseMessage responseMessage = await client.PutAsync(new StringBuilder("/authentication/update?").Append(query).ToString(), null);
         string? response = await responseMessage.Content.ReadAsStringAsync();
+
+        notificationMessage = response;
+
+        if (response.Contains("Internal server error") == true)
+        {
+            notificationType = Notifications.NotificationType.Error;
+        }
+        else if (response.Contains("Invalid password") == true)
+        {
+            notificationType = Notifications.NotificationType.Error;
+        }
+        else if (response.Contains("Invalid log in session key") == true)
+        {
+            operation = OnCloseOperation.NavigateToLogInPage;
+            notificationType = Notifications.NotificationType.Error;
+            OperationOnClose = true;
+        }
+        else if (response.Contains("Invalid log in session key") == true)
+        {
+            operation = OnCloseOperation.NavigateToLogInPage;
+            notificationType = Notifications.NotificationType.Error;
+            OperationOnClose = true;
+        }
+        else if (response.Contains("Log in session not approved") == true)
+        {
+            operation = OnCloseOperation.NavigateToLogInPage;
+            notificationType = Notifications.NotificationType.Error;
+            OperationOnClose = true;
+        }
+        else if (response.Contains("Account does not exists") == true)
+        {
+            operation = OnCloseOperation.NavigateToLogInPage;
+            notificationType = Notifications.NotificationType.Error;
+            OperationOnClose = true;
+        }
+        else if (response.Contains("Password update successful") == true)
+        {
+            operation = OnCloseOperation.NavigateToLogInPage;
+            notificationType = Notifications.NotificationType.Information;
+            OperationOnClose = true;
+        }
+        else if (response.Contains("Check the code sent to your email to approve the password change") == true)
+        {
+            operation = OnCloseOperation.OpenValidationPanel;
+            notificationType = Notifications.NotificationType.Information;
+            OperationOnClose = true;
+        }
+        else
+        {
+            notificationMessage = "Internal server error";
+        }
+
+        timer = new System.Timers.Timer();
+        timer.Interval = 100;
+        timer.Elapsed += Elapased;
+        timer.Start();
+
+        ShowNotification = true;
+        StateHasChanged();
+
+        Console.WriteLine(response);
     }
 
     public async void DeleteAccount()
     {
+        validationType = ValidationPanel.ValidationType.DeleteAccount;
+        validationInputTopic = "Account deletion";
+        placeholder = "Account deletion code";
+
         string? log_in_session_key = await GetCache();
 
         HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig);
@@ -215,11 +300,27 @@ else
         }
         else if (response.Contains("Invalid log in session key") == true)
         {
-            notificationType = Notifications.NotificationType.Error;            
+            operation = OnCloseOperation.NavigateToLogInPage;
+            notificationType = Notifications.NotificationType.Error;
+            OperationOnClose = true;
+        }
+        else if (response.Contains("Invalid log in session key") == true)
+        {
+            operation = OnCloseOperation.NavigateToLogInPage;
+            notificationType = Notifications.NotificationType.Error;
+            OperationOnClose = true;
+        }
+        else if (response.Contains("Log in session not approved") == true)
+        {
+            operation = OnCloseOperation.NavigateToLogInPage;
+            notificationType = Notifications.NotificationType.Error;
+            OperationOnClose = true;
         }
         else if (response.Contains("Account does not exists") == true)
         {
+            operation = OnCloseOperation.NavigateToLogInPage;
             notificationType = Notifications.NotificationType.Error;
+            OperationOnClose = true;
         }
         else if (response.Contains("Account deletion successful") == true)
         {
@@ -282,69 +383,151 @@ else
 
     private async void ValidationProcedure(string? code, ValidationPanel.ValidationType validationType)
     {
-        if (validationType == ValidationPanel.ValidationType.DeleteAccount)
+        HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig);
+        try
         {
-            HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig);
             client.BaseAddress = new Uri(NavigationManager.BaseUri);
-            HttpResponseMessage responseMessage = await client.DeleteAsync(new StringBuilder("/validation/delete-account?").Append("value=").Append(System.Net.WebUtility.UrlEncode(code)).ToString());
-            string? response = await responseMessage.Content.ReadAsStringAsync();
 
-            Console.WriteLine($"Response: {response}");
+            if (validationType == ValidationPanel.ValidationType.DeleteAccount)
+            {
+                HttpResponseMessage responseMessage = await client.DeleteAsync(new StringBuilder("/validation/delete-account?").Append("value=").Append(System.Net.WebUtility.UrlEncode(code)).ToString());
+                string? response = await responseMessage.Content.ReadAsStringAsync();
 
-            if (response.Contains("Internal server error") == true)
-            {
-                notificationType = Notifications.NotificationType.Error;
-                notificationMessage = response;
-            }
-            else if (response.Contains("Account does not exists") == true)
-            {
-                operation = OnCloseOperation.NavigateToLogInPage;
-                notificationType = Notifications.NotificationType.Error;
-                notificationMessage = response;
-                OperationOnClose = true;
-                ShowValidationPanel = false;
-            }
-            else if (response.Contains("Invalid code") == true)
-            {
-                notificationType = Notifications.NotificationType.Error;
-                notificationMessage = response;
-            }
-            else if (response.Contains("Account deletion code expired") == true)
-            {
-                notificationType = Notifications.NotificationType.Error;
-                notificationMessage = response;
-                ShowValidationPanel = false;
-            }
-            else if (response.Contains("Account deletion successful") == true)
-            {
-                operation = OnCloseOperation.NavigateToLogInPage;
-                notificationType = Notifications.NotificationType.Information;
-                notificationMessage = response;
-                OperationOnClose = true;
-                ShowValidationPanel = false;
-            }
-            else if (response.Contains("Invalid log in session key") == true)
-            {
-                operation = OnCloseOperation.NavigateToLogInPage;
-                notificationType = Notifications.NotificationType.Error;
-                notificationMessage = response;
-                OperationOnClose = true;
-                ShowValidationPanel = false;
-            }
-            else
-            {
-                notificationType = Notifications.NotificationType.Error;
-                notificationMessage = "Internal server error";
-            }
+                Console.WriteLine($"Response: {response}");
 
-            timer = new System.Timers.Timer();
-            timer.Interval = 100;
-            timer.Elapsed += Elapased;
-            timer.Start();
+                if (response.Contains("Internal server error") == true)
+                {
+                    notificationType = Notifications.NotificationType.Error;
+                    notificationMessage = response;
+                }
+                else if (response.Contains("Account does not exists") == true)
+                {
+                    operation = OnCloseOperation.NavigateToLogInPage;
+                    notificationType = Notifications.NotificationType.Error;
+                    notificationMessage = response;
+                    OperationOnClose = true;
+                    ShowValidationPanel = false;
+                }
+                else if (response.Contains("Invalid code") == true)
+                {
+                    notificationType = Notifications.NotificationType.Error;
+                    notificationMessage = response;
+                }
+                else if (response.Contains("Account deletion code expired") == true)
+                {
+                    notificationType = Notifications.NotificationType.Error;
+                    notificationMessage = response;
+                    ShowValidationPanel = false;
+                }
+                else if (response.Contains("Account deletion successful") == true)
+                {
+                    operation = OnCloseOperation.NavigateToLogInPage;
+                    notificationType = Notifications.NotificationType.Information;
+                    notificationMessage = response;
+                    OperationOnClose = true;
+                    ShowValidationPanel = false;
+                }
+                else if (response.Contains("Invalid log in session key") == true)
+                {
+                    operation = OnCloseOperation.NavigateToLogInPage;
+                    notificationType = Notifications.NotificationType.Error;
+                    notificationMessage = response;
+                    OperationOnClose = true;
+                    ShowValidationPanel = false;
+                }
+                else
+                {
+                    notificationType = Notifications.NotificationType.Error;
+                    notificationMessage = "Internal server error";
+                }
+            }
+            else if (validationType == ValidationPanel.ValidationType.UpdatePassword)
+            {
+                PasswordUpdateValidationModel model = new PasswordUpdateValidationModel()
+                {
+                    code = code,
+                    new_password = password
+                };
 
-            ShowNotification = true;
-            StateHasChanged();
+                string? query = await QueryParser.QueryParsing.QueryParser(model);
+
+                HttpResponseMessage responseMessage = await client.PutAsync(new StringBuilder("/validation/update-account?").Append(query).ToString(), null);
+                string? response = await responseMessage.Content.ReadAsStringAsync();
+
+
+                if (response.Contains("Internal server error") == true)
+                {
+                    notificationType = Notifications.NotificationType.Error;
+                }
+                else if (response.Contains("Invalid password") == true)
+                {
+                    notificationType = Notifications.NotificationType.Error;
+                }
+                else if (response.Contains("Invalid log in session key") == true)
+                {
+                    operation = OnCloseOperation.NavigateToLogInPage;
+                    notificationType = Notifications.NotificationType.Error;
+                    OperationOnClose = true;
+                }
+                else if (response.Contains("Invalid log in session key") == true)
+                {
+                    operation = OnCloseOperation.NavigateToLogInPage;
+                    notificationType = Notifications.NotificationType.Error;
+                    OperationOnClose = true;
+                }
+                else if (response.Contains("Log in session not approved") == true)
+                {
+                    operation = OnCloseOperation.NavigateToLogInPage;
+                    notificationType = Notifications.NotificationType.Error;
+                    OperationOnClose = true;
+                }
+                else if (response.Contains("Account does not exists") == true)
+                {
+                    operation = OnCloseOperation.NavigateToLogInPage;
+                    notificationType = Notifications.NotificationType.Error;
+                    OperationOnClose = true;
+                }
+                else if (response.Contains("Password update code expired") == true)
+                {
+                    operation = OnCloseOperation.NavigateToLogInPage;
+                    notificationType = Notifications.NotificationType.Error;
+                    OperationOnClose = true;
+                }
+                else if (response.Contains("Password update successful") == true)
+                {
+                    operation = OnCloseOperation.NavigateToLogInPage;
+                    notificationType = Notifications.NotificationType.Information;
+                    OperationOnClose = true;
+                }
+                else if (response.Contains("Check the code sent to your email to approve the password change") == true)
+                {
+                    operation = OnCloseOperation.OpenValidationPanel;
+                    notificationType = Notifications.NotificationType.Information;
+                    OperationOnClose = true;
+                }
+                else
+                {
+                    notificationMessage = "Internal server error";
+                }
+            }
         }
+        catch
+        {
+            notificationType = Notifications.NotificationType.Error;
+            notificationMessage = "Internal server error";
+        }
+        finally
+        {
+            client?.Dispose();
+        }
+
+        timer = new System.Timers.Timer();
+        timer.Interval = 100;
+        timer.Elapsed += Elapased;
+        timer.Start();
+
+        ShowNotification = true;
+        StateHasChanged();
     }
 
     private void CloseNotification()
@@ -357,8 +540,6 @@ else
                     NavigationManager.NavigateTo("/log-in", true);
                     break;
                 case OnCloseOperation.OpenValidationPanel:
-                    validationInputTopic = "Account deletion";
-                    placeholder = "Account deletion code";
                     ShowValidationPanel = true;
                     break;
             }
