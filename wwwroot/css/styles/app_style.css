@@ -37,7 +37,10 @@ div.title_div{
 }
 
 div.focus_panel {
+    left: 0px;
     top: 0px;
+    height:100vh;
+    width:100vw;
     position: absolute;
     display: flex;
     flex-direction: column;
