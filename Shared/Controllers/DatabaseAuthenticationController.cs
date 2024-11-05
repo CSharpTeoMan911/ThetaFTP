@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Firebase.Database;
 using System.Text;
 using MySqlX.XDevAPI;
+using static Mysqlx.Expect.Open.Types.Condition.Types;
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -481,18 +482,122 @@ namespace ThetaFTP.Shared.Controllers
 
         public async Task<string?> Update(PasswordUpdateModel? value)
         {
-            MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+            string? response = "Internal server error";
 
-            try
+            if (value != null)
             {
+                if (value.email != null)
+                {
+                    if (value.new_password != null)
+                    {
+                        MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
 
+                        try
+                        {
+                            if (connection.State == System.Data.ConnectionState.Open)
+                            {
+                                if (Shared.configurations?.two_step_auth == true)
+                                {
+                                    string? code = await CodeGenerator.GenerateKey(10);
+                                    Tuple<string, Type> hashed_code = await Sha512Hasher.Hash(code);
+
+                                    if (hashed_code.Item2 != typeof(Exception))
+                                    {
+                                        bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Password update", $"Password update key: {code}");
+
+                                        if (smtps_operation_result == true)
+                                        {
+                                            MySqlCommand account_update_command = connection.CreateCommand();
+                                            try
+                                            {
+                                                account_update_command.CommandText = "INSERT INTO accounts_waiting_for_password_change VALUES(@Account_Password_Change_Code, @Email, @Expiration_Date)";
+                                                account_update_command.Parameters.AddWithValue("Account_Password_Change_Code", hashed_code.Item1);
+                                                account_update_command.Parameters.AddWithValue("Email", value?.email);
+                                                account_update_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddMinutes(2));
+                                                account_update_command.ExecuteNonQuery();
+
+                                                response = "Check the code sent to your email to approve the password change";
+                                            }
+                                            catch
+                                            {
+                                                response = "Internal server error";
+                                            }
+                                            finally
+                                            {
+                                                await account_update_command.DisposeAsync();
+                                            }
+                                        }
+                                        else
+                                        {
+                                            response = "Internal server error";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        response = "Internal server error";
+                                    }
+                                }
+                                else
+                                {
+                                    Tuple<string, Type> hashed_password = await Sha512Hasher.Hash(value.new_password);
+
+                                    if (hashed_password.Item2 != typeof(Exception))
+                                    {
+                                        MySqlCommand password_update_command = connection.CreateCommand();
+                                        try
+                                        {
+                                            password_update_command.CommandText = "UPDATE credentials SET Password = @Password WHERE Email = @Email";
+                                            password_update_command.Parameters.AddWithValue("Email", value.email);
+                                            password_update_command.Parameters.AddWithValue("Password", hashed_password.Item1);
+                                            await password_update_command.ExecuteNonQueryAsync();
+
+                                            response = "Password update successful";
+                                        }
+                                        catch
+                                        {
+                                            response = "Internal server error";
+                                        }
+                                        finally
+                                        {
+                                            await password_update_command.DisposeAsync();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        response = "Internal server error";
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                response = "Internal server error";
+                            }
+                        }
+                        catch
+                        {
+                            response = "Internal server error";
+                        }
+                        finally
+                        {
+                            await connection.DisposeAsync();
+                        }
+                    }
+                    else
+                    {
+                        response = "Invalid password";
+                    }
+                }
+                else
+                {
+                    response = "Invalid email";
+                }
             }
-            catch
+            else
             {
-
+                response = "Internal server error";
             }
 
-            throw new NotImplementedException();
+            return response;
         }
     }
 }
