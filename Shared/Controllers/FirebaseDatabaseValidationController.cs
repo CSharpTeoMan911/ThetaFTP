@@ -432,5 +432,92 @@ namespace ThetaFTP.Shared.Controllers
             return response;
         }
 
+
+        public async Task<string> ValidateAccountUpdate(PasswordUpdateValidationModel? value)
+        {
+            string? response = "Internal server error";
+
+            if (value != null)
+            {
+                if (value.code != null)
+                {
+                    if (value.new_password != null)
+                    {
+                        FirebaseClient? client = await Shared.firebase.Firebase();
+
+                        if (client != null)
+                        {
+                            Tuple<string, Type> hashed_code = await Sha512Hasher.Hash(value.code);
+
+                            if (hashed_code.Item2 != typeof(Exception))
+                            {
+                                string base64_hashed_code = await Base64Formatter.FromUtf8ToBase64(hashed_code.Item1);
+
+                                string extracted_update_session = await client.Child("Accounts_Waiting_For_Password_Change").OrderBy("key").EqualTo(base64_hashed_code).OnceAsJsonAsync();
+                                Dictionary<string, FirebaseApprovalModel>? deserialised_update_session = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseApprovalModel>?>(extracted_update_session);
+
+                                if (deserialised_update_session?.Keys.Count() == 1)
+                                {
+                                    FirebaseApprovalModel model = deserialised_update_session.Values.ElementAt(0);
+
+                                    if (model.expiry_date > Convert.ToInt64(DateTime.Now.ToString("yyyyMMddHHmm")))
+                                    {
+                                        await client.Child("Accounts_Waiting_For_Password_Change").Child(deserialised_update_session.Keys.ElementAt(0)).DeleteAsync();
+
+                                        string extracted_credentials = await client.Child("Credentials").OrderBy("email").EqualTo(model.email).OnceAsJsonAsync();
+                                        Dictionary<string, FirebaseCredentialModel>? deserialised_credentials = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseCredentialModel>?>(extracted_credentials);
+
+                                        if (deserialised_credentials?.Keys.Count() == 1)
+                                        {
+                                            string base64_password = await Base64Formatter.FromUtf8ToBase64(value.new_password);
+                                            FirebaseCredentialModel credentials = deserialised_credentials.Values.ElementAt(0);
+                                            credentials.password = base64_password;
+
+                                            await client.Child("Credentials").Child(deserialised_credentials?.Keys.ElementAt(0)).PutAsync(credentials);
+
+                                            response = "Password update successful";
+                                        }
+                                        else
+                                        {
+                                            response = "Account does not exist";
+                                        }
+                                    }
+                                    else
+                                    {
+                                        response = "Password update code expired";
+                                    }
+                                }
+                                else
+                                {
+                                    response = "Invalid code";
+                                }
+                            }
+                            else
+                            {
+                                response = "Internal server error";
+                            }
+                        }
+                        else
+                        {
+                            response = "Internal server error";
+                        }
+                    }
+                    else
+                    {
+                        response = "Invalid password";
+                    }
+                }
+                else
+                {
+                    response = "Invalid code";
+                }
+            }
+            else
+            {
+                response = "Internal server error";
+            }
+
+            return response;
+        }
     }
 }

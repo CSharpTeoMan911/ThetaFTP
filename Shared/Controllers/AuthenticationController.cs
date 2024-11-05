@@ -8,7 +8,7 @@ namespace ThetaFTP.Shared.Controllers
 {
     [Route("/authentication")]
     [ApiController]
-    public class AuthenticationController : Controller, CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, string>
+    public class AuthenticationController : Controller, CRUD_Interface<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string>
     {
         [HttpDelete("delete")]
         public async Task<string?> Delete([FromQuery] string? value)
@@ -121,20 +121,60 @@ namespace ThetaFTP.Shared.Controllers
         }
 
         [HttpPut("update")]
-        public async Task<string?> Update([FromQuery] AuthenticationModel? value)
+        public async Task<string?> Update([FromQuery] PasswordUpdateModel? value)
         {
-            string? response = "Internal server error";
+            string? result = "Internal server error";
 
-            if (Shared.configurations != null)
-                if (!Shared.configurations.use_firebase)
+            string? log_in_key_validation_result = "Internal server error";
+
+            if (value != null)
+                if (Shared.configurations != null)
+                    if (!Shared.configurations.use_firebase)
+                        log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(value.log_in_session_key);
+                    else
+                        log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(value.log_in_session_key);
+
+            if (log_in_key_validation_result != "Internal server error")
+            {
+                if (log_in_key_validation_result != "Invalid log in session key")
                 {
-                    response = await Shared.database_auth.Update(value);
+                    if (log_in_key_validation_result != "Log in session key expired")
+                    {
+                        if (log_in_key_validation_result != "Log in session not approved")
+                        {
+                            if(value != null)
+                                value.email = log_in_key_validation_result;
+
+                            if (Shared.configurations != null)
+                                if (!Shared.configurations.use_firebase)
+                                {
+                                    result = await Shared.database_auth.Update(value);
+                                }
+                                else
+                                {
+                                    result = await Shared.firebase_database_auth.Update(value);
+                                }
+                            return result;
+                        }
+                        else
+                        {
+                            return log_in_key_validation_result;
+                        }
+                    }
+                    else
+                    {
+                        return log_in_key_validation_result;
+                    }
                 }
                 else
                 {
-                    response = await Shared.firebase_database_auth.Update(value);
+                    return log_in_key_validation_result;
                 }
-            return response;
+            }
+            else
+            {
+                return log_in_key_validation_result;
+            }
         }
     }
 }

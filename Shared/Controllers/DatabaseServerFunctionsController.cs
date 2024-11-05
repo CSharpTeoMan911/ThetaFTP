@@ -117,7 +117,6 @@ namespace ThetaFTP.Shared.Controllers
                                     while (await expired_deletion_reader.ReadAsync() == true)
                                     {
                                         string code = expired_deletion_reader.GetString(0);
-                                        Console.WriteLine($"deletion code: {code}");
 
                                         MySqlCommand delete_expired_deletion_command = command_execution_connection.CreateCommand();
                                         try
