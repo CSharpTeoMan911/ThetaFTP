@@ -24,7 +24,7 @@ namespace ThetaFTP
 
             System.Timers.Timer server_utility_timer = new System.Timers.Timer();
             server_utility_timer.Elapsed += Server_utility_timer_Elapsed;
-            server_utility_timer.Interval = 600000;
+            server_utility_timer.Interval = 60000;
             server_utility_timer.Start();
 
             var builder = WebApplication.CreateBuilder(args);
@@ -159,9 +159,9 @@ namespace ThetaFTP
         private static async void Server_utility_timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
         {
             if (configurations?.use_firebase == true)
-                await Shared.Shared.databaseServerFunctions.DeleteDatabaseCache();
+                await fireabseDatabaseServerFunctions.DeleteDatabaseCache();
             else
-                await Shared.Shared.databaseServerFunctions.DeleteDatabaseCache();
+                await databaseServerFunctions.DeleteDatabaseCache();
         }
     }
 }
