@@ -17,6 +17,7 @@ namespace ThetaFTP.Shared
         public static CRUD_Strategy<FtpModel, Metadata, FtpModel, FtpModel, FtpModel, FtpModel> database_ftp = new CRUD_Strategy<FtpModel, Metadata, FtpModel, FtpModel, FtpModel, FtpModel>(new FtpDatabaseController());
         public static CRUD_Strategy<FtpDirectoryModel, Metadata, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel> database_directory_ftp = new CRUD_Strategy<FtpDirectoryModel, Metadata, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel>(new FtpDirectoryDatabaseController());
         public static DatabaseServerFunctionsController databaseServerFunctions = new DatabaseServerFunctionsController();
+        public static FirebaseDatabaseServerFunctionsController fireabseDatabaseServerFunctions = new FirebaseDatabaseServerFunctionsController();
         public static DatabaseValidationController database_validation = new DatabaseValidationController();
         public static FirebaseDatabaseValidationController firebase_database_validation = new FirebaseDatabaseValidationController();
     }

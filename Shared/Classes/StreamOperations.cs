@@ -1,7 +1,4 @@
-﻿using MySqlX.XDevAPI.Common;
-using Org.BouncyCastle.Utilities.Zlib;
-using System.Buffers;
-using System.Threading;
+﻿using System.Buffers;
 
 namespace ThetaFTP.Shared.Classes
 {
@@ -21,7 +18,6 @@ namespace ThetaFTP.Shared.Classes
 
                 while (input_stream.CanRead == true && file_size > 0)
                 {
-
                     if (cancellation.IsCancellationRequested == false)
                     {
                         if ((DateTime.UtcNow - start).TotalMicroseconds >= 1000 * timeout)
