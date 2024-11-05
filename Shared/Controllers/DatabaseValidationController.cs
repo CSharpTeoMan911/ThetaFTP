@@ -471,7 +471,149 @@ namespace ThetaFTP.Shared.Controllers
 
         public async Task<string> ValidateAccountUpdate(PasswordUpdateValidationModel? value)
         {
-            throw new NotImplementedException();
+            string? response = "Internal server error";
+
+            if (value != null)
+            {
+                if (value.code != null)
+                {
+                    if (value.new_password != null)
+                    {
+                        MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+
+                        try
+                        {
+                            if (connection.State == System.Data.ConnectionState.Open)
+                            {
+                                Tuple<string, Type> hashed_code = await Sha512Hasher.Hash(value.code);
+
+                                if (hashed_code.Item2 != typeof(Exception))
+                                {
+                                    MySqlCommand account_update_session_command = connection.CreateCommand();
+                                    try
+                                    {
+                                        account_update_session_command.CommandText = "SELECT Email, Expiration_Date FROM accounts_waiting_for_password_change WHERE Account_Password_Change_Code = @Account_Password_Change_Code";
+                                        account_update_session_command.Parameters.AddWithValue("Account_Password_Change_Code", hashed_code.Item1);
+                                        DbDataReader account_update_session_reader = await account_update_session_command.ExecuteReaderAsync();
+                                        try
+                                        {
+                                            if (await account_update_session_reader.ReadAsync() == true)
+                                            {
+                                                string email = account_update_session_reader.GetString(0);
+                                                DateTime expiration_date = (DateTime)account_update_session_reader.GetValue(1);
+
+                                                await account_update_session_reader.CloseAsync();
+
+                                                if (expiration_date > DateTime.Now)
+                                                {
+                                                    MySqlCommand delete_account_update_session_command = connection.CreateCommand();
+                                                    try
+                                                    {
+                                                        delete_account_update_session_command.CommandText = "DELETE FROM accounts_waiting_for_password_change WHERE Account_Password_Change_Code = @Account_Password_Change_Code";
+                                                        delete_account_update_session_command.Parameters.AddWithValue("Account_Password_Change_Code", hashed_code.Item1);
+                                                        await delete_account_update_session_command.ExecuteNonQueryAsync();
+                                                    }
+                                                    catch
+                                                    {
+                                                        response = "Internal server error";
+                                                    }
+                                                    finally
+                                                    {
+                                                        await delete_account_update_session_command.DisposeAsync();
+                                                    }
+
+                                                    Tuple<string, Type> hashed_password = await Sha512Hasher.Hash(value.new_password);
+
+                                                    if (hashed_password.Item2 != typeof(Exception))
+                                                    {
+                                                        MySqlCommand update_password_command = connection.CreateCommand();
+                                                        try
+                                                        {
+                                                            update_password_command.CommandText = "UPDATE credentials SET Password = @Password WHERE Email = @Email";
+                                                            update_password_command.Parameters.AddWithValue("Email", email);
+                                                            update_password_command.Parameters.AddWithValue("Password", hashed_password.Item1);
+                                                            await update_password_command.ExecuteNonQueryAsync();
+
+                                                            response = "Password update successful";
+
+                                                        }
+                                                        catch
+                                                        {
+                                                            response = "Internal server error";
+                                                        }
+                                                        finally
+                                                        {
+                                                            await update_password_command.DisposeAsync();
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        response = "Internal server error";
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    response = "Password update code expired";
+                                                }
+                                            }
+                                            else
+                                            {
+                                                response = "Invalid code";
+                                            }
+                                        }
+                                        catch
+                                        {
+                                            response = "Internal server error";
+                                        }
+                                        finally
+                                        {
+                                            await account_update_session_reader.DisposeAsync();
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        response = "Internal server error";
+                                    }
+                                    finally
+                                    {
+                                        await account_update_session_command.DisposeAsync();
+                                    }
+                                }
+                                else
+                                {
+                                    response = "Internal server error";
+                                }
+                            }
+                            else
+                            {
+                                response = "Internal server error";
+                            }
+                        }
+                        catch
+                        {
+                            response = "Internal server error";
+                        }
+                        finally
+                        {
+                            await connection.DisposeAsync();
+                        }
+                    }
+                    else
+                    {
+                        response = "Invalid password";
+                    }
+                }
+                else 
+                {
+                    response = "Invalid code";
+                }
+            }
+            else
+            {
+                response = "Internal server error";
+            }
+
+            return response;
         }
     }
 }

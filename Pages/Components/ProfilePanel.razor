@@ -233,6 +233,12 @@ else
             notificationType = Notifications.NotificationType.Error;
             OperationOnClose = true;
         }
+        else if (response.Contains("Invalid email") == true)
+        {
+            operation = OnCloseOperation.NavigateToLogInPage;
+            notificationType = Notifications.NotificationType.Error;
+            OperationOnClose = true;
+        }
         else if (response.Contains("Invalid log in session key") == true)
         {
             operation = OnCloseOperation.NavigateToLogInPage;
@@ -393,8 +399,6 @@ else
                 HttpResponseMessage responseMessage = await client.DeleteAsync(new StringBuilder("/validation/delete-account?").Append("value=").Append(System.Net.WebUtility.UrlEncode(code)).ToString());
                 string? response = await responseMessage.Content.ReadAsStringAsync();
 
-                Console.WriteLine($"Response: {response}");
-
                 if (response.Contains("Internal server error") == true)
                 {
                     notificationType = Notifications.NotificationType.Error;
@@ -454,6 +458,7 @@ else
                 HttpResponseMessage responseMessage = await client.PutAsync(new StringBuilder("/validation/update-account?").Append(query).ToString(), null);
                 string? response = await responseMessage.Content.ReadAsStringAsync();
 
+                notificationMessage = response;
 
                 if (response.Contains("Internal server error") == true)
                 {
@@ -462,6 +467,12 @@ else
                 else if (response.Contains("Invalid password") == true)
                 {
                     notificationType = Notifications.NotificationType.Error;
+                }
+                else if (response.Contains("Invalid email") == true)
+                {
+                    operation = OnCloseOperation.NavigateToLogInPage;
+                    notificationType = Notifications.NotificationType.Error;
+                    OperationOnClose = true;
                 }
                 else if (response.Contains("Invalid log in session key") == true)
                 {
@@ -496,12 +507,6 @@ else
                 else if (response.Contains("Password update successful") == true)
                 {
                     operation = OnCloseOperation.NavigateToLogInPage;
-                    notificationType = Notifications.NotificationType.Information;
-                    OperationOnClose = true;
-                }
-                else if (response.Contains("Check the code sent to your email to approve the password change") == true)
-                {
-                    operation = OnCloseOperation.OpenValidationPanel;
                     notificationType = Notifications.NotificationType.Information;
                     OperationOnClose = true;
                 }
