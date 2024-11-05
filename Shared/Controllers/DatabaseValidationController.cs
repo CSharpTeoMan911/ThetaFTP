@@ -468,5 +468,10 @@ namespace ThetaFTP.Shared.Controllers
 
             return response;
         }
+
+        public async Task<string> ValidateAccountUpdate(PasswordUpdateValidationModel? value)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

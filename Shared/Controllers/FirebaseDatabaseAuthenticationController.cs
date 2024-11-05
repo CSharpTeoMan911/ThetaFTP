@@ -6,10 +6,11 @@ using System.Text;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
+using static Mysqlx.Expect.Open.Types.Condition.Types;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class FirebaseDatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, string>
+    public class FirebaseDatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string>
     {
 
         public async Task<string?> Delete(string? value)
@@ -431,9 +432,110 @@ namespace ThetaFTP.Shared.Controllers
             throw new NotImplementedException();
         }
 
-        public Task<string?> Update(AuthenticationModel? value)
+        public async Task<string?> Update(PasswordUpdateModel? value)
         {
-            throw new NotImplementedException();
+            string? response = "Internal server error";
+
+            if (value != null)
+            {
+                if (value.new_password != null)
+                {
+                    FirebaseClient? client = await Shared.firebase.Firebase();
+
+                    if (client != null)
+                    {
+                        string base64_email = await Base64Formatter.FromUtf8ToBase64(value.email);
+                        Tuple<string, Type> hashed_key = await Sha512Hasher.Hash(value.log_in_session_key);
+
+                        if (hashed_key.Item2 != typeof(Exception))
+                        {
+                            string base64_hashed_key = await Base64Formatter.FromUtf8ToBase64(hashed_key.Item1);
+                            if (Shared.configurations?.two_step_auth == true)
+                            {
+                                string? code = await CodeGenerator.GenerateKey(10);
+                                Tuple<string, Type> hashed_code = await Sha512Hasher.Hash(code);
+
+                                if (hashed_code.Item2 != typeof(Exception))
+                                {
+                                    string base64_code = await Base64Formatter.FromUtf8ToBase64(hashed_code.Item1);
+
+                                    bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Password update", $"Password update key: {code}");
+
+                                    if (smtps_operation_result == true)
+                                    {
+                                        FirebaseApprovalModel model = new FirebaseApprovalModel()
+                                        {
+                                            email = base64_email,
+                                            expiry_date = Convert.ToInt64(DateTime.Now.AddMinutes(2).ToString("yyyyMMddHHmm")),
+                                            key = base64_code
+                                        };
+
+                                        await client.Child("Accounts_Waiting_For_Password_Change").PostAsync(model, false);
+
+                                        response = "Check the code sent to your email to approve the password change";
+                                    }
+                                    else
+                                    {
+                                        response = "Internal server error";
+                                    }
+                                }
+                                else
+                                {
+                                    response = "Internal server error";
+                                }
+                            }
+                            else
+                            {
+                                string extracted_credentials = await client.Child("Credentials").OrderBy("email").EqualTo(base64_email).OnceAsJsonAsync();
+                                Dictionary<string, FirebaseCredentialModel>? deserialised_credentials = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseCredentialModel>?>(extracted_credentials);
+
+                                if (deserialised_credentials?.Keys.Count() == 1)
+                                {
+                                    Tuple<string, Type> hashed_password = await Sha512Hasher.Hash(value.new_password);
+
+                                    if (hashed_password.Item2 != typeof(Exception))
+                                    {
+                                        string base64_password = await Base64Formatter.FromUtf8ToBase64(hashed_password.Item1);
+
+                                        FirebaseCredentialModel credentials = deserialised_credentials.Values.ElementAt(0);
+                                        credentials.password = base64_password;
+
+                                        await client.Child("Credentials").Child(deserialised_credentials?.Keys.ElementAt(0)).PutAsync(credentials);
+
+                                        response = "Password update successful";
+                                    }
+                                    else
+                                    {
+                                        response = "Internal server error";
+                                    }
+                                }
+                                else
+                                {
+                                    response = "Account does not exist";
+                                }
+                            }
+                        }
+                        else
+                        {
+                            response = "Internal server error";
+                        }
+                    }
+                    else
+                    {
+                        response = "Internal server error";
+                    }
+                }
+                else
+                {
+                    response = "Invalid password";
+                }
+            }
+            else
+            {
+                response = "Internal server error";
+            }
+
+            return response;
         }
     }
 }

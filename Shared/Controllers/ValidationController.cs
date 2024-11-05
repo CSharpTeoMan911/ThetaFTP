@@ -77,5 +77,22 @@ namespace ThetaFTP.Shared.Controllers
                 }
             return result;
         }
+
+        [HttpPut("update-account")]
+        public async Task<string?> UpdateAccount([FromQuery] PasswordUpdateValidationModel? value)
+        {
+            string? result = String.Empty;
+
+            if (Shared.configurations != null)
+                if (!Shared.configurations.use_firebase)
+                {
+                    result = await Shared.database_validation.ValidateAccountUpdate(value);
+                }
+                else
+                {
+                    result = await Shared.firebase_database_validation.ValidateAccountUpdate(value);
+                }
+            return result;
+        }
     }
 }

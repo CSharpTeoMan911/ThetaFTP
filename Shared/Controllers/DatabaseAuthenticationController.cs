@@ -11,7 +11,7 @@ using MySqlX.XDevAPI;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class DatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, AuthenticationModel, string, string>
+    public class DatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string>
     {
         public async Task<string?> Delete(string? value)
         {
@@ -479,7 +479,7 @@ namespace ThetaFTP.Shared.Controllers
             throw new NotImplementedException();
         }
 
-        public async Task<string?> Update(AuthenticationModel? value)
+        public async Task<string?> Update(PasswordUpdateModel? value)
         {
             MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
 
