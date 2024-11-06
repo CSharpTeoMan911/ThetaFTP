@@ -2,6 +2,7 @@
 using ThetaFTP.Shared.Formatters;
 using System.IO;
 using System.Text;
+using Serilog;
 
 namespace ThetaFTP.Shared.Classes
 {
@@ -20,6 +21,10 @@ namespace ThetaFTP.Shared.Classes
                     byte[] json_binary = new byte[fs.Length];
                     await fs.ReadAsync(json_binary, 0, json_binary.Length);
                     serialised_json = Encoding.UTF8.GetString(json_binary);
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "Error reading server configurations");
                 }
                 finally
                 {
@@ -55,6 +60,10 @@ namespace ThetaFTP.Shared.Classes
                     await fileStream.WriteAsync(model_binary, 0, model_binary.Length);
                     await fileStream.FlushAsync();
                 }
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Error creating server configuration file");
             }
             finally
             {

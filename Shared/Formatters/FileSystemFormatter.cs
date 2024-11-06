@@ -7,9 +7,6 @@ namespace ThetaFTP.Shared.Formatters
 {
     public class FileSystemFormatter:Shared
     {
-        private static Dictionary<string, State> directories_operations = new Dictionary<string, State>();
-        private static Dictionary<string, State> files_operations = new Dictionary<string, State>();
-
         public static bool IsValidPath(string path_name) => path_name[0] == '/' ? path_name.All(c => char.IsLetter(c) || char.IsNumber(c) || c == '_' || c == '-' || c == ' ' || c == '/') : false;
         public static bool IsValidFileName(string file_name) => file_name.All(c => char.IsLetter(c) || char.IsNumber(c) || c == '_' || c == '-' || c == ' ' || c == '.');
         public static bool IsValidDirectoryName(string file_name) => file_name.All(c => char.IsLetter(c) || char.IsNumber(c) || c == '_' || c == '-' || c == ' ' || c == '.');
@@ -17,6 +14,7 @@ namespace ThetaFTP.Shared.Formatters
         public static bool CheckIfDirectoryOnDisk(string? path) => IsValidDiskPath(path) == false ? false : true;
         public static char PathSeparator() => OperatingSystem.IsWindows() == true ? '\\' : '/';
         public static bool IsValidDiskPath(string? path) => Directory.Exists(path);
+        public static bool IsValidUserDir(string? path) => path?.IndexOf(Environment.CurrentDirectory) == 0;
         public static long GetAvailableSpace() => new DriveInfo(Path.GetPathRoot(new FileInfo(Environment.CurrentDirectory).FullName) ?? String.Empty).AvailableFreeSpace;
         public static string PathConverter(string? path, string? email) => new StringBuilder(Environment.CurrentDirectory).Append(PathSeparator()).Append("FTP_Server").Append(PathSeparator()).Append(email).Append(PathConverter(path)).ToString();
         public static string GetSourcePath(string? email) => new StringBuilder(Environment.CurrentDirectory).Append(PathSeparator()).Append("FTP_Server").Append(PathSeparator()).Append(email).ToString();
@@ -88,150 +86,6 @@ namespace ThetaFTP.Shared.Formatters
                 }
 
             return true;
-        }
-
-
-        public static bool GetFileOperationState(string email, string path, State.Operation operation) 
-        {
-            State? state = new State();
-            files_operations.TryGetValue(email, out state);
-
-            FileState? _state = new FileState();
-            state?.operations.TryGetValue(path, out _state);
-
-            bool? res = _state?.GetState(operation);
-
-            if (res != null)
-                return (bool)res;
-            else
-                return false;
-        }
-
-
-        public static void SetFileOperationState(string email, string path, State.Operation operation, bool state)
-        {
-            State? _state = null;
-            files_operations.TryGetValue(email, out _state);
-
-            if (_state != null)
-            {
-                FileState? fileState = null;
-                _state?.operations.TryGetValue(path, out fileState);
-                fileState?.SetState(operation, state);
-            }
-            else
-            {
-                FileState? fileState = new FileState();
-                fileState.SetState(operation, state);
-
-                _state = new State();
-                _state.operations.Add(path, fileState);
-
-                files_operations.Add(email, _state);
-            }
-        }
-
-        public static bool GetDirectoryOperationState(string email, string path, State.Operation operation)
-        {
-            State? state = new State();
-            directories_operations.TryGetValue(email, out state);
-
-            FileState? _state = new FileState();
-            state?.operations.TryGetValue(path, out _state);
-
-            bool? res = _state?.GetState(operation);
-
-            if (res != null)
-                return (bool)res;
-            else
-                return false;
-        }
-
-
-        public static void SetDirectoryOperationState(string email, string path, State.Operation operation, bool state)
-        {
-            State? _state = null;
-            directories_operations.TryGetValue(email, out _state);
-
-            if (_state != null)
-            {
-                FileState? fileState = null;
-                _state?.operations.TryGetValue(path, out fileState);
-                fileState?.SetState(operation, state);
-            }
-            else
-            {
-                FileState? fileState = new FileState();
-                fileState.SetState(operation, state);
-
-                _state = new State();
-                _state.operations.Add(path, fileState);
-
-                directories_operations.Add(email, _state);
-            }
-        }
-
-
-        public static bool ValidateFileOperation(string email, string path, State.Operation operation)
-        {
-            State? _state = null;
-            files_operations.TryGetValue(email, out _state);
-
-            if (_state != null)
-            {
-                FileState? fileState = null;
-                _state?.operations.TryGetValue(path, out fileState);
-
-
-            }
-            else
-            {
-                FileState? fileState = new FileState();
-            }
-
-            return true;
-        }
-
-        public static bool ValidateDirectoryOperation(string email, string path, State.Operation operation)
-        {
-
-            return true;
-        }
-
-
-        public static bool FindRelocationFileOperation(string? email, string? path)
-        {
-            bool found = false;
-
-            return found;
-        }
-
-
-
-
-        public static bool FindDeleteFileOperation(string? email, string? path)
-        {
-            bool found = false;
-
-            return found;
-        }
-
-
-
-        public static bool FindRelocationDirectoryOperation(string? email, string? path)
-        {
-            bool found = false;
-
-            return found;
-        }
-
-
-
-        public static bool FindDeleteDirectoryOperation(string? email, string? path)
-        {
-            bool found = false;
-
-            return found;
         }
 
         public static string NavigateBackward(string? Path)

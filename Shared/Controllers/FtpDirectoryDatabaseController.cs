@@ -28,15 +28,22 @@ namespace ThetaFTP.Shared.Controllers
 
                             if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
                             {
-                                try
+                                if (FileSystemFormatter.IsValidUserDir(converted_path) == true)
                                 {
-                                    if (value != null)
-                                        FileSystemFormatter.DeleteDirectory(full_path);
-                                    result = "Directory deletion successful";
+                                    try
+                                    {
+                                        if (value != null)
+                                            FileSystemFormatter.DeleteDirectory(full_path);
+                                        result = "Directory deletion successful";
+                                    }
+                                    catch
+                                    {
+                                        result = "Internal server error";
+                                    }
                                 }
-                                catch
+                                else
                                 {
-                                    result = "Internal server error";
+                                    result = "Invalid path";
                                 }
                             }
                             else
@@ -88,22 +95,29 @@ namespace ThetaFTP.Shared.Controllers
 
                             if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
                             {
-                                try
+                                if (FileSystemFormatter.IsValidUserDir(converted_path) == true)
                                 {
-                                    List<DirectoryItem> directories_info = new List<DirectoryItem>();
-                                    DirectoryInfo directoryInfo = new DirectoryInfo(converted_path);
-                                    directoryInfo.GetDirectories()?.ToList()?.ForEach(directoryInfo => directories_info.Add(new DirectoryItem()
+                                    try
                                     {
-                                        name = directoryInfo.Name,
-                                        isDirectory = true
-                                    }));
+                                        List<DirectoryItem> directories_info = new List<DirectoryItem>();
+                                        DirectoryInfo directoryInfo = new DirectoryInfo(converted_path);
+                                        directoryInfo.GetDirectories()?.ToList()?.ForEach(directoryInfo => directories_info.Add(new DirectoryItem()
+                                        {
+                                            name = directoryInfo.Name,
+                                            isDirectory = true
+                                        }));
 
-                                    string? serialised_directory_names = await JsonFormatter.JsonSerialiser(directories_info);
-                                    return serialised_directory_names;
+                                        string? serialised_directory_names = await JsonFormatter.JsonSerialiser(directories_info);
+                                        return serialised_directory_names;
+                                    }
+                                    catch
+                                    {
+                                        result = "Internal server error";
+                                    }
                                 }
-                                catch
+                                else
                                 {
-                                    result = "Internal server error";
+                                    result = "Invalid path";
                                 }
                             }
                             else
@@ -154,14 +168,21 @@ namespace ThetaFTP.Shared.Controllers
 
                                     if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
                                     {
-                                        try
+                                        if (FileSystemFormatter.IsValidUserDir(converted_path) == true)
                                         {
-                                            Directory.CreateDirectory(FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_name));
-                                            result = "Directory upload successful";
+                                            try
+                                            {
+                                                Directory.CreateDirectory(FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_name));
+                                                result = "Directory upload successful";
+                                            }
+                                            catch
+                                            {
+                                                result = "Directory already exists";
+                                            }
                                         }
-                                        catch
+                                        else
                                         {
-                                            result = "Directory already exists";
+                                            result = "Invalid path";
                                         }
                                     }
                                     else
@@ -219,26 +240,39 @@ namespace ThetaFTP.Shared.Controllers
                                 string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
                                 string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_name);
                                 string re_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_new_name);
-                                //bool operation_found = false;
 
                                 if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
                                 {
-                                    if (File.Exists(re_path) == false)
+                                    if (FileSystemFormatter.IsValidUserDir(converted_path) == true)
                                     {
-                                        try
+                                        if(FileSystemFormatter.IsValidUserDir(re_path) == true)
                                         {
-                                            if (value != null)
-                                                FileSystemFormatter.RenameDirectory(full_path, re_path);
-                                            result = "Directory rename successful";
+                                            if (File.Exists(re_path) == false)
+                                            {
+                                                try
+                                                {
+                                                    if (value != null)
+                                                        FileSystemFormatter.RenameDirectory(full_path, re_path);
+                                                    result = "Directory rename successful";
+                                                }
+                                                catch
+                                                {
+                                                    result = "Invalid directory name";
+                                                }
+                                            }
+                                            else
+                                            {
+                                                result = "Invalid directory name";
+                                            }
                                         }
-                                        catch
+                                        else
                                         {
-                                            result = "Invalid directory name";
+                                            result = "Invalid path";
                                         }
                                     }
                                     else
                                     {
-                                        result = "Invalid directory name";
+                                        result = "Invalid path";
                                     }
                                 }
                                 else
@@ -299,10 +333,24 @@ namespace ThetaFTP.Shared.Controllers
                                         {
                                             if (FileSystemFormatter.IsValidDiskPath(converted_new_path) == true)
                                             {
-                                                string old_full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_name);
-                                                string new_full_path = FileSystemFormatter.FullPathBuilder(converted_new_path, value?.directory_name);
-                                                FileSystemFormatter.MoveDirectory(old_full_path, new_full_path);
-                                                result = "Directory relocation successful";
+                                                if (FileSystemFormatter.IsValidUserDir(converted_path) == true)
+                                                {
+                                                    if (FileSystemFormatter.IsValidUserDir(converted_new_path) == true)
+                                                    {
+                                                        string old_full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_name);
+                                                        string new_full_path = FileSystemFormatter.FullPathBuilder(converted_new_path, value?.directory_name);
+                                                        FileSystemFormatter.MoveDirectory(old_full_path, new_full_path);
+                                                        result = "Directory relocation successful";
+                                                    }
+                                                    else
+                                                    {
+                                                        result = "Invalid path";
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    result = "Invalid path";
+                                                }
                                             }
                                             else
                                             {

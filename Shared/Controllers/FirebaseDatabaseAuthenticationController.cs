@@ -1,12 +1,11 @@
 ﻿using Firebase.Database;
 using Firebase.Database.Query;
 using HallRentalSystem.Classes.StructuralAndBehavioralElements.Formaters;
-using MySqlX.XDevAPI;
 using System.Text;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
-using static Mysqlx.Expect.Open.Types.Condition.Types;
+using Serilog;
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -60,8 +59,9 @@ namespace ThetaFTP.Shared.Controllers
                                 response = "Internal server error";
                             }
                         }
-                        catch
+                        catch (Exception e)
                         {
+                            Log.Error(e, "Account deletion API error");
                             response = "Internal server error";
                         }
                     }
@@ -160,8 +160,9 @@ namespace ThetaFTP.Shared.Controllers
                     response = "Internal server error";
                 }
             }
-            catch
+            catch (Exception e)
             {
+                Log.Error(e, "Account deletion API error");
                 response = "Internal server error";
             }
 
@@ -184,119 +185,127 @@ namespace ThetaFTP.Shared.Controllers
                     {
                         FirebaseClient? client = await Shared.firebase.Firebase();
 
-                        if (client != null)
+                        try
                         {
-                            string base64_email = await Base64Formatter.FromUtf8ToBase64(value.email);
-
-                            string extracted_credentials = await client.Child("Credentials").OrderBy("email").EqualTo(base64_email).OnceAsJsonAsync();
-                            Dictionary<string, FirebaseCredentialModel>? deserialised_credentials = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseCredentialModel>?>(extracted_credentials);
-
-                            if (deserialised_credentials?.Keys.Count() > 0)
+                            if (client != null)
                             {
-                                Tuple<string, Type> hashed_password = await Sha512Hasher.Hash(value?.password);
+                                string base64_email = await Base64Formatter.FromUtf8ToBase64(value.email);
 
-                                if (hashed_password.Item2 != typeof(Exception))
+                                string extracted_credentials = await client.Child("Credentials").OrderBy("email").EqualTo(base64_email).OnceAsJsonAsync();
+                                Dictionary<string, FirebaseCredentialModel>? deserialised_credentials = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseCredentialModel>?>(extracted_credentials);
+
+                                if (deserialised_credentials?.Keys.Count() > 0)
                                 {
-                                    string base64_hashed_password = await Base64Formatter.FromUtf8ToBase64(hashed_password.Item1);
+                                    Tuple<string, Type> hashed_password = await Sha512Hasher.Hash(value?.password);
 
-                                    if (deserialised_credentials.Values.ElementAt(0).password == base64_hashed_password)
+                                    if (hashed_password.Item2 != typeof(Exception))
                                     {
-                                        if (Shared.configurations?.two_step_auth == true)
-                                        {
-                                            string extracted_approval = await client.Child("Accounts_Waiting_For_Approval").OrderBy("email").EqualTo(base64_email).OnceAsJsonAsync();
-                                            Dictionary<string, FirebaseApprovalModel>? deserialised_approval = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseApprovalModel>?>(extracted_approval);
+                                        string base64_hashed_password = await Base64Formatter.FromUtf8ToBase64(hashed_password.Item1);
 
-                                            if (deserialised_approval?.Keys.Count > 0)
+                                        if (deserialised_credentials.Values.ElementAt(0).password == base64_hashed_password)
+                                        {
+                                            if (Shared.configurations?.two_step_auth == true)
                                             {
-                                                serverPayload.response_message = "Account not approved";
-                                                goto End;
+                                                string extracted_approval = await client.Child("Accounts_Waiting_For_Approval").OrderBy("email").EqualTo(base64_email).OnceAsJsonAsync();
+                                                Dictionary<string, FirebaseApprovalModel>? deserialised_approval = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseApprovalModel>?>(extracted_approval);
+
+                                                if (deserialised_approval?.Keys.Count > 0)
+                                                {
+                                                    serverPayload.response_message = "Account not approved";
+                                                    goto End;
+                                                }
                                             }
+                                        }
+                                        else
+                                        {
+                                            serverPayload.response_message = "Invalid password";
                                         }
                                     }
                                     else
                                     {
-                                        serverPayload.response_message = "Invalid password";
+                                        serverPayload.response_message = "Internal server error";
                                     }
-                                }
-                                else
-                                {
-                                    serverPayload.response_message = "Internal server error";
-                                }
 
-                                string? log_in_session_key = await CodeGenerator.GenerateKey(40);
-                                Tuple<string, Type> hashed_log_in_session_key = await Sha512Hasher.Hash(log_in_session_key);
+                                    string? log_in_session_key = await CodeGenerator.GenerateKey(40);
+                                    Tuple<string, Type> hashed_log_in_session_key = await Sha512Hasher.Hash(log_in_session_key);
 
-                                if (hashed_log_in_session_key.Item2 != typeof(Exception) && log_in_session_key != null)
-                                {
-                                    string base64_hashed_log_in_session_key = await Base64Formatter.FromUtf8ToBase64(hashed_log_in_session_key.Item1);
-
-
-                                    FirebaseLogInSessionModel firebaseLogInSessionModel = new FirebaseLogInSessionModel()
+                                    if (hashed_log_in_session_key.Item2 != typeof(Exception) && log_in_session_key != null)
                                     {
-                                        email = base64_email,
-                                        expiry_date = Convert.ToInt64(DateTime.Now.AddDays(2).ToString("yyyyMMddHHmm")),
-                                        key = base64_hashed_log_in_session_key
-                                    };
-                                    FirebaseObject<FirebaseLogInSessionModel> firebaseLogInSessionResult = await client.Child("Log_In_Sessions").PostAsync(firebaseLogInSessionModel, false);
+                                        string base64_hashed_log_in_session_key = await Base64Formatter.FromUtf8ToBase64(hashed_log_in_session_key.Item1);
 
-                                    if (Shared.configurations?.two_step_auth == true)
-                                    {
-                                        string? log_in_code = await CodeGenerator.GenerateKey(10);
-                                        Tuple<string, Type> hashed_log_in_code = await Sha512Hasher.Hash(log_in_code);
-                                        string base64_hashed_log_in_code = await Base64Formatter.FromUtf8ToBase64(hashed_log_in_code.Item1);
 
-                                        if (hashed_log_in_code.Item2 != typeof(Exception) && log_in_code != null)
+                                        FirebaseLogInSessionModel firebaseLogInSessionModel = new FirebaseLogInSessionModel()
                                         {
+                                            email = base64_email,
+                                            expiry_date = Convert.ToInt64(DateTime.Now.AddDays(2).ToString("yyyyMMddHHmm")),
+                                            key = base64_hashed_log_in_session_key
+                                        };
+                                        FirebaseObject<FirebaseLogInSessionModel> firebaseLogInSessionResult = await client.Child("Log_In_Sessions").PostAsync(firebaseLogInSessionModel, false);
 
-                                            FirebaseLogInSessionApprovalModel firebaseLogInSessionWaitingForApprovalModel = new FirebaseLogInSessionApprovalModel()
+                                        if (Shared.configurations?.two_step_auth == true)
+                                        {
+                                            string? log_in_code = await CodeGenerator.GenerateKey(10);
+                                            Tuple<string, Type> hashed_log_in_code = await Sha512Hasher.Hash(log_in_code);
+                                            string base64_hashed_log_in_code = await Base64Formatter.FromUtf8ToBase64(hashed_log_in_code.Item1);
+
+                                            if (hashed_log_in_code.Item2 != typeof(Exception) && log_in_code != null)
                                             {
-                                                code = base64_hashed_log_in_code,
-                                                expiry_date = Convert.ToInt64(DateTime.Now.AddDays(2).ToString("yyyyMMddHHmm")),
-                                                key = base64_hashed_log_in_session_key
-                                            };
 
-                                            FirebaseObject<FirebaseLogInSessionApprovalModel> firebaseLogInSessionWaitingForApprovalResult = await client.Child("Log_In_Sessions_Waiting_For_Approval").PostAsync(firebaseLogInSessionWaitingForApprovalModel, false);
-                                            bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Log in authorisation", $"Login code: {log_in_code}");
+                                                FirebaseLogInSessionApprovalModel firebaseLogInSessionWaitingForApprovalModel = new FirebaseLogInSessionApprovalModel()
+                                                {
+                                                    code = base64_hashed_log_in_code,
+                                                    expiry_date = Convert.ToInt64(DateTime.Now.AddDays(2).ToString("yyyyMMddHHmm")),
+                                                    key = base64_hashed_log_in_session_key
+                                                };
+
+                                                FirebaseObject<FirebaseLogInSessionApprovalModel> firebaseLogInSessionWaitingForApprovalResult = await client.Child("Log_In_Sessions_Waiting_For_Approval").PostAsync(firebaseLogInSessionWaitingForApprovalModel, false);
+                                                bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Log in authorisation", $"Login code: {log_in_code}");
 
 
-                                            if (smtps_operation_result == true)
-                                            {
-                                                serverPayload.content = log_in_session_key;
-                                                serverPayload.response_message = "Check the code sent to your email address to approve your log in session";
+                                                if (smtps_operation_result == true)
+                                                {
+                                                    serverPayload.content = log_in_session_key;
+                                                    serverPayload.response_message = "Check the code sent to your email address to approve your log in session";
+                                                }
+                                                else
+                                                {
+                                                    await client.Child("Log_In_Sessions").Child(firebaseLogInSessionResult.Key).DeleteAsync();
+                                                    await client.Child("Log_In_Sessions_Waiting_For_Approval").Child(firebaseLogInSessionWaitingForApprovalResult.Key).DeleteAsync();
+                                                    serverPayload.response_message = "Internal server error";
+                                                }
                                             }
                                             else
                                             {
-                                                await client.Child("Log_In_Sessions").Child(firebaseLogInSessionResult.Key).DeleteAsync();
-                                                await client.Child("Log_In_Sessions_Waiting_For_Approval").Child(firebaseLogInSessionWaitingForApprovalResult.Key).DeleteAsync();
                                                 serverPayload.response_message = "Internal server error";
                                             }
                                         }
                                         else
                                         {
-                                            serverPayload.response_message = "Internal server error";
+                                            serverPayload.content = log_in_session_key;
+                                            serverPayload.response_message = "Authentication successful";
                                         }
                                     }
                                     else
                                     {
-                                        serverPayload.content = log_in_session_key;
-                                        serverPayload.response_message = "Authentication successful";
+                                        serverPayload.response_message = "Internal server error";
                                     }
+
+                                End:;
                                 }
                                 else
                                 {
-                                    serverPayload.response_message = "Internal server error";
+                                    serverPayload.response_message = "Invalid email";
                                 }
-
-                                End:;
                             }
                             else
                             {
-                                serverPayload.response_message = "Invalid email";
+                                serverPayload.response_message = "Internal server error";
                             }
                         }
-                        else
+                        catch (Exception e)
                         {
-                            serverPayload.response_message = "Internal server error";
+                            Log.Error(e, "User log in API error");
+                            response = "Internal server error";
                         }
                     }
                     else
@@ -336,76 +345,84 @@ namespace ThetaFTP.Shared.Controllers
                     {
                         FirebaseClient? client = await Shared.firebase.Firebase();
 
-                        if (client != null)
+                        try
                         {
-                            string base64_email = await Base64Formatter.FromUtf8ToBase64(value.email);
-
-                            string? exctracted_credentials = await client.Child("Credentials").OrderBy("email").EqualTo(base64_email).OnceAsJsonAsync();
-                            Dictionary<string, FirebaseCredentialModel>? deserialised_credentials = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseCredentialModel>>(exctracted_credentials);
-                            if (deserialised_credentials?.Keys.Count == 0)
+                            if (client != null)
                             {
-                                Tuple<string,Type> hashed_password = await Sha512Hasher.Hash(value.password);
-                                string base64_hashed_password = await Base64Formatter.FromUtf8ToBase64(hashed_password.Item1);
+                                string base64_email = await Base64Formatter.FromUtf8ToBase64(value.email);
 
-                                if (hashed_password.Item2 != typeof(Exception))
+                                string? exctracted_credentials = await client.Child("Credentials").OrderBy("email").EqualTo(base64_email).OnceAsJsonAsync();
+                                Dictionary<string, FirebaseCredentialModel>? deserialised_credentials = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseCredentialModel>>(exctracted_credentials);
+                                if (deserialised_credentials?.Keys.Count == 0)
                                 {
-                                    FirebaseCredentialModel credentialModel = new FirebaseCredentialModel()
+                                    Tuple<string, Type> hashed_password = await Sha512Hasher.Hash(value.password);
+                                    string base64_hashed_password = await Base64Formatter.FromUtf8ToBase64(hashed_password.Item1);
+
+                                    if (hashed_password.Item2 != typeof(Exception))
                                     {
-                                        email = base64_email,
-                                        password = base64_hashed_password
-                                    };
-
-                                    FirebaseObject<FirebaseCredentialModel> result = await client.Child("Credentials").PostAsync(credentialModel, false);
-                                    
-
-
-                                    if (Shared.configurations?.two_step_auth == true)
-                                    {
-                                        string? key = await CodeGenerator.GenerateKey(10);
-                                        Tuple<string, Type> key_hash_result = await Sha512Hasher.Hash(key);
-
-                                        if (key_hash_result.Item2 != typeof(Exception) && key != null)
+                                        FirebaseCredentialModel credentialModel = new FirebaseCredentialModel()
                                         {
-                                            string base64_key_hash = await Base64Formatter.FromUtf8ToBase64(key_hash_result.Item1);
+                                            email = base64_email,
+                                            password = base64_hashed_password
+                                        };
 
-                                            bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Account approval", $"Account approval key: {key}");
+                                        FirebaseObject<FirebaseCredentialModel> result = await client.Child("Credentials").PostAsync(credentialModel, false);
 
-                                            if (smtps_operation_result == true)
+
+
+                                        if (Shared.configurations?.two_step_auth == true)
+                                        {
+                                            string? key = await CodeGenerator.GenerateKey(10);
+                                            Tuple<string, Type> key_hash_result = await Sha512Hasher.Hash(key);
+
+                                            if (key_hash_result.Item2 != typeof(Exception) && key != null)
                                             {
-                                                FirebaseApprovalModel firebaseApprovalModel = new FirebaseApprovalModel()
+                                                string base64_key_hash = await Base64Formatter.FromUtf8ToBase64(key_hash_result.Item1);
+
+                                                bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Account approval", $"Account approval key: {key}");
+
+                                                if (smtps_operation_result == true)
                                                 {
-                                                    email = base64_email,
-                                                    key = base64_key_hash,
-                                                    expiry_date = Convert.ToInt64(DateTime.Now.AddHours(1).ToString("yyyyMMddHHmm"))
-                                                };
+                                                    FirebaseApprovalModel firebaseApprovalModel = new FirebaseApprovalModel()
+                                                    {
+                                                        email = base64_email,
+                                                        key = base64_key_hash,
+                                                        expiry_date = Convert.ToInt64(DateTime.Now.AddHours(1).ToString("yyyyMMddHHmm"))
+                                                    };
 
-                                                await client.Child("Accounts_Waiting_For_Approval").PostAsync(firebaseApprovalModel, false);
-                                                response = "Registration successful";
+                                                    await client.Child("Accounts_Waiting_For_Approval").PostAsync(firebaseApprovalModel, false);
+                                                    response = "Registration successful";
+                                                }
+                                                else
+                                                {
+                                                    await client.Child("Credentials").Child(result.Key).DeleteAsync();
+                                                    response = "Internal server error";
+                                                }
                                             }
-                                            else
-                                            {
-                                                await client.Child("Credentials").Child(result.Key).DeleteAsync();
-                                                response = "Internal server error";
-                                            }
+                                        }
+                                        else
+                                        {
+                                            response = "Registration successful";
                                         }
                                     }
                                     else
                                     {
-                                        response = "Registration successful";
+                                        response = "Internal server error";
                                     }
                                 }
                                 else
                                 {
-                                    response = "Internal server error";
+                                    response = "Account already exists";
                                 }
                             }
                             else
                             {
-                                response = "Account already exists";
+                                response = "Internal server error";
                             }
                         }
-                        else
+                        catch (Exception e)
                         {
+                            Log.Error(e, "User registration API error");
                             response = "Internal server error";
                         }
                     }
@@ -444,37 +461,44 @@ namespace ThetaFTP.Shared.Controllers
                     {
                         FirebaseClient? client = await Shared.firebase.Firebase();
 
-                        if (client != null)
+                        try
                         {
-                            string base64_email = await Base64Formatter.FromUtf8ToBase64(value.email);
-                            Tuple<string, Type> hashed_key = await Sha512Hasher.Hash(value.log_in_session_key);
-
-                            if (hashed_key.Item2 != typeof(Exception))
+                            if (client != null)
                             {
-                                string base64_hashed_key = await Base64Formatter.FromUtf8ToBase64(hashed_key.Item1);
-                                if (Shared.configurations?.two_step_auth == true)
+                                string base64_email = await Base64Formatter.FromUtf8ToBase64(value.email);
+                                Tuple<string, Type> hashed_key = await Sha512Hasher.Hash(value.log_in_session_key);
+
+                                if (hashed_key.Item2 != typeof(Exception))
                                 {
-                                    string? code = await CodeGenerator.GenerateKey(10);
-                                    Tuple<string, Type> hashed_code = await Sha512Hasher.Hash(code);
-
-                                    if (hashed_code.Item2 != typeof(Exception))
+                                    string base64_hashed_key = await Base64Formatter.FromUtf8ToBase64(hashed_key.Item1);
+                                    if (Shared.configurations?.two_step_auth == true)
                                     {
-                                        string base64_code = await Base64Formatter.FromUtf8ToBase64(hashed_code.Item1);
+                                        string? code = await CodeGenerator.GenerateKey(10);
+                                        Tuple<string, Type> hashed_code = await Sha512Hasher.Hash(code);
 
-                                        bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Password update", $"Password update key: {code}");
-
-                                        if (smtps_operation_result == true)
+                                        if (hashed_code.Item2 != typeof(Exception))
                                         {
-                                            FirebaseApprovalModel model = new FirebaseApprovalModel()
+                                            string base64_code = await Base64Formatter.FromUtf8ToBase64(hashed_code.Item1);
+
+                                            bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Password update", $"Password update key: {code}");
+
+                                            if (smtps_operation_result == true)
                                             {
-                                                email = base64_email,
-                                                expiry_date = Convert.ToInt64(DateTime.Now.AddMinutes(2).ToString("yyyyMMddHHmm")),
-                                                key = base64_code
-                                            };
+                                                FirebaseApprovalModel model = new FirebaseApprovalModel()
+                                                {
+                                                    email = base64_email,
+                                                    expiry_date = Convert.ToInt64(DateTime.Now.AddMinutes(2).ToString("yyyyMMddHHmm")),
+                                                    key = base64_code
+                                                };
 
-                                            await client.Child("Accounts_Waiting_For_Password_Change").PostAsync(model, false);
+                                                await client.Child("Accounts_Waiting_For_Password_Change").PostAsync(model, false);
 
-                                            response = "Check the code sent to your email to approve the password change";
+                                                response = "Check the code sent to your email to approve the password change";
+                                            }
+                                            else
+                                            {
+                                                response = "Internal server error";
+                                            }
                                         }
                                         else
                                         {
@@ -483,38 +507,38 @@ namespace ThetaFTP.Shared.Controllers
                                     }
                                     else
                                     {
-                                        response = "Internal server error";
+                                        string extracted_credentials = await client.Child("Credentials").OrderBy("email").EqualTo(base64_email).OnceAsJsonAsync();
+                                        Dictionary<string, FirebaseCredentialModel>? deserialised_credentials = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseCredentialModel>?>(extracted_credentials);
+
+                                        if (deserialised_credentials?.Keys.Count() == 1)
+                                        {
+                                            Tuple<string, Type> hashed_password = await Sha512Hasher.Hash(value.new_password);
+
+                                            if (hashed_password.Item2 != typeof(Exception))
+                                            {
+                                                string base64_password = await Base64Formatter.FromUtf8ToBase64(hashed_password.Item1);
+
+                                                FirebaseCredentialModel credentials = deserialised_credentials.Values.ElementAt(0);
+                                                credentials.password = base64_password;
+
+                                                await client.Child("Credentials").Child(deserialised_credentials?.Keys.ElementAt(0)).PutAsync(credentials);
+
+                                                response = "Password update successful";
+                                            }
+                                            else
+                                            {
+                                                response = "Internal server error";
+                                            }
+                                        }
+                                        else
+                                        {
+                                            response = "Account does not exist";
+                                        }
                                     }
                                 }
                                 else
                                 {
-                                    string extracted_credentials = await client.Child("Credentials").OrderBy("email").EqualTo(base64_email).OnceAsJsonAsync();
-                                    Dictionary<string, FirebaseCredentialModel>? deserialised_credentials = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseCredentialModel>?>(extracted_credentials);
-
-                                    if (deserialised_credentials?.Keys.Count() == 1)
-                                    {
-                                        Tuple<string, Type> hashed_password = await Sha512Hasher.Hash(value.new_password);
-
-                                        if (hashed_password.Item2 != typeof(Exception))
-                                        {
-                                            string base64_password = await Base64Formatter.FromUtf8ToBase64(hashed_password.Item1);
-
-                                            FirebaseCredentialModel credentials = deserialised_credentials.Values.ElementAt(0);
-                                            credentials.password = base64_password;
-
-                                            await client.Child("Credentials").Child(deserialised_credentials?.Keys.ElementAt(0)).PutAsync(credentials);
-
-                                            response = "Password update successful";
-                                        }
-                                        else
-                                        {
-                                            response = "Internal server error";
-                                        }
-                                    }
-                                    else
-                                    {
-                                        response = "Account does not exist";
-                                    }
+                                    response = "Internal server error";
                                 }
                             }
                             else
@@ -522,8 +546,9 @@ namespace ThetaFTP.Shared.Controllers
                                 response = "Internal server error";
                             }
                         }
-                        else
+                        catch (Exception e)
                         {
+                            Log.Error(e, "User password update API error");
                             response = "Internal server error";
                         }
                     }

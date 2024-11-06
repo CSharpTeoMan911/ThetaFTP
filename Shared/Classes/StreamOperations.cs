@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using Serilog;
 
 namespace ThetaFTP.Shared.Classes
 {
@@ -53,8 +54,9 @@ namespace ThetaFTP.Shared.Classes
 
                 result = true;
             }
-            catch
+            catch(Exception e)
             {
+                Log.Error(e, "Reading and writing FTP file error");
                 result = false;
             }
             finally

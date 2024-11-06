@@ -1,10 +1,8 @@
 ﻿namespace ThetaFTP.Shared.Classes
 {
     using MailKit.Net.Smtp;
-    using MailKit;
     using MimeKit;
-    using ThetaFTP.Shared.Models;
-    using static Org.BouncyCastle.Math.EC.ECCurve;
+    using Serilog;
 
     public class SMTPS_Service:Shared
     {
@@ -42,8 +40,9 @@
                     response = false;
                 }
             }
-            catch
-            { 
+            catch(Exception e)
+            {
+                Log.Error(e, "Error sending SMTP request");
                 response = false;
             }
             finally

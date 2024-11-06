@@ -1,6 +1,6 @@
-﻿namespace ThetaFTP.Shared.Classes
+﻿namespace ThetaFTP.Shared.Models
 {
-    public class RenameMetadata
+    public class RenameModel
     {
         public string? key { get; set; }
         public string? file_name { get; set; }
