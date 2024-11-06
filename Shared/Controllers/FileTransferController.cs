@@ -337,7 +337,7 @@ namespace ThetaFTP.Shared.Controllers
         }
 
         [HttpPut("rename")]
-        public async Task<ActionResult?> UpdateName([FromQuery] RenameMetadata? query, [FromBody] Stream? body)
+        public async Task<ActionResult?> UpdateName([FromQuery] RenameModel? query, [FromBody] Stream? body)
         {
             string? result = "Internal server error";
 

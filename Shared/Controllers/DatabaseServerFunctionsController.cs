@@ -1,6 +1,7 @@
 ﻿using MySql.Data.MySqlClient;
 using System.Data.Common;
 using System.Data;
+using Serilog;
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -48,9 +49,9 @@ namespace ThetaFTP.Shared.Controllers
                                             delete_expired_account_command.Parameters.AddWithValue("Email", email);
                                             await delete_expired_account_command.ExecuteNonQueryAsync();
                                         }
-                                        catch (Exception E)
+                                        catch (Exception e)
                                         {
-                                            Console.WriteLine($"Error: {E.Message}");
+                                            Log.Error(e, "Error deleting expired accounts");
                                         }
                                         finally
                                         {
@@ -60,14 +61,18 @@ namespace ThetaFTP.Shared.Controllers
 
                                     await expired_accounts_reader.CloseAsync();
                                 }
-                                catch
+                                catch (Exception e)
                                 {
-
+                                    Log.Error(e, "Error deleting expired accounts");
                                 }
                                 finally
                                 {
                                     await expired_accounts_reader.DisposeAsync();
                                 }
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Error(e, "Error deleting expired accounts");
                             }
                             finally
                             {
@@ -75,15 +80,19 @@ namespace ThetaFTP.Shared.Controllers
                             }
                         }
                     }
-                    catch (Exception E)
+                    catch (Exception e)
                     {
-                        Console.WriteLine($"Error: {E.Message}");
+                        Log.Error(e, "Error deleting expired accounts");
                     }
                     finally
                     {
                         await command_execution_connection.DisposeAsync();
                     }
 
+                }
+                catch(Exception e)
+                {
+                    Log.Error(e, "Error deleting expired accounts");
                 }
                 finally
                 {
@@ -125,9 +134,9 @@ namespace ThetaFTP.Shared.Controllers
                                             delete_expired_deletion_command.Parameters.AddWithValue("Account_Deletion_Code", code);
                                             await delete_expired_deletion_command.ExecuteNonQueryAsync();
                                         }
-                                        catch (Exception E)
+                                        catch (Exception e)
                                         {
-                                            Console.WriteLine($"Error: {E.Message}");
+                                            Log.Error(e, "Error deleting accounts deletion requests");
                                         }
                                         finally
                                         {
@@ -137,14 +146,18 @@ namespace ThetaFTP.Shared.Controllers
 
                                     await expired_deletion_reader.CloseAsync();
                                 }
-                                catch (Exception E)
+                                catch (Exception e)
                                 {
-                                    Console.WriteLine($"Error: {E.Message}");
+                                    Log.Error(e, "Error deleting accounts deletion requests");
                                 }
                                 finally
                                 {
                                     await expired_deletion_reader.DisposeAsync();
                                 }
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Error(e, "Error deleting accounts deletion requests");
                             }
                             finally
                             {
@@ -152,15 +165,19 @@ namespace ThetaFTP.Shared.Controllers
                             }
                         }
                     }
-                    catch (Exception E)
+                    catch (Exception e)
                     {
-                        Console.WriteLine($"Error: {E.Message}");
+                        Log.Error(e, "Error deleting accounts deletion requests");
                     }
                     finally
                     {
                         await command_execution_connection.DisposeAsync();
                     }
 
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "Error deleting accounts deletion requests");
                 }
                 finally
                 {
@@ -202,9 +219,9 @@ namespace ThetaFTP.Shared.Controllers
                                             delete_expired_password_update_command.Parameters.AddWithValue("Account_Password_Change_Code", code);
                                             await delete_expired_password_update_command.ExecuteNonQueryAsync();
                                         }
-                                        catch (Exception E)
+                                        catch (Exception e)
                                         {
-                                            Console.WriteLine($"Error: {E.Message}");
+                                            Log.Error(e, "Error deleting password update requests");
                                         }
                                         finally
                                         {
@@ -214,14 +231,18 @@ namespace ThetaFTP.Shared.Controllers
 
                                     await expired_password_update_reader.CloseAsync();
                                 }
-                                catch (Exception E)
+                                catch (Exception e)
                                 {
-                                    Console.WriteLine($"Error: {E.Message}");
+                                    Log.Error(e, "Error deleting password update requests");
                                 }
                                 finally
                                 {
                                     await expired_password_update_reader.DisposeAsync();
                                 }
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Error(e, "Error deleting password update requests");
                             }
                             finally
                             {
@@ -229,15 +250,19 @@ namespace ThetaFTP.Shared.Controllers
                             }
                         }
                     }
-                    catch (Exception E)
+                    catch (Exception e)
                     {
-                        Console.WriteLine($"Error: {E.Message}");
+                        Log.Error(e, "Error deleting password update requests");
                     }
                     finally
                     {
                         await command_execution_connection.DisposeAsync();
                     }
 
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "Error deleting password update requests");
                 }
                 finally
                 {
@@ -280,9 +305,9 @@ namespace ThetaFTP.Shared.Controllers
                                             delete_expired_log_in_sesssions_waiting_for_approval_command.Parameters.AddWithValue("Log_In_Code", code);
                                             await delete_expired_log_in_sesssions_waiting_for_approval_command.ExecuteNonQueryAsync();
                                         }
-                                        catch (Exception E)
+                                        catch (Exception e)
                                         {
-                                            Console.WriteLine($"Error: {E.Message}");
+                                            Log.Error(e, "Error deleting log in requests");
                                         }
                                         finally
                                         {
@@ -296,9 +321,9 @@ namespace ThetaFTP.Shared.Controllers
                                             delete_expired_log_in_sesssions_command.Parameters.AddWithValue("Log_In_Session_Key", key);
                                             await delete_expired_log_in_sesssions_command.ExecuteNonQueryAsync();
                                         }
-                                        catch (Exception E)
+                                        catch (Exception e)
                                         {
-                                            Console.WriteLine($"Error: {E.Message}");
+                                            Log.Error(e, "Error deleting log in requests");
                                         }
                                         finally
                                         {
@@ -308,14 +333,18 @@ namespace ThetaFTP.Shared.Controllers
 
                                     await expired_log_in_sesssions_waiting_for_approval_reader.CloseAsync();
                                 }
-                                catch (Exception E)
+                                catch (Exception e)
                                 {
-                                    Console.WriteLine($"Error: {E.Message}");
+                                    Log.Error(e, "Error deleting log in requests");
                                 }
                                 finally
                                 {
                                     await expired_log_in_sesssions_waiting_for_approval_reader.DisposeAsync();
                                 }
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Error(e, "Error deleting log in requests");
                             }
                             finally
                             {
@@ -323,15 +352,19 @@ namespace ThetaFTP.Shared.Controllers
                             }
                         }
                     }
-                    catch (Exception E)
+                    catch (Exception e)
                     {
-                        Console.WriteLine($"Error: {E.Message}");
+                        Log.Error(e, "Error deleting log in requests");
                     }
                     finally
                     {
                         await command_execution_connection.DisposeAsync();
                     }
 
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "Error deleting log in requests");
                 }
                 finally
                 {
@@ -373,9 +406,9 @@ namespace ThetaFTP.Shared.Controllers
                                             delete_expired_log_in_sessions_command.Parameters.AddWithValue("Log_In_Session_Key", key);
                                             await delete_expired_log_in_sessions_command.ExecuteNonQueryAsync();
                                         }
-                                        catch (Exception E)
+                                        catch (Exception e)
                                         {
-                                            Console.WriteLine($"Error: {E.Message}");
+                                            Log.Error(e, "Error deleting log in sessions");
                                         }
                                         finally
                                         {
@@ -385,14 +418,18 @@ namespace ThetaFTP.Shared.Controllers
 
                                     await expired_log_in_sessions_reader.CloseAsync();
                                 }
-                                catch (Exception E)
+                                catch (Exception e)
                                 {
-                                    Console.WriteLine($"Error: {E.Message}");
+                                    Log.Error(e, "Error deleting log in sessions");
                                 }
                                 finally
                                 {
                                     await expired_log_in_sessions_reader.DisposeAsync();
                                 }
+                            }
+                            catch (Exception e)
+                            {
+                                Log.Error(e, "Error deleting log in sessions");
                             }
                             finally
                             {
@@ -400,15 +437,19 @@ namespace ThetaFTP.Shared.Controllers
                             }
                         }
                     }
-                    catch (Exception E)
+                    catch (Exception e)
                     {
-                        Console.WriteLine($"Error: {E.Message}");
+                        Log.Error(e, "Error deleting log in sessions");
                     }
                     finally
                     {
                         await command_execution_connection.DisposeAsync();
                     }
 
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, "Error deleting log in sessions");
                 }
                 finally
                 {

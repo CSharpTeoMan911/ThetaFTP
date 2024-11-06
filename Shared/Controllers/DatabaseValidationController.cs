@@ -1,5 +1,6 @@
 ﻿using HallRentalSystem.Classes.StructuralAndBehavioralElements.Formaters;
 using MySql.Data.MySqlClient;
+using Serilog;
 using System.Data.Common;
 using System.Text;
 using ThetaFTP.Shared.Classes;
@@ -70,6 +71,11 @@ namespace ThetaFTP.Shared.Controllers
                                                         serverPayload.response_message = "Account authorised";
                                                         serverPayload.content = log_in_session_key;
                                                     }
+                                                    catch (Exception e)
+                                                    {
+                                                        Log.Error(e, "Account validation API error");
+                                                        response = "Internal server error";
+                                                    }
                                                     finally
                                                     {
                                                         await insert_log_in_key_command.DisposeAsync();
@@ -79,6 +85,11 @@ namespace ThetaFTP.Shared.Controllers
                                                 {
                                                     serverPayload.response_message = "Internal server error";
                                                 }
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                Log.Error(e, "Account validation API error");
+                                                response = "Internal server error";
                                             }
                                             finally
                                             {
@@ -95,15 +106,30 @@ namespace ThetaFTP.Shared.Controllers
                                         serverPayload.response_message = "Invalid code";
                                     }
                                 }
+                                catch (Exception e)
+                                {
+                                    Log.Error(e, "Account validation API error");
+                                    response = "Internal server error";
+                                }
                                 finally
                                 {
                                     await reader.DisposeAsync();
                                 }
                             }
+                            catch (Exception e)
+                            {
+                                Log.Error(e, "Account validation API error");
+                                response = "Internal server error";
+                            }
                             finally
                             {
                                 await validation_command.DisposeAsync();
                             }
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Error(e, "Account validation API error");
+                            response = "Internal server error";
                         }
                         finally
                         {
@@ -168,6 +194,11 @@ namespace ThetaFTP.Shared.Controllers
                                             await approval_command.ExecuteNonQueryAsync();
                                             serverPayload.response_message = "Authentication successful";
                                         }
+                                        catch (Exception e)
+                                        {
+                                            Log.Error(e, "Log in session validation API error");
+                                            response = "Internal server error";
+                                        }
                                         finally
                                         {
                                             await approval_command.DisposeAsync();
@@ -178,15 +209,30 @@ namespace ThetaFTP.Shared.Controllers
                                         serverPayload.response_message = "Invalid code";
                                     }
                                 }
+                                catch (Exception e)
+                                {
+                                    Log.Error(e, "Log in session validation API error");
+                                    response = "Internal server error";
+                                }
                                 finally
                                 {
                                     await reader.DisposeAsync();
                                 }
                             }
+                            catch (Exception e)
+                            {
+                                Log.Error(e, "Log in session validation API error");
+                                response = "Internal server error";
+                            }
                             finally
                             {
                                 await validation_command.DisposeAsync();
                             }
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Error(e, "Log in session validation API error");
+                            response = "Internal server error";
                         }
                         finally
                         {
@@ -265,10 +311,20 @@ namespace ThetaFTP.Shared.Controllers
                                                         response = "Log in session not approved";
                                                     }
                                                 }
+                                                catch (Exception e)
+                                                {
+                                                    Log.Error(e, "Log in session key validation API error");
+                                                    response = "Internal server error";
+                                                }
                                                 finally
                                                 {
                                                     await log_in_session_key_is_validated_reader.DisposeAsync();
                                                 }
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                Log.Error(e, "Log in session key validation API error");
+                                                response = "Internal server error";
                                             }
                                             finally
                                             {
@@ -290,15 +346,30 @@ namespace ThetaFTP.Shared.Controllers
                                     response = "Invalid log in session key";
                                 }
                             }
+                            catch (Exception e)
+                            {
+                                Log.Error(e, "Log in session key validation API error");
+                                response = "Internal server error";
+                            }
                             finally
                             {
                                 await log_in_session_key_validation_reader.DisposeAsync();
                             }
                         }
+                        catch (Exception e)
+                        {
+                            Log.Error(e, "Log in session key validation API error");
+                            response = "Internal server error";
+                        }
                         finally
                         {
                             await log_in_session_key_validation.DisposeAsync();
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(e, "Log in session key validation API error");
+                        response = "Internal server error";
                     }
                     finally
                     {
@@ -341,10 +412,20 @@ namespace ThetaFTP.Shared.Controllers
 
                             response = "Log out successful";
                         }
+                        catch (Exception e)
+                        {
+                            Log.Error(e, "Account log out API error");
+                            response = "Internal server error";
+                        }
                         finally
                         {
                             await delete_key_command.DisposeAsync();
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(e, "Account log out API error");
+                        response = "Internal server error";
                     }
                     finally
                     {
@@ -413,8 +494,9 @@ namespace ThetaFTP.Shared.Controllers
 
                                             response = "Account deletion successful";
                                         }
-                                        catch
+                                        catch (Exception e)
                                         {
+                                            Log.Error(e, "Account deletion validation API error");
                                             response = "Internal server error";
                                         }
                                         finally
@@ -432,8 +514,9 @@ namespace ThetaFTP.Shared.Controllers
                                     response = "Invalid code";
                                 }
                             }
-                            catch
+                            catch (Exception e)
                             {
+                                Log.Error(e, "Account deletion validation API error");
                                 response = "Internal server error";
                             }
                             finally
@@ -442,14 +525,20 @@ namespace ThetaFTP.Shared.Controllers
                             }
                             
                         }
-                        catch
+                        catch (Exception e)
                         {
+                            Log.Error(e, "Account deletion validation API error");
                             response = "Internal server error";
                         }
                         finally
                         {
                             await accounts_waiting_for_deletion_command.DisposeAsync();
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Error(e, "Account deletion validation API error");
+                        response = "Internal server error";
                     }
                     finally
                     {
@@ -513,8 +602,9 @@ namespace ThetaFTP.Shared.Controllers
                                                         delete_account_update_session_command.Parameters.AddWithValue("Account_Password_Change_Code", hashed_code.Item1);
                                                         await delete_account_update_session_command.ExecuteNonQueryAsync();
                                                     }
-                                                    catch
+                                                    catch (Exception e)
                                                     {
+                                                        Log.Error(e, "Password update validation API error");
                                                         response = "Internal server error";
                                                     }
                                                     finally
@@ -537,8 +627,9 @@ namespace ThetaFTP.Shared.Controllers
                                                             response = "Password update successful";
 
                                                         }
-                                                        catch
+                                                        catch (Exception e)
                                                         {
+                                                            Log.Error(e, "Password update validation API error");
                                                             response = "Internal server error";
                                                         }
                                                         finally
@@ -561,8 +652,9 @@ namespace ThetaFTP.Shared.Controllers
                                                 response = "Invalid code";
                                             }
                                         }
-                                        catch
+                                        catch (Exception e)
                                         {
+                                            Log.Error(e, "Password update validation API error");
                                             response = "Internal server error";
                                         }
                                         finally
@@ -570,8 +662,9 @@ namespace ThetaFTP.Shared.Controllers
                                             await account_update_session_reader.DisposeAsync();
                                         }
                                     }
-                                    catch
+                                    catch (Exception e)
                                     {
+                                        Log.Error(e, "Password update validation API error");
                                         response = "Internal server error";
                                     }
                                     finally
@@ -589,8 +682,9 @@ namespace ThetaFTP.Shared.Controllers
                                 response = "Internal server error";
                             }
                         }
-                        catch
+                        catch (Exception e)
                         {
+                            Log.Error(e, "Password update validation API error");
                             response = "Internal server error";
                         }
                         finally

@@ -1,4 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
+using Serilog;
 
 namespace ThetaFTP.Shared.Classes
 {
@@ -15,9 +16,9 @@ namespace ThetaFTP.Shared.Classes
             {
                 await connection.OpenAsync();
             }
-            catch
+            catch(Exception e)
             {
-                
+                Log.Error(e, "MySql connection error");
             }
             return connection;
         }
