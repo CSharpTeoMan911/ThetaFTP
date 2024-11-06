@@ -2,6 +2,7 @@
 using Firebase.Database.Query;
 using ThetaFTP.Shared.Models;
 using ThetaFTP.Shared.Formatters;
+using Serilog;
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -30,9 +31,9 @@ namespace ThetaFTP.Shared.Controllers
                         await client.Child("Accounts_Waiting_For_Approval").Child(deserialised_extracted_cache.Keys.ElementAt(i)).DeleteAsync();
                 }
             }
-            catch(Exception E)
+            catch(Exception e)
             {
-                Console.WriteLine(E.Message);
+                Log.Error(e, "Error deleting expired accounts");
             }
             finally
             {
@@ -54,9 +55,9 @@ namespace ThetaFTP.Shared.Controllers
                         await client.Child("Accounts_Waiting_For_Deletion").Child(deserialised_extracted_cache.Keys.ElementAt(i)).DeleteAsync();
                 }
             }
-            catch (Exception E)
+            catch (Exception e)
             {
-                Console.WriteLine(E.Message);
+                Log.Error(e, "Error deleting accounts deletion requests");
             }
             finally
             {
@@ -78,9 +79,9 @@ namespace ThetaFTP.Shared.Controllers
                         await client.Child("Accounts_Waiting_For_Password_Change").Child(deserialised_extracted_cache.Keys.ElementAt(i)).DeleteAsync();
                 }
             }
-            catch (Exception E)
+            catch (Exception e)
             {
-                Console.WriteLine(E.Message);
+                Log.Error(e, "Error deleting password update requests");
             }
             finally
             {
@@ -113,9 +114,9 @@ namespace ThetaFTP.Shared.Controllers
                     }
                 }
             }
-            catch (Exception E)
+            catch (Exception e)
             {
-                Console.WriteLine(E.Message);
+                Log.Error(e, "Error deleting log in requests");
             }
             finally
             {
@@ -137,9 +138,9 @@ namespace ThetaFTP.Shared.Controllers
                         await client.Child("Log_In_Sessions").Child(deserialised_extracted_cache.Keys.ElementAt(i)).DeleteAsync();
                 }
             }
-            catch (Exception E)
+            catch (Exception e)
             {
-                Console.WriteLine(E.Message);
+                Log.Error(e, "Error deleting log in sessions");
             }
             finally
             {

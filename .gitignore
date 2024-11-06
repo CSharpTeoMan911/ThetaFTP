@@ -373,3 +373,6 @@ ErrorLogs.txt
 
 # User Files
 FTP_Server
+
+#Log errors
+ServerErrorLogs.txt

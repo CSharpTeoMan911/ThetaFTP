@@ -41,55 +41,6 @@
                     </div>
                 </Component>
             </PanelComponent>
-
-            @* <div class="jumbotron-custom" style="border-radius:5px; padding: 5px 5px 10px 5px; margin-top: 150px;">
-                <div style="display: flex; flex-direction:row-reverse">
-                    <button class="close_button" @onclick=Close>
-                        <img src="./images/close.webp" style="height:18px;" />
-                    </button>
-                </div>
-
-                <div style="display: flex; width: 100%; align-content: center; flex-direction: column">
-                    <h4 style="align-self: center; margin-bottom: 15px;">
-                        Profile
-                    </h4>
-                </div>
-
-                <div style="padding: 0px 23px 0px 23px;">
-                    <h6 style="padding: 0px 0px 0px 0px; margin: 0px 0px 2px 0px">
-                        Email
-                    </h6>
-                    <input class="profile_input" readonly="readonly" @bind-value=email />
-                </div>
-
-                <div style="padding: 0px 23px 0px 23px; margin-top: 20px; margin-bottom: 10px;">
-                    <h6 style="padding: 0px 0px 0px 0px; margin: 0px 0px 2px 0px">
-                        New password
-                    </h6>
-                    <div style="display:flex; flex-direction:row;">
-                        @if (ShowPassword == true)
-                        {
-                            <input class="profile_input" @bind=password />
-                        }
-                        else
-                        {
-                            <input class="profile_input" @bind=password type="password" />
-                        }
-                        <button class="control_button" @onclick=ShowOrHidePassword>
-                            <img src=@password_visibility_button_img style="height:18px">
-                        </button>
-                    </div>
-                </div>
-
-                <div style="display: flex; flex-direction: column">
-                    <button class="profile_function profile_function_upload" @onclick=UpdatePassword>
-                        Update password
-                    </button>
-                    <button class="profile_function profile_function_delete" @onclick="DeleteAccount">
-                        Delete account
-                    </button>
-                </div>
-            </div> *@
         </Component>
     </FocusPanel>
 }
@@ -108,8 +59,6 @@ else
     [Parameter] public ClosePanel? closePanel { get; set; }
     private string? email { get; set; }
     private string? password { get; set; }
-    private bool ShowPassword { get; set; }
-    private string password_visibility_button_img = "./images/visible.webp";
 
     private ValidationPanel.ValidationType validationType { get; set; } = ValidationPanel.ValidationType.DeleteAccount;
     private string? validationInputTopic { get; set; }
@@ -354,22 +303,6 @@ else
         StateHasChanged();
 
         Console.WriteLine(response);
-    }
-
-    public void ShowOrHidePassword()
-    {
-        if (ShowPassword == true)
-        {
-            ShowPassword = false;
-            password_visibility_button_img = @"./images/visible.webp";
-        }
-        else
-        {
-            ShowPassword = true;
-            password_visibility_button_img = @"./images/visibility.webp";
-        }
-
-        StateHasChanged();
     }
 
     private void Elapased(object? obj, System.Timers.ElapsedEventArgs args)

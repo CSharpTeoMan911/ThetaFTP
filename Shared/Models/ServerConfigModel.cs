@@ -27,7 +27,7 @@
             "https://localhost:7040",
             "http://localhost:5219"
         };
-        public bool enforce_https { get; set;}
+        public bool enforce_https { get; set; } = true;
         public int min_worker_threads { get; set; } = 100;
         public int min_input_output_threads { get; set; } = 100;
         public int logs_expiration_days { get; set; } = 10;
