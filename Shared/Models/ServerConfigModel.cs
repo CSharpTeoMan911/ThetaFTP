@@ -2,6 +2,8 @@
 {
     public class ServerConfigModel
     {
+        public string? server_ip_address { get; set; } = "!!! REPLACE THE DESIRED SERVER IP ADDRESS !!!";
+        public int server_port { get; set; } = 8000;
         public bool use_secure_local_storage { get; set; } = true;
         public bool use_firebase { get; set; } = true;
         public string firebase_admin_token { get; set; } = "!!! REPLACE WITH FIREBASE DATABASE ADMIN TOKEN !!!";
@@ -19,17 +21,16 @@
         public int smtp_port { get; set; }
         public bool smtp_use_ssl { get; set; } = false;
         public bool two_step_auth { get; set; } = false;
-        public bool validate_ssl_certificates { get; set; } = false;
         public int ReadAndWriteOperationsPerSecond { get; set; } = 1200;
         public int ConnectionTimeoutSeconds { get; set; } = 600;
-        public List<string> http_addresses { get; set; } = new List<string>()
-        {
-            "https://localhost:7040",
-            "http://localhost:5219"
-        };
         public bool enforce_https { get; set; } = true;
         public int min_worker_threads { get; set; } = 100;
         public int min_input_output_threads { get; set; } = 100;
         public int logs_expiration_days { get; set; } = 10;
+        public bool validate_ssl_certificates { get; set; } = false;
+        public bool use_custom_ssl_certificate { get; set; }
+        public bool ensure_host_name_and_certificate_domain_name_match { get; set; }
+        public string? custom_server_certificate_path { get; set; } = "!!! REPLACE WITH THE PATH TO THE SERVER PRIVATE CERTIFICATE !!!";
+        public string? custom_server_certificate_password{ get; set; } = "!!! REPLACE WITH THE PATH TO THE SERVER PRIVATE CERTIFICATE !!!";
     }
 }
