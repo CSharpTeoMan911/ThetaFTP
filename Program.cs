@@ -1,8 +1,9 @@
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.OpenApi.Models;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 using Serilog;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using System.Net;
 
 namespace ThetaFTP
 {
@@ -23,9 +24,15 @@ namespace ThetaFTP
             try
             {
                 await ServerConfig.GetServerConfig();
+                CertGenConfig.Result cert_result = await CertGenConfig.CertGen();
 
                 if (configurations != null)
-                    ThreadPool.SetMinThreads(configurations.min_worker_threads, configurations.min_input_output_threads);
+                {
+                    if (cert_result == CertGenConfig.Result.None)
+                        ThreadPool.SetMinThreads(configurations.min_worker_threads, configurations.min_input_output_threads);
+                    else
+                        Environment.Exit(0);
+                }
                 else
                     Environment.Exit(0);
 
@@ -36,7 +43,7 @@ namespace ThetaFTP
 
                 var builder = WebApplication.CreateBuilder(args);
 
-                builder.Services.AddHttpClient(Shared.Shared.HttpClientConfig, client => {
+                builder.Services.AddHttpClient(HttpClientConfig, client => {
                     int timeout = 600;
                     if (configurations != null)
                         timeout = configurations.ConnectionTimeoutSeconds;
@@ -46,9 +53,27 @@ namespace ThetaFTP
                 {
                     ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) =>
                     {
-                        if (configurations != null)
-                            return !configurations.validate_ssl_certificates;
-                        return true;
+                        if (configurations.validate_ssl_certificates == true)
+                        {
+                            if (policyErrors == System.Net.Security.SslPolicyErrors.None)
+                                return true;
+                            else
+                            {
+                                if (policyErrors == System.Net.Security.SslPolicyErrors.RemoteCertificateNameMismatch)
+                                {
+                                    if (configurations.ensure_host_name_and_certificate_domain_name_match == false)
+                                        return true;
+                                    else
+                                        return false;
+                                }
+                                else
+                                    return false;
+                            }
+                        }
+                        else
+                        {
+                            return true;
+                        }
                     }
                 }).SetHandlerLifetime(TimeSpan.FromSeconds(configurations.ConnectionTimeoutSeconds));
 
@@ -65,22 +90,6 @@ namespace ThetaFTP
                 {
                     c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
                 });
-
-                if (configurations != null)
-                {
-                    List<string>? addresses = configurations.http_addresses.Distinct().ToList();
-                    List<string>? urls = builder.Configuration[WebHostDefaults.ServerUrlsKey]?.Split(';').ToList();
-                    List<string>? config_urls = new List<string>();
-
-                    addresses?.ForEach(element =>
-                    {
-                        if (urls?.Contains(element) == false)
-                            config_urls.Add(element);
-                    });
-
-                    if (config_urls.Count > 0)
-                        builder.WebHost.UseUrls(config_urls.ToArray());
-                }
 
 
                 //////////////////////////////////////////////
@@ -124,7 +133,25 @@ namespace ThetaFTP
                     });
 
 
+                builder.WebHost.ConfigureKestrel((context, serverOptions) =>
+                {
+                    IPAddress? iPAddress = IPAddress.Loopback;
 
+                    if (configurations != null)
+                        if (configurations.server_ip_address != null && configurations.server_ip_address != "!!! REPLACE THE DESIRED SERVER IP ADDRESS !!!")
+                            iPAddress = IPAddress.Parse(configurations.server_ip_address);
+
+                    serverOptions.Listen(iPAddress, 8000, listenOptions =>
+                    {
+                        if (configurations != null && configurations.use_custom_ssl_certificate == true && configurations.custom_server_certificate_path != null)
+                            listenOptions.UseHttps(configurations.custom_server_certificate_path, configurations.custom_server_certificate_password);
+                        else
+                            listenOptions.UseHttps();
+
+                        listenOptions.UseHttps();
+                        listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+                    });
+                });
 
                 var app = builder.Build();
 
@@ -161,6 +188,7 @@ namespace ThetaFTP
             catch(Exception E)
             {
                 Log.Fatal(E, "Fatal error");
+                Environment.Exit(1);
             }
             finally
             {

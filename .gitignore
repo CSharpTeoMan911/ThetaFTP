@@ -376,3 +376,11 @@ FTP_Server
 
 #Log errors
 ServerErrorLogs.txt
+
+#Certificate generation config
+certificate_generation.json
+
+#Certificate files
+*.pfx
+*.crt
+*.pem
