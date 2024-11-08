@@ -113,22 +113,55 @@ else
             HttpResponseMessage responseMessage = await client.GetAsync(new StringBuilder("/authentication/get-info?").Append("value=").Append(System.Net.WebUtility.UrlEncode(log_in_session_key)).ToString());
             string? response = await responseMessage.Content.ReadAsStringAsync();
 
+            notificationMessage = response;
 
             if (response.Contains("Internal server error") == true)
             {
+                operation = OnCloseOperation.NavigateToLogInPage;
+                notificationType = Notifications.NotificationType.Error;
+                OperationOnClose = true;
+                ShowNotification = true;
+
+                timer = new System.Timers.Timer();
+                timer.Interval = 100;
+                timer.Elapsed += Elapased;
+                timer.Start();
             }
             else if (response.Contains("Log in session not approved") == true)
             {
+                operation = OnCloseOperation.NavigateToLogInPage;
+                notificationType = Notifications.NotificationType.Error;
+                OperationOnClose = true;
+                ShowNotification = true;
+
+                timer = new System.Timers.Timer();
+                timer.Interval = 100;
+                timer.Elapsed += Elapased;
+                timer.Start();
             }
             else if (response.Contains("Log in session key expired") == true)
             {
+                operation = OnCloseOperation.NavigateToLogInPage;
+                notificationType = Notifications.NotificationType.Error;
+                OperationOnClose = true;
+                ShowNotification = true;
+
+                timer = new System.Timers.Timer();
+                timer.Interval = 100;
+                timer.Elapsed += Elapased;
+                timer.Start();
             }
             else if (response.Contains("Invalid log in session key") == true)
             {
-            }
-            else if (response.Contains("Check the code sent to your email to approve the account deletion") == true)
-            {
+                operation = OnCloseOperation.NavigateToLogInPage;
+                notificationType = Notifications.NotificationType.Error;
+                OperationOnClose = true;
+                ShowNotification = true;
 
+                timer = new System.Timers.Timer();
+                timer.Interval = 100;
+                timer.Elapsed += Elapased;
+                timer.Start();
             }
             else
             {
@@ -230,8 +263,6 @@ else
 
         ShowNotification = true;
         StateHasChanged();
-
-        Console.WriteLine(response);
     }
 
     public async void DeleteAccount()
@@ -301,8 +332,6 @@ else
 
         ShowNotification = true;
         StateHasChanged();
-
-        Console.WriteLine(response);
     }
 
     private void Elapased(object? obj, System.Timers.ElapsedEventArgs args)

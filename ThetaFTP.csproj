@@ -7,6 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="certificate_generation.json" />
+    <Content Remove="server_settings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="certificate_generation.json" />
+    <None Include="server_settings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
     <PackageReference Include="FirebaseAuthentication.net" Version="4.1.0" />
     <PackageReference Include="FirebaseDatabase.net" Version="4.2.0" />

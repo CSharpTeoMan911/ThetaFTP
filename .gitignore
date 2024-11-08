@@ -381,6 +381,6 @@ ServerErrorLogs.txt
 certificate_generation.json
 
 #Certificate files
-*.pfx
 *.crt
-*.pem
+*.pfx
+
