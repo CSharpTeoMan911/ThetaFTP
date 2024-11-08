@@ -197,6 +197,10 @@ namespace ThetaFTP.Shared.Classes
                                         {
                                             public_cert_stream.Write(public_cert);
                                             await public_cert_stream.FlushAsync();
+
+                                            X509Store store = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+                                            store.Open(OpenFlags.ReadWrite);
+                                            store.Add(public_certificate);
                                         }
                                         catch (Exception e)
                                         {

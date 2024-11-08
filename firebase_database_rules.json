@@ -1,0 +1,24 @@
+{
+  "rules": {
+    ".read": "false",
+    ".write": "false",
+    "Credentials": {
+      ".indexOn": [ "email", "password" ]
+    },
+    "Accounts_Waiting_For_Approval": {
+      ".indexOn": [ "email", "expiry_date", "key" ]
+    },
+    "Log_In_Sessions": {
+      ".indexOn": [ "email", "expiry_date", "key" ]
+    },
+    "Log_In_Sessions_Waiting_For_Approval": {
+      ".indexOn": [ "code", "expiry_date", "key" ]
+    },
+    "Accounts_Waiting_For_Deletion": {
+      ".indexOn": [ "email", "expiry_date", "key" ]
+    },
+    "Accounts_Waiting_For_Password_Change": {
+      ".indexOn": [ "email", "expiry_date", "key" ]
+    }
+  }
+}
