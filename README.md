@@ -8,7 +8,27 @@
 # Usage
 For instructions about how the application must be configured and its behaviour please visit the [Wiki](https://github.com/CSharpTeoMan911/ThetaFTP/wiki) section of this repository.
 
-# Features
+# Ftp features
+
+## Upload
+![UploadFiles-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/e004908c-f866-4b2e-baed-8caf790b9bbb)
+
+## Download
+![DownloadFiles-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/03a876b4-4418-40ae-a636-25de83af6615)
+
+## Move
+![MoveFiles-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/6835f5b8-ce18-4b41-bebb-abfabf230dfe)
+
+## Rename
+![RenameFile-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/69cf6cf2-3311-4e76-b0b9-b0f20c3ab1f6)
+
+## Delete
+![DeleteFiles-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/d9ec2f1a-e0dc-4f11-b204-bd7478c8a138)
+
+# Security features
+
+## Connection encryption
+The application can encrypt the client/server connection using the TLS/SSL protocols by using self-signed certificates or trusted publisher certificates. 
 
 ## Two-step registration
 
@@ -25,13 +45,22 @@ When the user is creating an account, the server will verify if the account alre
 
 When the user is logging in, the server will verify the user credentials and, if the credentials are valid, it will generate a **log in session key**, as well as a **log in code**, both the **log in session key** and the **log in code** will be stored in the database. The **log in code** is associated with the **log in session key** and as long as the **log in code** associated with the **log in session key** exist, the **log in session key** is invalid. Afterwards, the server will send the **log in code** to the user's email address and prompt the user for the **log in code**. If the **log in code** is valid, the server will delete the **log in code** from the database and thus making the **log in session key** valid. The **log in code** has an expiration date of 2 minutes. If the user does not validate the **log in code**, both the **log in session key** and the **log in code** will be deleted from the database.
 
+<br/>
+<br/>
+
 ## Log in session validation
 
 For every operation requested by the user, such as uploading or downloading a file, the server will request for the client its **log in session key**. If the **log in session key** is expired or the **log in session key** is invalid, the server will log out the user. If the **log in session key** is valid, the server will only process request and information for the account associated with the **log in session key**, thus preventing mallicious attacks.
 
+<br/>
+<br/>
+
 ## Salting and hashing
 
 All sesitive information to be stored in the database is both hashed and salted. The hashing algorithm used is **SHA512**. 
+
+<br/>
+<br/>
 
 ## Path traversal attack prevention
 
