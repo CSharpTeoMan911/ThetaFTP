@@ -9,6 +9,12 @@
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 @inject ProtectedLocalStorage protectedLocalStorage;
 
+
+@if (ShowNotification == true)
+{
+    <Notifications notificationType=@notificationType NotificationMessage=@notificationMessage closeNotification=@CloseNotification style="z-index:10" />
+}
+
 <FocusPanel style="z-index:5;">
     <Component>
         <div class="jumbotron" style="padding:5px; display:flex; flex-direction:column; width:fit-content; align-self:center; margin-top: 300px;">
@@ -74,12 +80,23 @@
     private List<DirectoryItem>? directories { get; set; }
 
     [Parameter] public string? Path { get; set; }
+    public string? Current_Path { get; set; }
     private string? SrcPath { get; set; }
 
     public delegate void ClosePanel();
     [Parameter] public ClosePanel? closePanel { get; set; }
 
     [Parameter] public DirectoryItem? selected_item {get;set;}
+
+    private bool ShowNotification { get; set; }
+    private bool NavigateToLogIn { get; set; }
+
+    private Notifications.NotificationType notificationType { get; set; }
+    private string? notificationMessage { get; set; }
+
+    private System.Timers.Timer? timer { get; set; }
+    private DateTime start { get; set; }
+    public bool CloseFilePanel { get; set; }
 
     private void Close() => closePanel?.Invoke();
 
@@ -89,14 +106,16 @@
 
         if (firstRender == true)
         {
+            timer?.Dispose();
             SrcPath = Path;
+            Current_Path = Path;
             GetDirectories();
         }
     }
 
     private async void GetDirectories()
     {
-        Tuple<bool, string?> last_dir_ = await FileSystemFormatter.GetLastDir(Path);
+        Tuple<bool, string?> last_dir_ = await FileSystemFormatter.GetLastDir(Current_Path);
 
         ShowBackButton = last_dir_.Item1;
         last_dir = last_dir_.Item2;
@@ -117,7 +136,7 @@
 
         Metadata metadata = new Metadata()
         {
-            path = Path,
+                path = Current_Path,
             key = log_in_session_key
         };
 
@@ -137,14 +156,14 @@
     private void Back()
     {
         directories?.Clear();
-        Path = FileSystemFormatter.NavigateBackward(Path);
+        Current_Path = FileSystemFormatter.NavigateBackward(Current_Path);
         GetDirectories();
     }
 
     private void Open(DirectoryItem? item)
     {
         directories?.Clear();
-        Path = FileSystemFormatter.NavigateForward(Path, item?.name);
+        Current_Path = FileSystemFormatter.NavigateForward(Current_Path, item?.name);
         GetDirectories();
     }
 
@@ -164,7 +183,7 @@
             await module.DisposeAsync();
         }
 
-        string? selected_path = new StringBuilder(Path).Append(item?.name).ToString();
+        string? selected_path = Current_Path?[Current_Path.Length - 1] == '/' ? new StringBuilder(Current_Path).Append(item?.name).ToString() : new StringBuilder(Current_Path).Append('/').Append(item?.name).ToString(); ;
         StringBuilder? request_url = new StringBuilder();
 
         if (selected_item?.isDirectory == false)
@@ -195,5 +214,87 @@
         HttpResponseMessage responseMessage = await client.PutAsync(request_url.ToString(), null);
 
         string response = await responseMessage.Content.ReadAsStringAsync();
+
+        notificationMessage = response;
+
+        if (response.Contains("Internal server error") == true)
+        {
+            notificationType = Notifications.NotificationType.Error;
+        }
+        else if (response.Contains("Invalid log in session key") == true)
+        {
+            notificationType = Notifications.NotificationType.Error;
+            NavigateToLogIn = true;
+        }
+        else if (response.Contains("Log in session key expired") == true)
+        {
+            notificationType = Notifications.NotificationType.Error;
+            NavigateToLogIn = true;
+        }
+        else if (response.Contains("Log in session not approved") == true)
+        {
+            notificationType = Notifications.NotificationType.Error;
+            NavigateToLogIn = true;
+        }
+        else if (response.Contains("Invalid file name") == true)
+        {
+            notificationType = Notifications.NotificationType.Error;            
+        }
+        else if (response.Contains("Invalid path") == true)
+        {
+            notificationType = Notifications.NotificationType.Error;            
+        }
+        else if (response.Contains("File already exist") == true)
+        {
+            notificationType = Notifications.NotificationType.Error;
+        }
+        else if (response.Contains("Invalid file name. Use only numbers, letters, '-', '/', '_', ' ', and '.'") == true)
+        {
+            notificationType = Notifications.NotificationType.Error;            
+        }
+        else if (response.Contains("File relocation successful") == true)
+        {
+            notificationType = Notifications.NotificationType.Information;
+            CloseFilePanel = true;
+        }
+        else
+        {
+            notificationMessage = "Internal server error";
+            notificationType = Notifications.NotificationType.Error;
+        }
+
+        start = DateTime.Now;
+
+        timer = new System.Timers.Timer();
+        timer.Interval = 100;
+        timer.Elapsed += Elapsed;
+        timer.Start();
+
+        ShowNotification = true;
+        StateHasChanged();
+    }
+
+    private void Elapsed(object? obj, System.Timers.ElapsedEventArgs args)
+    {
+        if ((DateTime.Now - start).TotalSeconds >= 7)
+        {
+            ((Timer?)obj)?.Dispose();
+            CloseNotification();
+        }
+    }
+
+    private void CloseNotification()
+    {
+        if (NavigateToLogIn == true)
+        {
+            NavigationManager.NavigateTo("/log-in", true);
+        }
+        else if (CloseFilePanel == true)
+        {
+            closePanel?.Invoke();
+        }
+
+        ShowNotification = false;
+        StateHasChanged();
     }
 }

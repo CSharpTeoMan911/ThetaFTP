@@ -1,9 +1,7 @@
-﻿using MySql.Data.MySqlClient;
-using System.Data.Common;
-using System.Text;
-using ThetaFTP.Shared.Classes;
+﻿using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
+using Serilog;
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -24,25 +22,33 @@ namespace ThetaFTP.Shared.Controllers
                         {
                             if (value.size <= 524288000)
                             {
-                                string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
-                                string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
-                                
-                                if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
+                                try
                                 {
+                                    string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
+                                    string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
+
                                     if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
                                     {
-                                        if (value != null)
-                                            FileSystemFormatter.DeleteFile(full_path);
-                                        result = "File deletion successful";
+                                        if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
+                                        {
+                                            if (value != null)
+                                                FileSystemFormatter.DeleteFile(full_path);
+                                            result = "File deletion successful";
+                                        }
+                                        else
+                                        {
+                                            result = "Invalid path";
+                                        }
                                     }
                                     else
                                     {
                                         result = "Invalid path";
                                     }
                                 }
-                                else
+                                catch(Exception e)
                                 {
-                                    result = "Invalid path";
+                                    Log.Error(e, "File FTP Controller delete error");
+                                    result = "Internal server error";
                                 }
                                 
                             }
@@ -166,8 +172,9 @@ namespace ThetaFTP.Shared.Controllers
                                         string? serialised_file_names = await JsonFormatter.JsonSerialiser(file_info);
                                         return serialised_file_names;
                                     }
-                                    catch
+                                    catch (Exception e)
                                     {
+                                        Log.Error(e, "File FTP controller get info error");
                                         result = "Internal server error";
                                     }
                                 }
@@ -238,38 +245,58 @@ namespace ThetaFTP.Shared.Controllers
 
                                                         if (value != null)
                                                         {
-                                                            FileStream file_stream = File.OpenWrite(full_path);
-                                                            bool file_upload_result = await StreamOperations.ReadAsync(value.fileStream, value.size, file_stream, 102400, 3, value.operation_cancellation);
-
-                                                            FileInfo uploaded_file = new FileInfo(full_path);
-
-                                                            if (file_upload_result == true)
+                                                            try
                                                             {
-                                                                if (value?.operation_cancellation.IsCancellationRequested == true)
+                                                                FileStream file_stream = File.OpenWrite(full_path);
+                                                                try
                                                                 {
-                                                                    if (File.Exists(full_path) == true)
-                                                                    {
-                                                                        file_stream?.Dispose();
-                                                                        uploaded_file.Delete();
-                                                                    }
+                                                                    bool file_upload_result = await StreamOperations.ReadAsync(value.fileStream, value.size, file_stream, 102400, 3, value.operation_cancellation);
 
-                                                                    result = "Operation cancelled";
+                                                                    FileInfo uploaded_file = new FileInfo(full_path);
+
+                                                                    if (file_upload_result == true)
+                                                                    {
+                                                                        if (value?.operation_cancellation.IsCancellationRequested == true)
+                                                                        {
+                                                                            if (File.Exists(full_path) == true)
+                                                                            {
+                                                                                file_stream?.Dispose();
+                                                                                uploaded_file.Delete();
+                                                                            }
+
+                                                                            result = "Operation cancelled";
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            file_stream?.Dispose();
+                                                                            result = "File upload successful";
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        if (File.Exists(full_path) == true)
+                                                                        {
+                                                                            file_stream?.Dispose();
+                                                                            uploaded_file.Delete();
+                                                                        }
+
+                                                                        result = "Operation cancelled";
+                                                                    }
                                                                 }
-                                                                else
+                                                                catch (Exception e)
+                                                                {
+                                                                    Log.Error(e, "File FTP controller upload error");
+                                                                    result = "Internal server error";
+                                                                }
+                                                                finally
                                                                 {
                                                                     file_stream?.Dispose();
-                                                                    result = "File upload successful";
                                                                 }
                                                             }
-                                                            else
+                                                            catch (Exception e)
                                                             {
-                                                                if (File.Exists(full_path) == true)
-                                                                {
-                                                                    file_stream?.Dispose();
-                                                                    uploaded_file.Delete();
-                                                                }
-
-                                                                result = "Operation cancelled";
+                                                                Log.Error(e, "File FTP controller upload error");
+                                                                result = "Internal server error";
                                                             }
                                                         }
                                                         else
@@ -359,11 +386,11 @@ namespace ThetaFTP.Shared.Controllers
 
                                         if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
                                         {
-                                            if (FileSystemFormatter.IsValidDiskPath(converted_new_path) == true)
+                                            if (FileSystemFormatter.IsValidUserDir(converted_path))
                                             {
-                                                if (FileSystemFormatter.IsValidUserDir(converted_path))
+                                                if (FileSystemFormatter.IsValidUserDir(converted_new_path))
                                                 {
-                                                    if (FileSystemFormatter.IsValidUserDir(converted_new_path))
+                                                    try
                                                     {
                                                         string old_full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
                                                         string new_full_path = FileSystemFormatter.FullPathBuilder(converted_new_path, value?.file_name);
@@ -371,9 +398,14 @@ namespace ThetaFTP.Shared.Controllers
                                                         FileSystemFormatter.MoveFile(old_full_path, new_full_path);
                                                         result = "File relocation successful";
                                                     }
-                                                    else
+                                                    catch (Exception e)
                                                     {
-                                                        result = "Invalid path";
+                                                        Log.Error(e, "File FTP controller relocation error");
+                                                        
+                                                        if(e.Message.Contains("Cannot create a file when that file already exists") == true)
+                                                            result = "File already exist";
+                                                        else
+                                                            result = "Internal server error";
                                                     }
                                                 }
                                                 else
@@ -459,8 +491,9 @@ namespace ThetaFTP.Shared.Controllers
                                                     FileSystemFormatter.RenameFile(full_path, re_path);
                                                 result = "File rename successful";
                                             }
-                                            catch
+                                            catch (Exception e)
                                             {
+                                                Log.Error(e, "File FTP controller relocation error");
                                                 result = "Invalid file name";
                                             }
                                         }

@@ -78,10 +78,7 @@
                 await module.DisposeAsync();
             }
         }
-        catch(Exception E)
-        {
-            Console.WriteLine($"Error: {E.Message}");
-        }
+        catch { }
 
 
         if (AuthCache == null)

@@ -1,11 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json.Linq;
-using System.IO;
-using System.Text;
-using System.Text.RegularExpressions;
-using ThetaFTP.Shared.Classes;
+﻿using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
+using Serilog;
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -36,8 +32,9 @@ namespace ThetaFTP.Shared.Controllers
                                             FileSystemFormatter.DeleteDirectory(full_path);
                                         result = "Directory deletion successful";
                                     }
-                                    catch
+                                    catch(Exception e)
                                     {
+                                        Log.Error(e, "Directory FTP Controller delete error");
                                         result = "Internal server error";
                                     }
                                 }
@@ -110,8 +107,9 @@ namespace ThetaFTP.Shared.Controllers
                                         string? serialised_directory_names = await JsonFormatter.JsonSerialiser(directories_info);
                                         return serialised_directory_names;
                                     }
-                                    catch
+                                    catch (Exception e)
                                     {
+                                        Log.Error(e, "Directory FTP Controller get info error");
                                         result = "Internal server error";
                                     }
                                 }
@@ -175,9 +173,10 @@ namespace ThetaFTP.Shared.Controllers
                                                 Directory.CreateDirectory(FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_name));
                                                 result = "Directory upload successful";
                                             }
-                                            catch
+                                            catch (Exception e)
                                             {
-                                                result = "Directory already exists";
+                                                Log.Error(e, "Directory FTP Controller upload error");
+                                                result = "Internal server error";
                                             }
                                         }
                                         else
@@ -255,8 +254,9 @@ namespace ThetaFTP.Shared.Controllers
                                                         FileSystemFormatter.RenameDirectory(full_path, re_path);
                                                     result = "Directory rename successful";
                                                 }
-                                                catch
+                                                catch (Exception e)
                                                 {
+                                                    Log.Error(e, "Directory FTP Controller upload error");
                                                     result = "Invalid directory name";
                                                 }
                                             }
@@ -337,10 +337,22 @@ namespace ThetaFTP.Shared.Controllers
                                                 {
                                                     if (FileSystemFormatter.IsValidUserDir(converted_new_path) == true)
                                                     {
-                                                        string old_full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_name);
-                                                        string new_full_path = FileSystemFormatter.FullPathBuilder(converted_new_path, value?.directory_name);
-                                                        FileSystemFormatter.MoveDirectory(old_full_path, new_full_path);
-                                                        result = "Directory relocation successful";
+                                                        try
+                                                        {
+                                                            string old_full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_name);
+                                                            string new_full_path = FileSystemFormatter.FullPathBuilder(converted_new_path, value?.directory_name);
+                                                            FileSystemFormatter.MoveDirectory(old_full_path, new_full_path);
+                                                            result = "Directory relocation successful";
+                                                        }
+                                                        catch (Exception e)
+                                                        {
+                                                            Log.Error(e, "Directory FTP controller relocation error");
+
+                                                            if (e.Message.Contains("already exists") == true)
+                                                                result = "File already exist";
+                                                            else
+                                                                result = "Internal server error";
+                                                        }
                                                     }
                                                     else
                                                     {
