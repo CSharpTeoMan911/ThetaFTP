@@ -96,7 +96,8 @@
 
     private System.Timers.Timer? timer { get; set; }
     private DateTime start { get; set; }
-    public bool CloseFilePanel { get; set; }
+
+    private bool refresh { get; set; }
 
     private void Close() => closePanel?.Invoke();
 
@@ -255,7 +256,12 @@
         else if (response.Contains("File relocation successful") == true)
         {
             notificationType = Notifications.NotificationType.Information;
-            CloseFilePanel = true;
+            refresh = true;
+        }
+        else if (response.Contains("Directory relocation successful") == true)
+        {
+            notificationType = Notifications.NotificationType.Information;
+            refresh = true;
         }
         else
         {
@@ -289,9 +295,9 @@
         {
             NavigationManager.NavigateTo("/log-in", true);
         }
-        else if (CloseFilePanel == true)
+        else if (refresh == true)
         {
-            closePanel?.Invoke();
+            NavigationManager.Refresh(true);
         }
 
         ShowNotification = false;
