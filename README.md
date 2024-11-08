@@ -33,4 +33,8 @@ For every operation requested by the user, such as uploading or downloading a fi
 
 All sesitive information to be stored in the database is both hashed and salted. The hashing algorithm used is **SHA512**. 
 
+## Path traversal attack prevention
+
+Each user has its own directory associated with its account. Every time a user is performing an operation related to the file system, the server will process the path given by the user and verify if it has as its root the directory associated with the account. If the path to be processed does not have as its root, the folder associated with the account, the operation is cancelled, thus preventing mallicious attacks on the server's directory level, as well as preventing every user's information being compromised.
+
 
