@@ -12,6 +12,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Theta_FTP.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Theta_FTP.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="certificate_generation.json" />
     <None Include="server_settings.json" />
   </ItemGroup>
