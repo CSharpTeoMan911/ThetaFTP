@@ -71,7 +71,7 @@ Each user has its own directory associated with its account. Every time a user i
 
 ## SQL injection prevention
 
-The application is using parametrised parameter injection within SQL commands, which in turn is removing any special charater from the SQL string, thus making any SQL injection attack impossible
+The application is using parametrised parameter injection within SQL commands, which in turn is escaping any special charater from the SQL string, thus making any SQL injection attack impossible
 
 ![SQL command C#](https://github.com/user-attachments/assets/9b6d7a8b-76b8-474e-bbba-8ff9e62c2a83)
 
