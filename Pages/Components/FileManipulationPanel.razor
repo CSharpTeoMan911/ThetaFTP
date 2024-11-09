@@ -11,30 +11,25 @@
 <FocusPanel style="z-index:5;">
     <Component>
         <div class="jumbotron" style="padding:5px; display:flex; flex-direction:column; width:fit-content; align-self:center; margin-top: 300px;">
-            <div style="display:flex; flex-direction:row-reverse;">
-                <button class="close_button" @onclick=Close>
-                    <img src="./images/cancel.webp" style="width:22px;"/>
+            <div style="display:flex; flex-direction:row-reverse; margin-bottom: 5px;">
+                <button class="close_button" @onclick=Close >
+                    <img src="./images/close_button.webp" style="width:20px;"/>
                 </button>
             </div>
-            <div class="title_div" style="align-self:center;">
-                <h5 style="font-size:calc(16px + 0.4vw);">
-                    Rename
-                </h5>
-            </div>
-            <div class="generic_div" style="padding-left:5px; padding-right: 5px;">
-                <div class="generic_horizontal_div" style="margin-top:10px; margin-bottom: 15px; align-self:start">
-                    <p class="label">
-                        File:
+            <div class="generic_div" style="padding-left:10px; padding-right: 10px;">
+                <div class="generic_horizontal_div" style="margin-top:5px; margin-bottom: 25px; align-self:start">
+                    <p class="label" style="color: #2A6691">
+                        Name:
                     </p>
-                    <input class="display" readonly="readonly" value="@item?.name"/>
+                    <input class="display" style="align-self:center; font-family: sans-serif;" readonly="readonly" value="@item?.name" />
                 </div>
                 <div class="generic_horizontal_div" style="margin-top:0px; margin-bottom: 10px; align-self:start">
-                    <p class="label">
-                        Rename:
+                    <p class="label" style="color: #2A6691">
+                        New name:
                     </p>
-                    <input class="value" @bind-value=@_new_name/>
-                    <button class="select_button" style="margin-left: 5px;" @onclick=Rename>
-                        <img src="./images/check.webp" style="height:calc(25px + 0.5vw)" />
+                    <input class="input_style_small" style="align-self:center; border-radius: 5px; border-width: 1px; padding:0px; width: 160px;" @bind-value=@_new_name />
+                    <button class="select_button" style="margin-left: 5px; height: fit-content; align-self: center" @onclick=Rename>
+                        <img src="./images/check.webp" style="height:calc(20px + 0.1vw)" />
                     </button>
                 </div>
             </div>
