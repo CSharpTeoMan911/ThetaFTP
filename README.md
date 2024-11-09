@@ -7,8 +7,7 @@
 
 ## Tech stack
 
-<img width="1754" alt="Tech Stack Diagram (Copy)" src="https://github.com/user-attachments/assets/b3d8523b-63da-446e-9eaf-2583a44dfb8c">
-
+<img width="2074" alt="Tech Stack Diagram (Copy) (1)" src="https://github.com/user-attachments/assets/d1d24f2e-935b-4204-bc79-bebca80d4f95">
 
 
 # Usage
