@@ -5,6 +5,12 @@
 # About
 **ThetaDrive** is a cross-platform easily configurable, ready to deploy, FTP server application that works on both Windows and Linux. It has advanced features such as: two step authentication via SMTP, connection encryption via SSL/TLS, SSL certificate generation, and the ability to customise multiple attributes related to security and databases.
 
+## Tech stack
+
+<img width="1754" alt="Tech Stack Diagram (Copy)" src="https://github.com/user-attachments/assets/b3d8523b-63da-446e-9eaf-2583a44dfb8c">
+
+
+
 # Usage
 For instructions about how the application must be configured and its behaviour please visit the [Wiki](https://github.com/CSharpTeoMan911/ThetaFTP/wiki) section of this repository.
 
@@ -65,5 +71,17 @@ All sesitive information to be stored in the database is both hashed and salted.
 ## Path traversal attack prevention
 
 Each user has its own directory associated with its account. Every time a user is performing an operation related to the file system, the server will process the path given by the user and verify if it has as its root the directory associated with the account. If the path to be processed does not have as its root, the folder associated with the account, the operation is cancelled, thus preventing mallicious attacks on the server's directory level, as well as preventing every user's information being compromised.
+
+<br/>
+<br/>
+
+## SQL injection prevention
+
+The application is using parametrised parameter injection within SQL commands, which in turn is escaping any special charater from the SQL string, thus making any SQL injection attack impossible
+
+![SQL command C#](https://github.com/user-attachments/assets/9b6d7a8b-76b8-474e-bbba-8ff9e62c2a83)
+
+
+
 
 
