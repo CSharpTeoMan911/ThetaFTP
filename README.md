@@ -5,6 +5,12 @@
 # About
 **ThetaDrive** is a cross-platform easily configurable, ready to deploy, FTP server application that works on both Windows and Linux. It has advanced features such as: two step authentication via SMTP, connection encryption via SSL/TLS, SSL certificate generation, and the ability to customise multiple attributes related to security and databases.
 
+## Tech stack
+
+<img width="1754" alt="Tech Stack Diagram (Copy)" src="https://github.com/user-attachments/assets/b3d8523b-63da-446e-9eaf-2583a44dfb8c">
+
+
+
 # Usage
 For instructions about how the application must be configured and its behaviour please visit the [Wiki](https://github.com/CSharpTeoMan911/ThetaFTP/wiki) section of this repository.
 
