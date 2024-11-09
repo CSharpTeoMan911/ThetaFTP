@@ -103,7 +103,7 @@ input.input_style {
 }
 
 input.input_style_small {
-    font-size: calc(12px + 0.2vw);
+    font-size: calc(11px + 0.2vw);
     border-radius: 5px;
     border-width: calc(1px + 0.1vw);
     width: calc(230px + 1vw);
