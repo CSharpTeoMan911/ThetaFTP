@@ -37,7 +37,8 @@ The application can encrypt the client/server connection using the TLS/SSL proto
 
 ## Two-step registration
 
-![Two step registration](https://github.com/user-attachments/assets/0ae8193f-fe91-493e-9b49-b4181bad2332)
+![Two step registration](https://github.com/user-attachments/assets/8097bcbc-e92d-449c-bb71-2e97f924bb3e)
+
 
 
 When the user is creating an account, the server will verify if the account already exists, and if it does not exist, it will generate a **registration code** and store it in the database. The **registration code** is associated with the account, and as long as the registration code exists, the account is marked as invalid. Afterwards, the server will send the **registration code** to the user's email address and prompt the user for the **registration code**. If the **registration code** is valid, the server will delete the **registration code** from the database and send a **log in session key** to the user, and thus making the account valid as well as logging in the user. The **registration code** has an expiration date of 1 hour. If the user does not validate the **registration code**, both the account and the **registration code** will be deleted from the database.
