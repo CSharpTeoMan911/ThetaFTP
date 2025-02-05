@@ -23,7 +23,7 @@
                     </p>
                 </div>
                 <div class="generic_horizontal_div" style="margin-top:0px; margin-bottom: 10px; align-self:start">
-                    <input class="input_style_small" style="align-self:center; border-radius: 5px; border-width: 1px; padding:0px; width: 160px;" @bind-value="@_new_name"/>
+                    <input class="input_style_small" style="align-self:center; border-radius: 5px; border-width: 1px; padding:0px; width: 160px;" @oninput=OnChange value="@_new_name"/>
                     <button class="select_button" style="margin-left: 5px; height: fit-content; align-self: center" @onclick=Rename>
                         <img src="./images/check.webp" style="height:calc(20px + 0.1vw)"/>
                     </button> 
@@ -56,13 +56,17 @@
     protected override void OnAfterRender(bool firstRender)
     {
         base.OnAfterRender(firstRender);
-        _new_name = item?.name;
-
         if (firstRender == true)
         {
+            _new_name = item?.name;
             Loaded = true;
             StateHasChanged();
         }
+    }
+
+    private void OnChange(ChangeEventArgs e)
+    {
+        _new_name = e.Value.ToString();
     }
 
 
