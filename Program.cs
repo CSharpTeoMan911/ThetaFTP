@@ -1,4 +1,3 @@
-using Microsoft.OpenApi.Models;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 using Serilog;
@@ -92,10 +91,6 @@ namespace ThetaFTP
                     options.InputFormatters.Add(new JsonTextInputFormatter());
                     options.OutputFormatters.Add(new StreamOutputFormatter());
                 });
-                builder.Services.AddSwaggerGen(c =>
-                {
-                    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
-                });
 
 
                 //////////////////////////////////////////////
@@ -168,14 +163,6 @@ namespace ThetaFTP
 
                     if (configurations?.enforce_https == true)
                         app.UseHsts();
-                }
-                else
-                {
-                    app.UseSwagger();
-                    app.UseSwaggerUI(c =>
-                    {
-                        c.SwaggerEndpoint("v1/swagger.json", "My API V1");
-                    });
                 }
 
 
