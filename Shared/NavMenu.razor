@@ -48,14 +48,33 @@
 
     private string second_menu_item_state { get; set; } = "#044275";
 
-    protected override async void OnAfterRender(bool firstRender)
+    private bool Loaded { get; set; }
+    private bool Init { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
     {
         base.OnAfterRender(firstRender);
-        string? AuthCache = null;
 
-        try
+        if(firstRender == true)
         {
-            if (firstRender == true)
+            Loaded = true;
+            StateHasChanged();
+        }
+
+        if (Loaded == true && Init == false)
+        {
+            Init = true;
+            Initiation();
+        }
+    }
+
+    private async void Initiation()
+    {
+        if(Loaded)
+        {
+            string? AuthCache = null;
+
+            try
             {
                 IJSObjectReference animation_module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/animations.js");
                 await animation_module.InvokeVoidAsync("InitBackgroundGradientFluctuation");
@@ -63,92 +82,94 @@
                 await animation_module.InvokeVoidAsync("InitFocusPanelGeometry");
                 await animation_module.DisposeAsync();
                 StateHasChanged();
-            }
 
-            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-
-            if (Shared.configurations?.use_secure_local_storage == true)
-            {
-                ProtectedBrowserStorageResult<string> AuthCacheResult = await protectedLocalStorage.GetAsync<string>("AuthCache");
-                AuthCache = AuthCacheResult.Value;
-            }
-            else
-            {
-                AuthCache = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-                await module.DisposeAsync();
-            }
-        }
-        catch { }
-
-
-        if (AuthCache == null)
-        {
-            if (AuthState != "Log in")
-            {
-                AuthState = "Log in";
-                StateHasChanged();
-            }
-
-            if (NavigationManager.ToAbsoluteUri("log-in") != new Uri(NavigationManager.Uri) || NavigationManager.ToAbsoluteUri("register") != new Uri(NavigationManager.Uri))
-                NavigationManager.NavigateTo("log-in", false);
-        }
-
-
-        if (NavigationManager.ToAbsoluteUri("log-in") == new Uri(NavigationManager.Uri))
-        {
-            first_menu_item_state = "#066FC4";
-            second_menu_item_state = "#044275";
-        }
-        else if (NavigationManager.ToAbsoluteUri("files") == new Uri(NavigationManager.Uri))
-        {
-            second_menu_item_state = "#066FC4";
-            first_menu_item_state = "#044275";
-        }
-
-    }
-
-    private async void Navigate(string partial_uri, bool auth)
-    {
-        if (auth == true)
-        {
-            if (AuthState == "Log out")
-            {
-                string? key = null;
-
-                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "././js/functions.js");
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
 
                 if (Shared.configurations?.use_secure_local_storage == true)
                 {
                     ProtectedBrowserStorageResult<string> AuthCacheResult = await protectedLocalStorage.GetAsync<string>("AuthCache");
-                    key = AuthCacheResult.Value;
+                    AuthCache = AuthCacheResult.Value;
                 }
                 else
                 {
-                    key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                    AuthCache = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                    await module.DisposeAsync();
                 }
-
-                StringBuilder builder = new StringBuilder("/validation/delete-session?value=");
-                builder.Append(System.Web.HttpUtility.UrlEncode(key));
-
-                HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
-                client.BaseAddress = new Uri(NavigationManager.BaseUri);
-                HttpResponseMessage responseMessage = await client.DeleteAsync(builder.ToString());
+            }
+            catch { }
 
 
-                if (Shared.configurations?.use_secure_local_storage == true)
+            if (AuthCache == null)
+            {
+                if (AuthState != "Log in")
                 {
-                    await protectedLocalStorage.DeleteAsync("AuthCache");
-                }
-                else
-                {
-                    await module.InvokeVoidAsync("Delete_Cache", "auth", "AuthCache");
+                    AuthState = "Log in";
+                    StateHasChanged();
                 }
 
-                await module.DisposeAsync();
+                if (NavigationManager.ToAbsoluteUri("log-in") != new Uri(NavigationManager.Uri) || NavigationManager.ToAbsoluteUri("register") != new Uri(NavigationManager.Uri))
+                    NavigationManager.NavigateTo("log-in", false);
+            }
+
+
+            if (NavigationManager.ToAbsoluteUri("log-in") == new Uri(NavigationManager.Uri))
+            {
+                first_menu_item_state = "#066FC4";
+                second_menu_item_state = "#044275";
+            }
+            else if (NavigationManager.ToAbsoluteUri("files") == new Uri(NavigationManager.Uri))
+            {
+                second_menu_item_state = "#066FC4";
+                first_menu_item_state = "#044275";
             }
         }
+    }
 
-        NavigationManager.NavigateTo(partial_uri, true);
+    private async void Navigate(string partial_uri, bool auth)
+    {
+        if(Loaded)
+        {
+            if (auth == true)
+            {
+                if (AuthState == "Log out")
+                {
+                    string? key = null;
+
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "././js/functions.js");
+
+                    if (Shared.configurations?.use_secure_local_storage == true)
+                    {
+                        ProtectedBrowserStorageResult<string> AuthCacheResult = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                        key = AuthCacheResult.Value;
+                    }
+                    else
+                    {
+                        key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                    }
+
+                    StringBuilder builder = new StringBuilder("/validation/delete-session?value=");
+                    builder.Append(System.Web.HttpUtility.UrlEncode(key));
+
+                    HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
+                    client.BaseAddress = new Uri(NavigationManager.BaseUri);
+                    HttpResponseMessage responseMessage = await client.DeleteAsync(builder.ToString());
+
+
+                    if (Shared.configurations?.use_secure_local_storage == true)
+                    {
+                        await protectedLocalStorage.DeleteAsync("AuthCache");
+                    }
+                    else
+                    {
+                        await module.InvokeVoidAsync("Delete_Cache", "auth", "AuthCache");
+                    }
+
+                    await module.DisposeAsync();
+                }
+            }
+
+            NavigationManager.NavigateTo(partial_uri, true);
+        }
     }
 
     private void ActivateProfilePanel()

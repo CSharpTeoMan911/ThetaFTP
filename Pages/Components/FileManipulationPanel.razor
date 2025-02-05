@@ -11,26 +11,22 @@
 <FocusPanel style="z-index:5;">
     <Component>
         <div class="jumbotron" style="padding:5px; display:flex; flex-direction:column; width:fit-content; align-self:center; margin-top: 300px;">
-            <div style="display:flex; flex-direction:row-reverse; margin-bottom: 5px;">
-                <button class="close_button" @onclick=Close >
+            <div style="display:flex; flex-direction:row-reverse;">
+                <button class="close_button" @onclick=Close>
                     <img src="./images/close_button.webp" style="width:20px;"/>
                 </button>
             </div>
             <div class="generic_div" style="padding-left:10px; padding-right: 10px;">
-                <div class="generic_horizontal_div" style="margin-top:5px; margin-bottom: 25px; align-self:start">
+                <div class="generic_horizontal_div" style="margin-top:5px; margin-bottom: 10px; align-self:start">
                     <p class="label" style="color: #2A6691">
-                        Name:
+                        Rename
                     </p>
-                    <input class="display" style="align-self:center; font-family: sans-serif;" readonly="readonly" value="@item?.name" />
                 </div>
                 <div class="generic_horizontal_div" style="margin-top:0px; margin-bottom: 10px; align-self:start">
-                    <p class="label" style="color: #2A6691">
-                        New name:
-                    </p>
-                    <input class="input_style_small" style="align-self:center; border-radius: 5px; border-width: 1px; padding:0px; width: 160px;" @bind-value=@_new_name />
+                    <input class="input_style_small" style="align-self:center; border-radius: 5px; border-width: 1px; padding:0px; width: 160px;" @bind-value="@_new_name"/>
                     <button class="select_button" style="margin-left: 5px; height: fit-content; align-self: center" @onclick=Rename>
-                        <img src="./images/check.webp" style="height:calc(20px + 0.1vw)" />
-                    </button>
+                        <img src="./images/check.webp" style="height:calc(20px + 0.1vw)"/>
+                    </button> 
                 </div>
             </div>
         </div>
@@ -38,7 +34,7 @@
 </FocusPanel>
 
 @code {
-    private string? _new_name { get; set; }
+    private string? _new_name {get; set;}
 
     [Parameter] public DirectoryItem? item { get; set; }
 
@@ -54,51 +50,70 @@
 
     private string? operation_result { get; set; }
 
+    private bool Loaded { get; set; }
+
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        _new_name = item?.name;
+
+        if (firstRender == true)
+        {
+            Loaded = true;
+            StateHasChanged();
+        }
+    }
+
+
     public async void Rename()
     {
-        string? log_in_session_key = null;
-
-        if (Shared.configurations?.use_secure_local_storage == true)
+        if(Loaded)
         {
-            ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-            log_in_session_key = log_in_session_key_result.Value;
-        }
-        else
-        {
-            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-            log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-            await module.DisposeAsync();
-        }
+            string? log_in_session_key = null;
 
-        string formatted_url = String.Empty;
+            if (Shared.configurations?.use_secure_local_storage == true)
+            {
+                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                log_in_session_key = log_in_session_key_result.Value;
+            }
+            else
+            {
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                await module.DisposeAsync();
+            }
 
-        if (item?.isDirectory == false)
-        {
-            string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
-                {
-                    key = log_in_session_key,
-                    file_name = item.name,
-                    new_name = _new_name,
-                    path = Path,
-                });
-            formatted_url = new StringBuilder("/files/rename?").Append(formated_query_content).ToString();
-        }
-        else
-        {
-            string formated_query_content = await QueryParsing.QueryParser(new DirectoryOperationMetadata()
-                {
-                    key = log_in_session_key,
-                    directory_name = item?.name,
-                    new_directory_name = _new_name,
-                    path = Path,
-                });
-            formatted_url = new StringBuilder("/directories/rename?").Append(formated_query_content).ToString();
-        }
+            string formatted_url = String.Empty;
 
-        HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
-        client.BaseAddress = new Uri(NavigationManager.BaseUri);
-        HttpResponseMessage response = await client.PutAsync(formatted_url, null);
-        operation_result = await response.Content.ReadAsStringAsync();
-        Manipulation();
+            if (item?.isDirectory == false)
+            {
+                string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
+                    {
+                        key = log_in_session_key,
+                        file_name = item.name,
+                        new_name = _new_name,
+                        path = Path,
+                    });
+                formatted_url = new StringBuilder("/files/rename?").Append(formated_query_content).ToString();
+            }
+            else
+            {
+                string formated_query_content = await QueryParsing.QueryParser(new DirectoryOperationMetadata()
+                    {
+                        key = log_in_session_key,
+                        directory_name = item?.name,
+                        new_directory_name = _new_name,
+                        path = Path,
+                    });
+                formatted_url = new StringBuilder("/directories/rename?").Append(formated_query_content).ToString();
+            }
+
+            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
+            client.BaseAddress = new Uri(NavigationManager.BaseUri);
+            HttpResponseMessage response = await client.PutAsync(formatted_url, null);
+            operation_result = await response.Content.ReadAsStringAsync();
+            Manipulation();
+        }
     }
 }

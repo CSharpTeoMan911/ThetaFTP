@@ -47,7 +47,7 @@
                             show = true;
                         else
                             if(Path != SrcPath)
-                                show = true;
+                            show = true;
 
                         if (show == true)
                         {
@@ -57,10 +57,13 @@
                                     <input class="display" value=" @item?.name" readonly="readonly" />
                                 </div>
                                 <div style="display:flex; flex-direction:row-reverse; width: 50%">
-                                    <button @onclick=@(()=>Open(item)) class="file_relocation" style="margin-left:30px; background-color: black; color: white; border-color: black;">
-                                        Open
-                                    </button>
-                                    <button @onclick=@(()=>Select(item)) class="file_relocation" style="">
+                                    @if (item.name != "/")
+                                    {
+                                        <button @onclick=@(()=>Open(item)) class="file_relocation" style="margin-left:30px; background-color: black; color: white; border-color: black; cursor: pointer">
+                                            Open
+                                        </button>
+                                    }
+                                            <button @onclick=@(()=>Select(item)) class="file_relocation" style="cursor: pointer">
                                         Select
                                     </button>
                                 </div>
@@ -101,6 +104,10 @@
 
     private void Close() => closePanel?.Invoke();
 
+    private bool Loaded { get; set; }
+    private bool Init { get; set; }
+
+
     protected override void OnAfterRender(bool firstRender)
     {
         base.OnAfterRender(firstRender);
@@ -110,47 +117,64 @@
             timer?.Dispose();
             SrcPath = Path;
             Current_Path = Path;
+            Loaded = true;
+            StateHasChanged();
+        }
+
+        if(Loaded == true && Init == false)
+        {
+            Init = true;
             GetDirectories();
         }
     }
 
     private async void GetDirectories()
     {
-        Tuple<bool, string?> last_dir_ = await FileSystemFormatter.GetLastDir(Current_Path);
-
-        ShowBackButton = last_dir_.Item1;
-        last_dir = last_dir_.Item2;
-
-        string? log_in_session_key = null;
-
-        if (Shared.configurations?.use_secure_local_storage == true)
+        if (Loaded == true)
         {
-            ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-            log_in_session_key = log_in_session_key_result.Value;
+            Tuple<bool, string?> last_dir_ = await FileSystemFormatter.GetLastDir(Current_Path);
+
+            ShowBackButton = last_dir_.Item1;
+            last_dir = last_dir_.Item2;
+
+            string? log_in_session_key = null;
+
+            if (Shared.configurations?.use_secure_local_storage == true)
+            {
+                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                log_in_session_key = log_in_session_key_result.Value;
+            }
+            else
+            {
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                await module.DisposeAsync();
+            }
+
+            Metadata metadata = new Metadata()
+                {
+                    path = Current_Path,
+                    key = log_in_session_key
+                };
+
+            string? url = new StringBuilder().Append("/directories/get-directories?").Append(await QueryParsing.QueryParser(metadata)).ToString();
+
+            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
+            client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
+            HttpResponseMessage httpResponse = await client.GetAsync(url);
+            string result = await httpResponse.Content.ReadAsStringAsync();
+
+            directories = await JsonFormatter.JsonDeserialiser<List<DirectoryItem>?>(result);
+
+            if (Current_Path == "/")
+                directories.Add(new DirectoryItem()
+                {
+                    isDirectory = true,
+                    name = Current_Path
+                });
+            StateHasChanged();
         }
-        else
-        {
-            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-            log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-            await module.DisposeAsync();
-        }
-
-        Metadata metadata = new Metadata()
-        {
-                path = Current_Path,
-            key = log_in_session_key
-        };
-
-        string? url = new StringBuilder().Append("/directories/get-directories?").Append(await QueryParsing.QueryParser(metadata)).ToString();
-
-        HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
-        client.BaseAddress = new Uri(NavigationManager.BaseUri);
-
-        HttpResponseMessage httpResponse = await client.GetAsync(url);
-        string result = await httpResponse.Content.ReadAsStringAsync();
-
-        directories = await JsonFormatter.JsonDeserialiser<List<DirectoryItem>?>(result);
-        StateHasChanged();
     }
 
 
@@ -170,114 +194,117 @@
 
     private async void Select(DirectoryItem? item)
     {
-        string? log_in_session_key = null;
-
-        if (Shared.configurations?.use_secure_local_storage == true)
+        if(Loaded)
         {
-            ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-            log_in_session_key = log_in_session_key_result.Value;
-        }
-        else
-        {
-            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-            log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-            await module.DisposeAsync();
-        }
+            string? log_in_session_key = null;
 
-        string? selected_path = Current_Path?[Current_Path.Length - 1] == '/' ? new StringBuilder(Current_Path).Append(item?.name).ToString() : new StringBuilder(Current_Path).Append('/').Append(item?.name).ToString(); ;
-        StringBuilder? request_url = new StringBuilder();
-
-        if (selected_item?.isDirectory == false)
-        {
-            FileOperationMetadata fileOperationMetadata = new FileOperationMetadata()
+            if (Shared.configurations?.use_secure_local_storage == true)
             {
-                key = log_in_session_key,
-                file_name = selected_item?.name,
-                path = Path,
-                new_path = selected_path
-            };
-            request_url.Append("/files/relocate?").Append(await QueryParsing.QueryParser(fileOperationMetadata));
-        }
-        else
-        {
-            DirectoryOperationMetadata directoryOperationMetadata = new DirectoryOperationMetadata()
+                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                log_in_session_key = log_in_session_key_result.Value;
+            }
+            else
             {
-                key = log_in_session_key,
-                directory_name = selected_item?.name,
-                path = Path,
-                new_path = selected_path
-            };
-            request_url.Append("/directories/relocate?").Append(await QueryParsing.QueryParser(directoryOperationMetadata));
-        }
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                await module.DisposeAsync();
+            }
 
-        HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
-        client.BaseAddress = new Uri(NavigationManager.BaseUri);
-        HttpResponseMessage responseMessage = await client.PutAsync(request_url.ToString(), null);
+            string? selected_path = Current_Path?[Current_Path.Length - 1] == '/' ? new StringBuilder(Current_Path).Append(item?.name).ToString() : new StringBuilder(Current_Path).Append('/').Append(item?.name).ToString(); ;
+            StringBuilder? request_url = new StringBuilder();
 
-        string response = await responseMessage.Content.ReadAsStringAsync();
+            if (selected_item?.isDirectory == false)
+            {
+                FileOperationMetadata fileOperationMetadata = new FileOperationMetadata()
+                    {
+                        key = log_in_session_key,
+                        file_name = selected_item?.name,
+                        path = Path,
+                        new_path = selected_path
+                    };
+                request_url.Append("/files/relocate?").Append(await QueryParsing.QueryParser(fileOperationMetadata));
+            }
+            else
+            {
+                DirectoryOperationMetadata directoryOperationMetadata = new DirectoryOperationMetadata()
+                    {
+                        key = log_in_session_key,
+                        directory_name = selected_item?.name,
+                        path = Path,
+                        new_path = selected_path
+                    };
+                request_url.Append("/directories/relocate?").Append(await QueryParsing.QueryParser(directoryOperationMetadata));
+            }
 
-        notificationMessage = response;
+            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
+            client.BaseAddress = new Uri(NavigationManager.BaseUri);
+            HttpResponseMessage responseMessage = await client.PutAsync(request_url.ToString(), null);
 
-        if (response.Contains("Internal server error") == true)
-        {
-            notificationType = Notifications.NotificationType.Error;
-        }
-        else if (response.Contains("Invalid log in session key") == true)
-        {
-            notificationType = Notifications.NotificationType.Error;
-            NavigateToLogIn = true;
-        }
-        else if (response.Contains("Log in session key expired") == true)
-        {
-            notificationType = Notifications.NotificationType.Error;
-            NavigateToLogIn = true;
-        }
-        else if (response.Contains("Log in session not approved") == true)
-        {
-            notificationType = Notifications.NotificationType.Error;
-            NavigateToLogIn = true;
-        }
-        else if (response.Contains("Invalid file name") == true)
-        {
-            notificationType = Notifications.NotificationType.Error;            
-        }
-        else if (response.Contains("Invalid path") == true)
-        {
-            notificationType = Notifications.NotificationType.Error;            
-        }
-        else if (response.Contains("File already exist") == true)
-        {
-            notificationType = Notifications.NotificationType.Error;
-        }
-        else if (response.Contains("Invalid file name. Use only numbers, letters, '-', '/', '_', ' ', and '.'") == true)
-        {
-            notificationType = Notifications.NotificationType.Error;            
-        }
-        else if (response.Contains("File relocation successful") == true)
-        {
-            notificationType = Notifications.NotificationType.Information;
-            refresh = true;
-        }
-        else if (response.Contains("Directory relocation successful") == true)
-        {
-            notificationType = Notifications.NotificationType.Information;
-            refresh = true;
-        }
-        else
-        {
-            notificationMessage = "Internal server error";
-            notificationType = Notifications.NotificationType.Error;
-        }
+            string response = await responseMessage.Content.ReadAsStringAsync();
 
-        start = DateTime.Now;
+            notificationMessage = response;
 
-        timer = new System.Timers.Timer();
-        timer.Interval = 100;
-        timer.Elapsed += Elapsed;
-        timer.Start();
+            if (response.Contains("Internal server error") == true)
+            {
+                notificationType = Notifications.NotificationType.Error;
+            }
+            else if (response.Contains("Invalid log in session key") == true)
+            {
+                notificationType = Notifications.NotificationType.Error;
+                NavigateToLogIn = true;
+            }
+            else if (response.Contains("Log in session key expired") == true)
+            {
+                notificationType = Notifications.NotificationType.Error;
+                NavigateToLogIn = true;
+            }
+            else if (response.Contains("Log in session not approved") == true)
+            {
+                notificationType = Notifications.NotificationType.Error;
+                NavigateToLogIn = true;
+            }
+            else if (response.Contains("Invalid file name") == true)
+            {
+                notificationType = Notifications.NotificationType.Error;
+            }
+            else if (response.Contains("Invalid path") == true)
+            {
+                notificationType = Notifications.NotificationType.Error;
+            }
+            else if (response.Contains("File already exist") == true)
+            {
+                notificationType = Notifications.NotificationType.Error;
+            }
+            else if (response.Contains("Invalid file name. Use only numbers, letters, '-', '/', '_', ' ', and '.'") == true)
+            {
+                notificationType = Notifications.NotificationType.Error;
+            }
+            else if (response.Contains("File relocation successful") == true)
+            {
+                notificationType = Notifications.NotificationType.Information;
+                refresh = true;
+            }
+            else if (response.Contains("Directory relocation successful") == true)
+            {
+                notificationType = Notifications.NotificationType.Information;
+                refresh = true;
+            }
+            else
+            {
+                notificationMessage = "Internal server error";
+                notificationType = Notifications.NotificationType.Error;
+            }
 
-        ShowNotification = true;
-        StateHasChanged();
+            start = DateTime.Now;
+
+            timer = new System.Timers.Timer();
+            timer.Interval = 100;
+            timer.Elapsed += Elapsed;
+            timer.Start();
+
+            ShowNotification = true;
+            StateHasChanged();
+        }
     }
 
     private void Elapsed(object? obj, System.Timers.ElapsedEventArgs args)
