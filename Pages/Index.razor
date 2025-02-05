@@ -88,9 +88,9 @@
                         </div>
                     </div>
                 </div>
-           </div>
+            </div>
 
-           
+
             <div class="directory_file_items">
                 <div style="width:100%; height:fit-content; display:flex; flex-direction:column;">
                     @if (ShowBackButton == true)
@@ -155,295 +155,311 @@
 
     private bool SearchFilterEnabled { get; set; }
 
+    private bool Loaded { get; set; }
+    private bool Init { get; set; }
+
     protected override void OnAfterRender(bool firstRender)
     {
         base.OnAfterRender(firstRender);
 
         if (firstRender == true)
         {
+            Loaded = true;
+            StateHasChanged();
+        }
+
+        if(Init == false && Loaded == true)
+        {
+            Init = true;
             GetDirectoryInfo(true);
         }
+
     }
 
     public async void GetDirectoryInfo(bool re_render)
     {
-        try
+        if(Loaded)
         {
-            Tuple<bool, string?> last_dir_ = await FileSystemFormatter.GetLastDir(Path);
-            ShowBackButton = last_dir_.Item1;
-            last_dir = last_dir_.Item2;
-
-            if(ShowBackButton == true)
-                items?.Clear();
-
-            string? log_in_session_key = null;
-
-            if (Shared.configurations?.use_secure_local_storage == true)
+            try
             {
-                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-                log_in_session_key = log_in_session_key_result.Value;
-            }
-            else
-            {
-                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-                await module.DisposeAsync();
-            }
+                Tuple<bool, string?> last_dir_ = await FileSystemFormatter.GetLastDir(Path);
+                ShowBackButton = last_dir_.Item1;
+                last_dir = last_dir_.Item2;
 
-            Metadata metadata = new Metadata();
-            metadata.path = Path;
-            metadata.key = log_in_session_key;
+                if (ShowBackButton == true)
+                    items?.Clear();
 
-            StringBuilder url_builder = new StringBuilder("/files/get-files?");
-            url_builder.Append(await QueryParsing.QueryParser(metadata));
+                string? log_in_session_key = null;
 
-            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
-            client.BaseAddress = new Uri(NavigationManager.BaseUri);
-
-
-            HttpResponseMessage result = await client.GetAsync(url_builder.ToString());
-            string result_string = await result.Content.ReadAsStringAsync();
-
-
-            if (result_string == "Invalid log in session key" || result_string == "Log in session key expired" || result_string == "Log in session not approved" || result_string == "Invalid file path" || result_string == "Internal server error")
-            {
-                InvalidLogInSessionKey = true;
-                ShowNotification = true;
-                notificationMessage = result_string;
-                notificationType = Notifications.NotificationType.Error;
-            }
-            else
-            {
-                List<DirectoryItem>? files = await JsonFormatter.JsonDeserialiser<List<DirectoryItem>>(result_string);
-
-                if (files != null)
+                if (Shared.configurations?.use_secure_local_storage == true)
                 {
-                    url_builder.Clear();
-                    url_builder.Append("/directories/get-directories?").Append(await QueryParsing.QueryParser(metadata));
-
-                    result = await client.GetAsync(url_builder.ToString());
-                    result_string = await result.Content.ReadAsStringAsync();
-
-                    if (result_string == "Invalid log in session key" || result_string == "Log in session key expired" || result_string == "Log in session not approved" || result_string == "Invalid file path" || result_string == "Internal server error")
-                    {
-                        InvalidLogInSessionKey = true;
-                        ShowNotification = true;
-                        notificationMessage = result_string;
-                        notificationType = Notifications.NotificationType.Error;
-                    }
-                    else
-                    {
-                        List<DirectoryItem>? directories = await JsonFormatter.JsonDeserialiser<List<DirectoryItem>>(result_string);
-
-                        if (directories != null)
-                        {
-                            SortUtility sortUtility = new SortUtility();
-
-                            files?.AddRange(directories);
-
-                            items = files;
-
-                            if (SearchFilterEnabled == true)
-                                items = await SearchFilter(items);
-
-                            bool ascending = false;
-
-                            if (order == FilterPanel.Order.up)
-                                ascending = true;
-
-                            switch (type)
-                            {
-                                case FilterPanel.Type.Name:
-                                    sortUtility.MergeSortByName(items, ascending);
-                                    break;
-                                case FilterPanel.Type.Size:
-                                    sortUtility.MergeSortBySize(items, ascending);
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            ShowNotification = true;
-                            notificationMessage = "Internal server error";
-                            notificationType = Notifications.NotificationType.Error;
-                        }
-                    }
+                    ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                    log_in_session_key = log_in_session_key_result.Value;
                 }
                 else
                 {
-                    ShowNotification = true;
-                    notificationMessage = "Internal server error";
-                    notificationType = Notifications.NotificationType.Error;
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                    log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                    await module.DisposeAsync();
                 }
 
-            }
-        }
-        catch { }
+                Metadata metadata = new Metadata();
+                metadata.path = Path;
+                metadata.key = log_in_session_key;
 
-        if (re_render == true)
-            StateHasChanged();
+                StringBuilder url_builder = new StringBuilder("/files/get-files?");
+                url_builder.Append(await QueryParsing.QueryParser(metadata));
+
+                HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
+                client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
+
+                HttpResponseMessage result = await client.GetAsync(url_builder.ToString());
+                string result_string = await result.Content.ReadAsStringAsync();
+
+
+                if (result_string == "Invalid log in session key" || result_string == "Log in session key expired" || result_string == "Log in session not approved" || result_string == "Invalid file path" || result_string == "Internal server error")
+                {
+                    InvalidLogInSessionKey = true;
+                    ShowNotification = true;
+                    notificationMessage = result_string;
+                    notificationType = Notifications.NotificationType.Error;
+                }
+                else
+                {
+                    List<DirectoryItem>? files = await JsonFormatter.JsonDeserialiser<List<DirectoryItem>>(result_string);
+
+                    if (files != null)
+                    {
+                        url_builder.Clear();
+                        url_builder.Append("/directories/get-directories?").Append(await QueryParsing.QueryParser(metadata));
+
+                        result = await client.GetAsync(url_builder.ToString());
+                        result_string = await result.Content.ReadAsStringAsync();
+
+                        if (result_string == "Invalid log in session key" || result_string == "Log in session key expired" || result_string == "Log in session not approved" || result_string == "Invalid file path" || result_string == "Internal server error")
+                        {
+                            InvalidLogInSessionKey = true;
+                            ShowNotification = true;
+                            notificationMessage = result_string;
+                            notificationType = Notifications.NotificationType.Error;
+                        }
+                        else
+                        {
+                            List<DirectoryItem>? directories = await JsonFormatter.JsonDeserialiser<List<DirectoryItem>>(result_string);
+
+                            if (directories != null)
+                            {
+                                SortUtility sortUtility = new SortUtility();
+
+                                files?.AddRange(directories);
+
+                                items = files;
+
+                                if (SearchFilterEnabled == true)
+                                    items = await SearchFilter(items);
+
+                                bool ascending = false;
+
+                                if (order == FilterPanel.Order.up)
+                                    ascending = true;
+
+                                switch (type)
+                                {
+                                    case FilterPanel.Type.Name:
+                                        sortUtility.MergeSortByName(items, ascending);
+                                        break;
+                                    case FilterPanel.Type.Size:
+                                        sortUtility.MergeSortBySize(items, ascending);
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                ShowNotification = true;
+                                notificationMessage = "Internal server error";
+                                notificationType = Notifications.NotificationType.Error;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        ShowNotification = true;
+                        notificationMessage = "Internal server error";
+                        notificationType = Notifications.NotificationType.Error;
+                    }
+
+                }
+            }
+            catch { }
+
+            if (re_render == true)
+                StateHasChanged();
+        }
     }
 
     public async void Upload(InputFileChangeEventArgs e)
     {
-
-        System.Timers.Timer timer = new System.Timers.Timer();
-        try
+        if(Loaded)
         {
-            string? log_in_session_key = null;
-
-            if (Shared.configurations?.use_secure_local_storage == true)
+            System.Timers.Timer timer = new System.Timers.Timer();
+            try
             {
-                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-                log_in_session_key = log_in_session_key_result.Value;
-            }
-            else
-            {
-                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-                await module.DisposeAsync();
-            }
+                string? log_in_session_key = null;
 
-            Tuple<string, Stream, StreamContent?> payload =  await FileUploadPayloadBuilder.FileUpload(e.File, Path, log_in_session_key);
-
-            if (payload.Item3 != null)
-            {
-                CancellationTokenSource source = new CancellationTokenSource();
-                CancellationToken token = source.Token;
-
-                try
+                if (Shared.configurations?.use_secure_local_storage == true)
                 {
-                    UploadInProgress = true;
-                    double progress = 0;
+                    ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                    log_in_session_key = log_in_session_key_result.Value;
+                }
+                else
+                {
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                    log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                    await module.DisposeAsync();
+                }
 
-                    HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
-                    client.BaseAddress = new Uri(NavigationManager.BaseUri);
+                Tuple<string, Stream, StreamContent?> payload = await FileUploadPayloadBuilder.FileUpload(e.File, Path, log_in_session_key);
 
-                    pending_upload_progress_data.TryAdd(e.File.Name, new Tuple<string, CancellationTokenSource>("0", source));
+                if (payload.Item3 != null)
+                {
+                    CancellationTokenSource source = new CancellationTokenSource();
+                    CancellationToken token = source.Token;
 
-                    timer.Elapsed += async (object? sender, System.Timers.ElapsedEventArgs args) =>
+                    try
                     {
-                        if (token.IsCancellationRequested == false)
+                        UploadInProgress = true;
+                        double progress = 0;
+
+                        HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
+                        client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
+                        pending_upload_progress_data.TryAdd(e.File.Name, new Tuple<string, CancellationTokenSource>("0", source));
+
+                        timer.Elapsed += async (object? sender, System.Timers.ElapsedEventArgs args) =>
                         {
-                            long file_size = payload.Item2.Length;
-                            long position = payload.Item2.Position + 1;
-                            double difference = 0;
-
-                            if (position != 0)
-                                difference = file_size / position;
-                            if (difference != 0)
-                                progress = 100 / (difference);
-
-
-                            Tuple<string, CancellationTokenSource>? previous_value = null;
-                            pending_upload_progress_data.TryGetValue(e.File.Name, out previous_value);
-
-                            if (previous_value != null)
-                                pending_upload_progress_data.TryUpdate(e.File.Name, new Tuple<string, CancellationTokenSource>(progress.ToString("F2"), source), previous_value);
-
-                            await InvokeAsync(() =>
+                            if (token.IsCancellationRequested == false)
                             {
-                                StateHasChanged();
-                            });
+                                long file_size = payload.Item2.Length;
+                                long position = payload.Item2.Position + 1;
+                                double difference = 0;
+
+                                if (position != 0)
+                                    difference = file_size / position;
+                                if (difference != 0)
+                                    progress = 100 / (difference);
+
+
+                                Tuple<string, CancellationTokenSource>? previous_value = null;
+                                pending_upload_progress_data.TryGetValue(e.File.Name, out previous_value);
+
+                                if (previous_value != null)
+                                    pending_upload_progress_data.TryUpdate(e.File.Name, new Tuple<string, CancellationTokenSource>(progress.ToString("F2"), source), previous_value);
+
+                                await InvokeAsync(() =>
+                                {
+                                    StateHasChanged();
+                                });
+                            }
+                            else
+                            {
+                                pending_upload_progress_data.Remove(e.File.Name, out _);
+                                pending_upload_progress_data.Remove(e.File.Name, out _);
+                                timer.Dispose();
+
+                                await InvokeAsync(() =>
+                                {
+                                    if (pending_upload_progress_data.Count == 0)
+                                    {
+                                        UploadInProgress = false;
+                                        StateHasChanged();
+                                    }
+                                });
+
+                                client.CancelPendingRequests();
+                            }
+                        };
+                        timer.Interval = 500;
+                        timer.Start();
+
+                        HttpResponseMessage responseMessage = await client.PostAsync(payload.Item1, payload.Item3);
+                        string response = await responseMessage.Content.ReadAsStringAsync();
+
+                        pending_upload_progress_data.Remove(e.File.Name, out _);
+                        pending_upload_progress_data.Remove(e.File.Name, out _);
+                        timer?.Dispose();
+
+                        if (response.Contains("File upload successful") == true)
+                        {
+                            if (pending_upload_progress_data.Count == 0)
+                                UploadInProgress = false;
+                            GetDirectoryInfo(true);
+                            goto DoNotRenderNotification;
+                        }
+                        else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
+                        {
+                            notificationType = Notifications.NotificationType.Error;
+                            InvalidLogInSessionKey = true;
                         }
                         else
                         {
-                            pending_upload_progress_data.Remove(e.File.Name, out _);
-                            pending_upload_progress_data.Remove(e.File.Name, out _);
-                            timer.Dispose();
-
-                            await InvokeAsync(() =>
-                            {
-                                if (pending_upload_progress_data.Count == 0)
-                                {
-                                    UploadInProgress = false;
-                                    StateHasChanged();
-                                }
-                            });
-
-                            client.CancelPendingRequests();
+                            notificationType = Notifications.NotificationType.Error;
                         }
-                    };
-                    timer.Interval = 500;
-                    timer.Start();
 
-                    HttpResponseMessage responseMessage = await client.PostAsync(payload.Item1, payload.Item3);
-                    string response = await responseMessage.Content.ReadAsStringAsync();
-
-                    pending_upload_progress_data.Remove(e.File.Name, out _);
-                    pending_upload_progress_data.Remove(e.File.Name, out _);
-                    timer?.Dispose();
-
-                    if (response.Contains("File upload successful") == true)
-                    {
-                        if (pending_upload_progress_data.Count == 0)
-                            UploadInProgress = false;
-                        GetDirectoryInfo(true);
-                        goto DoNotRenderNotification;
+                        notificationMessage = response;
                     }
-                    else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
+                    catch (Exception E)
                     {
-                        notificationType = Notifications.NotificationType.Error;
-                        InvalidLogInSessionKey = true;
-                    }
-                    else
-                    {
-                        notificationType = Notifications.NotificationType.Error;
-                    }
+                        pending_upload_progress_data.Remove(e.File.Name, out _);
+                        pending_upload_progress_data.Remove(e.File.Name, out _);
+                        timer.Dispose();
 
-                    notificationMessage = response;
+                        if (E.Message.Contains("The operation was canceled") == false)
+                        {
+                            notificationType = Notifications.NotificationType.Error;
+                            notificationMessage = "Could not upload file";
+                        }
+                        else
+                        {
+                            goto DoNotRenderNotification;
+                        }
+                    }
+                    finally
+                    {
+                        await payload.Item2.DisposeAsync();
+                    }
                 }
-                catch (Exception E)
+                else
                 {
                     pending_upload_progress_data.Remove(e.File.Name, out _);
                     pending_upload_progress_data.Remove(e.File.Name, out _);
                     timer.Dispose();
 
-                    if (E.Message.Contains("The operation was canceled") == false)
-                    {
-                        notificationType = Notifications.NotificationType.Error;
-                        notificationMessage = "Could not upload file";
-                    }
-                    else
-                    {
-                        goto DoNotRenderNotification;
-                    }
+                    notificationType = Notifications.NotificationType.Error;
+                    notificationMessage = "Could not read file";
                 }
-                finally
-                {
-                    await payload.Item2.DisposeAsync();
-                }
+
+                if (pending_upload_progress_data.Count == 0)
+                    UploadInProgress = false;
+
+                ShowNotification = true;
+                StateHasChanged();
+            DoNotRenderNotification:;
             }
-            else
+            catch
             {
                 pending_upload_progress_data.Remove(e.File.Name, out _);
                 pending_upload_progress_data.Remove(e.File.Name, out _);
                 timer.Dispose();
 
+                if (pending_upload_progress_data.Count == 0)
+                    UploadInProgress = false;
+
+                StateHasChanged();
+
                 notificationType = Notifications.NotificationType.Error;
-                notificationMessage = "Could not read file";
+                notificationMessage = "Could not upload file";
             }
-
-            if (pending_upload_progress_data.Count == 0)
-                UploadInProgress = false;
-
-            ShowNotification = true;
-            StateHasChanged();
-        DoNotRenderNotification:;
-        }
-        catch
-        {
-            pending_upload_progress_data.Remove(e.File.Name, out _);
-            pending_upload_progress_data.Remove(e.File.Name, out _);
-            timer.Dispose();
-
-            if (pending_upload_progress_data.Count == 0)
-                UploadInProgress = false;
-
-            StateHasChanged();
-
-            notificationType = Notifications.NotificationType.Error;
-            notificationMessage = "Could not upload file";
         }
     }
 
@@ -463,62 +479,65 @@
 
     private async void ValidationProcedure(string? code, ValidationPanel.ValidationType validationType)
     {
-        try
+        if(Loaded)
         {
-            string? log_in_session_key = null;
-
-            if (Shared.configurations?.use_secure_local_storage == true)
-            {
-                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-                log_in_session_key = log_in_session_key_result.Value;
-            }
-            else
-            {
-                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-                await module.DisposeAsync();
-            }
-
-
-
-            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
             try
             {
-                client.BaseAddress = new Uri(NavigationManager.BaseUri);
+                string? log_in_session_key = null;
 
-                if (validationType == ValidationPanel.ValidationType.DirectoryName)
+                if (Shared.configurations?.use_secure_local_storage == true)
                 {
+                    ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                    log_in_session_key = log_in_session_key_result.Value;
+                }
+                else
+                {
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                    log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                    await module.DisposeAsync();
+                }
 
-                    HttpResponseMessage responseMessage = await client.PostAsync(await DirectoryUploadPayloadBuilder.DirectoryUpload(code, Path, log_in_session_key), null);
-                    string response = await responseMessage.Content.ReadAsStringAsync();
-                    notificationMessage = response;
 
-                    if (response.Contains("Directory upload successful") == true)
+
+                HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
+                try
+                {
+                    client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
+                    if (validationType == ValidationPanel.ValidationType.DirectoryName)
                     {
-                        GetDirectoryInfo(true);
-                    }
-                    else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
-                    {
-                        notificationType = Notifications.NotificationType.Error;
-                        InvalidLogInSessionKey = true;
-                        ShowNotification = true;
-                    }
-                    else
-                    {
-                        notificationType = Notifications.NotificationType.Error;
-                        ShowNotification = true;
+
+                        HttpResponseMessage responseMessage = await client.PostAsync(await DirectoryUploadPayloadBuilder.DirectoryUpload(code, Path, log_in_session_key), null);
+                        string response = await responseMessage.Content.ReadAsStringAsync();
+                        notificationMessage = response;
+
+                        if (response.Contains("Directory upload successful") == true)
+                        {
+                            GetDirectoryInfo(true);
+                        }
+                        else if (response.Contains("Log in session key expired") == true || response.Contains("Log in session not approved") == true || response.Contains("Log in session not approved") == true || response.Contains("Invalid log in session key") == true)
+                        {
+                            notificationType = Notifications.NotificationType.Error;
+                            InvalidLogInSessionKey = true;
+                            ShowNotification = true;
+                        }
+                        else
+                        {
+                            notificationType = Notifications.NotificationType.Error;
+                            ShowNotification = true;
+                        }
                     }
                 }
+                finally
+                {
+                    client.Dispose();
+                }
             }
-            finally
-            {
-                client.Dispose();
-            }
-        }
-        catch{}
+            catch { }
 
-        ShowValidationPanel = false;
-        StateHasChanged();
+            ShowValidationPanel = false;
+            StateHasChanged();
+        }
     }
 
     private async void CloseNotification()
@@ -537,41 +556,44 @@
 
     private async Task LogOut()
     {
-        try
+        if(Loaded)
         {
-            string? key = null;
-            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "././js/functions.js");
+            try
+            {
+                string? key = null;
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "././js/functions.js");
 
-            if (Shared.configurations?.use_secure_local_storage == true)
-            {
-                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-                key = log_in_session_key_result.Value;
-            }
-            else
-            {
-                key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                if (Shared.configurations?.use_secure_local_storage == true)
+                {
+                    ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                    key = log_in_session_key_result.Value;
+                }
+                else
+                {
+                    key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                    await module.DisposeAsync();
+                }
+
+                StringBuilder builder = new StringBuilder("/validation/delete-session?value=");
+                builder.Append(System.Web.HttpUtility.UrlEncode(key));
+
+                HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
+                client.BaseAddress = new Uri(NavigationManager.BaseUri);
+                HttpResponseMessage responseMessage = await client.DeleteAsync(builder.ToString());
+
+                if (Shared.configurations?.use_secure_local_storage == true)
+                {
+                    await protectedLocalStorage.DeleteAsync("AuthCache");
+                }
+                else
+                {
+                    await module.InvokeVoidAsync("Delete_Cache", "auth", "AuthCache");
+                }
+
                 await module.DisposeAsync();
             }
-
-            StringBuilder builder = new StringBuilder("/validation/delete-session?value=");
-            builder.Append(System.Web.HttpUtility.UrlEncode(key));
-
-            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
-            client.BaseAddress = new Uri(NavigationManager.BaseUri);
-            HttpResponseMessage responseMessage = await client.DeleteAsync(builder.ToString());
-
-            if (Shared.configurations?.use_secure_local_storage == true)
-            {
-                await protectedLocalStorage.DeleteAsync("AuthCache");
-            }
-            else
-            {
-                await module.InvokeVoidAsync("Delete_Cache", "auth", "AuthCache");
-            }
-
-            await module.DisposeAsync();
+            catch { }
         }
-        catch { }
     }
 
     public void Sort(FilterPanel.Order order_, FilterPanel.Type type_)
@@ -664,12 +686,54 @@
 
     private async void DownloadFile(DirectoryItem? item)
     {
-        try
+        if(Loaded)
         {
-            if (item != null)
+            try
             {
+                if (item != null)
+                {
+                    string? log_in_session_key = null;
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+
+                    if (Shared.configurations?.use_secure_local_storage == true)
+                    {
+                        ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                        log_in_session_key = log_in_session_key_result.Value;
+                    }
+                    else
+                    {
+                        log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                    }
+
+                    string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
+                        {
+                            key = log_in_session_key,
+                            file_name = item.name,
+                            path = Path,
+                            file_length = item.size,
+                        });
+
+                    string formatted_url = new StringBuilder("/files/get?").Append(formated_query_content).ToString();
+
+                    await module.InvokeVoidAsync("BrowserManagedFileDownload", formatted_url, item.name);
+
+                    await module.DisposeAsync();
+
+                    GetDirectoryInfo(false);
+                }
+            }
+            catch { }
+        }
+    }
+
+    private async void DeleteFile(DirectoryItem? item)
+    {
+        if(Loaded)
+        {
+            try
+            {
+
                 string? log_in_session_key = null;
-                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
 
                 if (Shared.configurations?.use_secure_local_storage == true)
                 {
@@ -678,81 +742,45 @@
                 }
                 else
                 {
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
                     log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                    await module.DisposeAsync();
                 }
 
-                string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
-                    {
-                        key = log_in_session_key,
-                        file_name = item.name,
-                        path = Path,
-                        file_length = item.size,
-                    });
+                string formatted_url = String.Empty;
 
-                string formatted_url = new StringBuilder("/files/get?").Append(formated_query_content).ToString();
-
-                await module.InvokeVoidAsync("BrowserManagedFileDownload", formatted_url, item.name);
-
-                await module.DisposeAsync();
-
-                GetDirectoryInfo(false);
-            }
-        }
-        catch { }
-    }
-
-    private async void DeleteFile(DirectoryItem? item)
-    {
-        try
-        {
-
-            string? log_in_session_key = null;
-
-            if (Shared.configurations?.use_secure_local_storage == true)
-            {
-                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-                log_in_session_key = log_in_session_key_result.Value;
-            }
-            else
-            {
-                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-                await module.DisposeAsync();
-            }
-
-            string formatted_url = String.Empty;
-
-            if (item?.isDirectory == false)
-            {
-                string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
+                if (item?.isDirectory == false)
                 {
-                    key = log_in_session_key,
-                    file_name = item.name,
-                    path = Path,
-                    file_length = item.size,
-                });
-                formatted_url = new StringBuilder("/files/delete?").Append(formated_query_content).ToString();
-            }
-            else
-            {
-                string formated_query_content = await QueryParsing.QueryParser(new DirectoryOperationMetadata()
+                    string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
+                        {
+                            key = log_in_session_key,
+                            file_name = item.name,
+                            path = Path,
+                            file_length = item.size,
+                        });
+                    formatted_url = new StringBuilder("/files/delete?").Append(formated_query_content).ToString();
+                }
+                else
                 {
-                    key = log_in_session_key,
-                    directory_name = item?.name,
-                    path = Path,
-                });
-                formatted_url = new StringBuilder("/directories/delete?").Append(formated_query_content).ToString();
+                    string formated_query_content = await QueryParsing.QueryParser(new DirectoryOperationMetadata()
+                        {
+                            key = log_in_session_key,
+                            directory_name = item?.name,
+                            path = Path,
+                        });
+                    formatted_url = new StringBuilder("/directories/delete?").Append(formated_query_content).ToString();
+                }
+
+                HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
+                client.BaseAddress = new Uri(NavigationManager.BaseUri);
+                HttpResponseMessage response_message = await client.DeleteAsync(formatted_url);
+
+                string response_string = await response_message.Content.ReadAsStringAsync();
+
+                GetDirectoryInfo(true);
             }
-
-            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
-            client.BaseAddress = new Uri(NavigationManager.BaseUri);
-            HttpResponseMessage response_message = await client.DeleteAsync(formatted_url);
-
-            string response_string = await response_message.Content.ReadAsStringAsync();
-
-            GetDirectoryInfo(true);
+            catch { }
         }
-        catch { }
     }
 
     private void RenameFile(DirectoryItem? item)

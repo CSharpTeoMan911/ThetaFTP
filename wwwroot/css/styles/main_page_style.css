@@ -322,13 +322,13 @@ button.directory-item-handle-close {
     border: 0px solid transparent;
 }
 
-button.file_relocation{
+button.file_relocation {
     background-color: transparent;
     border-radius: 10px;
     padding: 2px 10px 2px 10px;
     height: fit-content;
     align-self: center;
-    border-width: 2px;
+    border: solid 1px black;
 }
 
 button.profile_function{

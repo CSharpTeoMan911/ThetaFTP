@@ -92,7 +92,7 @@ p.label {
     font-weight: 400;
     font-size: calc(11px + 0.4vw);
     align-self:center;
-    margin: 0px 5px 0px 0px;
+    margin: 0px 0px 0px 0px;
     padding: 0px 0px 0px 0px;
 }
 
@@ -107,6 +107,16 @@ input.input_style_small {
     border-radius: 5px;
     border-width: calc(1px + 0.1vw);
     width: calc(230px + 1vw);
+    border-color: dodgerblue;
+    border-width: 5px;
+    outline-color: dodgerblue;
+}
+
+.input_style_small:focus {
+    border-color: dodgerblue;
+    border-width: 1px;
+    outline-color: dodgerblue;
+    outline-width: 1px;
 }
 
 input.display {

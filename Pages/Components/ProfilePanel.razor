@@ -71,6 +71,8 @@ else
     private string? notificationMessage { get; set; }
     private DateTime start { get; set; }
     private bool OperationOnClose;
+    private bool Loaded { get; set; }
+    private bool Init { get; set; }
 
     private enum OnCloseOperation
     {
@@ -82,20 +84,22 @@ else
 
     public void Close() => closePanel?.Invoke();
 
-
     private async Task<string?> GetCache()
     {
         string? log_in_session_key = null;
-        if (Shared.configurations?.use_secure_local_storage == true)
+        if(Loaded)
         {
-            ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-            log_in_session_key = log_in_session_key_result.Value;
-        }
-        else
-        {
-            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-            log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-            await module.DisposeAsync();
+            if (Shared.configurations?.use_secure_local_storage == true)
+            {
+                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                log_in_session_key = log_in_session_key_result.Value;
+            }
+            else
+            {
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                await module.DisposeAsync();
+            }
         }
         return log_in_session_key;
     }
@@ -105,71 +109,83 @@ else
     {
         if (firstRender == true)
         {
-            timer?.Dispose();
-            string? log_in_session_key = await GetCache();
-
-            HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig);
-            client.BaseAddress = new Uri(NavigationManager.BaseUri);
-            HttpResponseMessage responseMessage = await client.GetAsync(new StringBuilder("/authentication/get-info?").Append("value=").Append(System.Net.WebUtility.UrlEncode(log_in_session_key)).ToString());
-            string? response = await responseMessage.Content.ReadAsStringAsync();
-
-            notificationMessage = response;
-
-            if (response.Contains("Internal server error") == true)
-            {
-                operation = OnCloseOperation.NavigateToLogInPage;
-                notificationType = Notifications.NotificationType.Error;
-                OperationOnClose = true;
-                ShowNotification = true;
-
-                timer = new System.Timers.Timer();
-                timer.Interval = 100;
-                timer.Elapsed += Elapased;
-                timer.Start();
-            }
-            else if (response.Contains("Log in session not approved") == true)
-            {
-                operation = OnCloseOperation.NavigateToLogInPage;
-                notificationType = Notifications.NotificationType.Error;
-                OperationOnClose = true;
-                ShowNotification = true;
-
-                timer = new System.Timers.Timer();
-                timer.Interval = 100;
-                timer.Elapsed += Elapased;
-                timer.Start();
-            }
-            else if (response.Contains("Log in session key expired") == true)
-            {
-                operation = OnCloseOperation.NavigateToLogInPage;
-                notificationType = Notifications.NotificationType.Error;
-                OperationOnClose = true;
-                ShowNotification = true;
-
-                timer = new System.Timers.Timer();
-                timer.Interval = 100;
-                timer.Elapsed += Elapased;
-                timer.Start();
-            }
-            else if (response.Contains("Invalid log in session key") == true)
-            {
-                operation = OnCloseOperation.NavigateToLogInPage;
-                notificationType = Notifications.NotificationType.Error;
-                OperationOnClose = true;
-                ShowNotification = true;
-
-                timer = new System.Timers.Timer();
-                timer.Interval = 100;
-                timer.Elapsed += Elapased;
-                timer.Start();
-            }
-            else
-            {
-                email = response;
-            }
-
+            Loaded = true;
             StateHasChanged();
         }
+
+        if(Loaded == true && Init == false)
+        {
+            Init = true;
+            Initialise();
+        }
+    }
+
+    private async void Initialise()
+    {
+        timer?.Dispose();
+        string? log_in_session_key = await GetCache();
+
+        HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig);
+        client.BaseAddress = new Uri(NavigationManager.BaseUri);
+        HttpResponseMessage responseMessage = await client.GetAsync(new StringBuilder("/authentication/get-info?").Append("value=").Append(System.Net.WebUtility.UrlEncode(log_in_session_key)).ToString());
+        string? response = await responseMessage.Content.ReadAsStringAsync();
+
+        notificationMessage = response;
+
+        if (response.Contains("Internal server error") == true)
+        {
+            operation = OnCloseOperation.NavigateToLogInPage;
+            notificationType = Notifications.NotificationType.Error;
+            OperationOnClose = true;
+            ShowNotification = true;
+
+            timer = new System.Timers.Timer();
+            timer.Interval = 100;
+            timer.Elapsed += Elapased;
+            timer.Start();
+        }
+        else if (response.Contains("Log in session not approved") == true)
+        {
+            operation = OnCloseOperation.NavigateToLogInPage;
+            notificationType = Notifications.NotificationType.Error;
+            OperationOnClose = true;
+            ShowNotification = true;
+
+            timer = new System.Timers.Timer();
+            timer.Interval = 100;
+            timer.Elapsed += Elapased;
+            timer.Start();
+        }
+        else if (response.Contains("Log in session key expired") == true)
+        {
+            operation = OnCloseOperation.NavigateToLogInPage;
+            notificationType = Notifications.NotificationType.Error;
+            OperationOnClose = true;
+            ShowNotification = true;
+
+            timer = new System.Timers.Timer();
+            timer.Interval = 100;
+            timer.Elapsed += Elapased;
+            timer.Start();
+        }
+        else if (response.Contains("Invalid log in session key") == true)
+        {
+            operation = OnCloseOperation.NavigateToLogInPage;
+            notificationType = Notifications.NotificationType.Error;
+            OperationOnClose = true;
+            ShowNotification = true;
+
+            timer = new System.Timers.Timer();
+            timer.Interval = 100;
+            timer.Elapsed += Elapased;
+            timer.Start();
+        }
+        else
+        {
+            email = response;
+        }
+
+        StateHasChanged();
     }
 
     public void OnInput(string? _password)
