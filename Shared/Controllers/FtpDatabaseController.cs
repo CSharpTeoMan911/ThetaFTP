@@ -475,8 +475,6 @@ namespace ThetaFTP.Shared.Controllers
                         {
                             if (value.path != null)
                             {
-                                Console.WriteLine("New file name: " + value.new_name);
-
                                 string converted_path = FileSystemFormatter.PathConverter(value?.path, value?.email);
                                 string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
                                 string re_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.new_name);
