@@ -52,7 +52,7 @@ The application can encrypt the client/server connection using the TLS/SSL proto
 
 ## Two-step registration
 
-![Two step registration](https://github.com/user-attachments/assets/8097bcbc-e92d-449c-bb71-2e97f924bb3e)
+![Two-step registration](https://github.com/user-attachments/assets/bbd1e542-0655-40af-b7f0-ac1393689347)
 
 
 
@@ -63,7 +63,8 @@ When the user is creating an account, the server will verify if the account alre
 
 ## Two-step authentication
 
-![Two step auth diagram](https://github.com/user-attachments/assets/2f982e10-640d-4c16-bb1f-f03a50d161f1)
+![Two step auth diagram](https://github.com/user-attachments/assets/5b0f2a12-e483-4c92-af0d-4e180db4314c)
+
 
 
 When the user is logging in, the server will verify the user credentials and, if the credentials are valid, it will generate a **log in session key**, as well as a **log in code**, both the **log in session key** and the **log in code** will be stored in the database. The **log in code** is associated with the **log in session key** and as long as the **log in code** associated with the **log in session key** exist, the **log in session key** is invalid. Afterwards, the server will send the **log in code** to the user's email address and prompt the user for the **log in code**. If the **log in code** is valid, the server will delete the **log in code** from the database and thus making the **log in session key** valid. The **log in code** has an expiration date of 2 minutes. If the user does not validate the **log in code**, both the **log in session key** and the **log in code** will be deleted from the database.
