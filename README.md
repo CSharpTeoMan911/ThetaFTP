@@ -40,7 +40,7 @@ To download the application, go to the [Release](https://github.com/CSharpTeoMan
 ![MoveFiles-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/6835f5b8-ce18-4b41-bebb-abfabf230dfe)
 
 ## Rename
-![RenameFile-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/69cf6cf2-3311-4e76-b0b9-b0f20c3ab1f6)
+![Rename-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/016c41a7-9145-45eb-80b5-e6c283924f43)
 
 ## Delete
 ![DeleteFiles-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/d9ec2f1a-e0dc-4f11-b204-bd7478c8a138)
