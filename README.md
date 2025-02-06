@@ -2,7 +2,7 @@
   <img src="https://github.com/user-attachments/assets/758c76d5-1bd5-423a-a8cf-fdd0efd0f5e6"/>
 </div>
 
-# About
+# About❓
 
 ![image](https://github.com/user-attachments/assets/aa67b4fb-072e-44f6-8253-3701daa63ba6)
 
@@ -15,42 +15,50 @@
 <br/>
 <br/>
 
-## Tech stack
+## 📚 Tech stack
 
 <img width="2074" alt="Tech Stack Diagram (Copy) (1)" src="https://github.com/user-attachments/assets/d1d24f2e-935b-4204-bc79-bebca80d4f95">
 
 <br/>
 <br/>
 
-# Usage
-To download the application, go to the [Release](https://github.com/CSharpTeoMan911/ThetaFTP/releases/tag/ThetaFTP-v1.0.0) section and download the application binary executables. For instructions about how the application must be configured and its behaviour please visit the [Wiki](https://github.com/CSharpTeoMan911/ThetaFTP/wiki) section of this repository.
+# 📥Download & Setup
+* To download the application, go to the [Release](https://github.com/CSharpTeoMan911/ThetaFTP/releases/tag/ThetaFTP-v1.0.0) section and download the application binary executables. 
+* For instructions about how the application must be configured and its behaviour please visit the [Wiki](https://github.com/CSharpTeoMan911/ThetaFTP/wiki) section of this repository.
 
 <br/>
 <br/>
 
-# Ftp features
+# 🗂️ Ftp features
 
-## Upload
+## 🔼 Upload
 ![UploadFiles-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/e004908c-f866-4b2e-baed-8caf790b9bbb)
 
-## Download
+## 🔽 Download
 ![DownloadFiles-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/03a876b4-4418-40ae-a636-25de83af6615)
 
-## Move
+## 📦 Move
 ![MoveFiles-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/6835f5b8-ce18-4b41-bebb-abfabf230dfe)
 
-## Rename
+## ✏️ Rename
 ![Rename-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/016c41a7-9145-45eb-80b5-e6c283924f43)
 
-## Delete
+## 🗑️ Delete
 ![DeleteFiles-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/d9ec2f1a-e0dc-4f11-b204-bd7478c8a138)
 
-# Security features
+<br/>
+<br/>
+<br/>
 
-## Connection encryption
+# 🛡️ Security features
+
+## 🔐 Connection encryption
 The application can encrypt the client/server connection using the TLS/SSL protocols by using self-signed certificates or trusted publisher certificates. 
 
-## Two-step registration
+<br/>
+<br/>
+
+## 🪪 Two-step registration
 
 ![Two-step registration](https://github.com/user-attachments/assets/bbd1e542-0655-40af-b7f0-ac1393689347)
 
@@ -61,7 +69,7 @@ When the user is creating an account, the server will verify if the account alre
 <br/>
 <br/>
 
-## Two-step authentication
+## 🪪 Two-step authentication
 
 ![Two step auth diagram](https://github.com/user-attachments/assets/5b0f2a12-e483-4c92-af0d-4e180db4314c)
 
@@ -72,28 +80,28 @@ When the user is logging in, the server will verify the user credentials and, if
 <br/>
 <br/>
 
-## Log in session validation
+## 🪪 Log in session validation
 
 For every operation requested by the user, such as uploading or downloading a file, the server will request for the client its **log in session key**. If the **log in session key** is expired or the **log in session key** is invalid, the server will log out the user. If the **log in session key** is valid, the server will only process request and information for the account associated with the **log in session key**, thus preventing mallicious attacks.
 
 <br/>
 <br/>
 
-## Salting and hashing
+## 🧂& #️⃣ Salting and hashing
 
 All sesitive information to be stored in the database is both hashed and salted. The hashing algorithm used is **SHA512**. 
 
 <br/>
 <br/>
 
-## Path traversal attack prevention
+## 🔐 Path traversal attack prevention
 
 Each user has its own directory associated with its account. Every time a user is performing an operation related to the file system, the server will process the path given by the user and verify if it has as its root the directory associated with the account. If the path to be processed does not have as its root, the folder associated with the account, the operation is cancelled, thus preventing mallicious attacks on the server's directory level, as well as preventing every user's information being compromised.
 
 <br/>
 <br/>
 
-## SQL injection prevention
+## 🔐 SQL injection prevention
 
 The application is using parametrised parameter injection within SQL commands, which in turn is escaping any special charater from the SQL string, thus making any SQL injection attack impossible
 
