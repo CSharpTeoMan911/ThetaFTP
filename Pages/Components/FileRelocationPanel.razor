@@ -17,12 +17,14 @@
 
 <FocusPanel style="z-index:5;">
     <Component>
-        <div class="jumbotron" style="padding:5px; display:flex; flex-direction:column; width:fit-content; align-self:center; margin-top: 300px;">
-            <div style="display:flex; flex-direction:row-reverse">
+        <div class="jumbotron" style="padding:0px; display:flex; flex-direction:column; width:fit-content; align-self:center; margin-top: 100px;">
+            <div style="display:flex; flex-direction:row-reverse; padding: 8px;">
                 <button class="close_button">
                     <img src="./images/close.webp" style="width:20px;" @onclick="@Close"/>
                 </button>
             </div>
+
+            <div style="background-color: #bfbfbf; height:2px"> </div>
 
             <div style="display:flex; flex-direction:column">
                 <div style="display: flex; flex-direction:row">
@@ -37,38 +39,32 @@
                         </div>
                     }
                 </div>
+
                 <div style="display:flex; flex-direction:column; overflow-y:auto; width:calc(220px + 20vw); height:300px;">
-                    @for (int i = 0; i < directories?.Count; i++)
+                    @if (directories?.Count > 0)
                     {
-                        bool show = false;
-                        DirectoryItem? item = directories?.ElementAt(i);
-
-                        if (selected_item?.name != item?.name)
-                            show = true;
-                        else
-                            if(Path != SrcPath)
-                            show = true;
-
-                        if (show == true)
-                        {
-                            <div style="display: flex; flex-direction: row; padding: 20px;">
+                        <Virtualize Items="@directories" Context="directory">
+                            <div style="display: flex; flex-direction: row; padding: 7px;">
                                 <div style="display: flex; flex-direction: row; width: 50%">
-                                    <img src="./images/folder.webp" style="width:40px; height:40px" />
-                                    <input class="display" value=" @item?.name" readonly="readonly" />
+                                    <img src="./images/open-folder.webp" style="width:40px; height:40px" />
+                                    <input class="display" style="width:100%" value=" @directory?.name" readonly="readonly" />
                                 </div>
                                 <div style="display:flex; flex-direction:row-reverse; width: 50%">
-                                    @if (item.name != "/")
+                                    @if (directory.name != "/")
                                     {
-                                        <button @onclick=@(()=>Open(item)) class="file_relocation" style="margin-left:30px; background-color: black; color: white; border-color: black; cursor: pointer">
-                                            Open
+                                        <button @onclick=@(()=>Open(directory)) class="file_relocation" style="margin-left:30px; cursor: pointer">
+                                            <img height="28px" src="./images/open-directory.webp" />
                                         </button>
                                     }
-                                            <button @onclick=@(()=>Select(item)) class="file_relocation" style="cursor: pointer">
-                                        Select
-                                    </button>
+                                    @if (Path != (Current_Path?[Current_Path.Length - 1] == '/' ? new StringBuilder(Current_Path).Append(directory?.name).ToString() : new StringBuilder(Current_Path).Append('/').Append(directory?.name).ToString()) && directory?.name != Path)
+                                    {
+                                        <button @onclick=@(()=>Select(directory)) class="file_relocation" style="cursor: pointer">
+                                            <img height="28px" src="./images/check-mark.webp" />
+                                        </button>
+                                    }
                                 </div>
                             </div>
-                        }
+                        </Virtualize>
                     }
                 </div>
             </div>
@@ -80,7 +76,7 @@
     private bool ShowBackButton{ get; set; }
     private string? last_dir { get; set; }
 
-    private List<DirectoryItem>? directories { get; set; }
+    private List<DirectoryItem>? directories { get; set; } = new List<DirectoryItem>();
 
     [Parameter] public string? Path { get; set; }
     public string? Current_Path { get; set; }
@@ -123,8 +119,8 @@
 
         if(Loaded == true && Init == false)
         {
-            Init = true;
             GetDirectories();
+            Init = true;
         }
     }
 
@@ -152,10 +148,10 @@
             }
 
             Metadata metadata = new Metadata()
-                {
-                    path = Current_Path,
-                    key = log_in_session_key
-                };
+            {
+                path = Current_Path,
+                key = log_in_session_key
+            };
 
             string? url = new StringBuilder().Append("/directories/get-directories?").Append(await QueryParsing.QueryParser(metadata)).ToString();
 
@@ -165,14 +161,38 @@
             HttpResponseMessage httpResponse = await client.GetAsync(url);
             string result = await httpResponse.Content.ReadAsStringAsync();
 
-            directories = await JsonFormatter.JsonDeserialiser<List<DirectoryItem>?>(result);
+            StringBuilder filter_builder = new StringBuilder();
 
+            directories = await JsonFormatter.JsonDeserialiser<List<DirectoryItem>?>(result);
             if (Current_Path == "/")
                 directories.Add(new DirectoryItem()
                 {
-                    isDirectory = true,
-                    name = Current_Path
+                     isDirectory = true,
+                     name = Current_Path
                 });
+
+            directories = new List<DirectoryItem>(directories);
+            int length = directories.Count;
+
+            for (int i = 0; i < length; i++)
+            {
+                DirectoryItem current_item = directories.ElementAt(i);
+
+                string current_path = Current_Path?[Current_Path.Length - 1] == '/' ? filter_builder.Append(Current_Path).Append(current_item?.name).ToString() : filter_builder.Append(Current_Path).Append('/').Append(current_item?.name).ToString();
+                filter_builder.Clear();
+
+                string selected_path = Current_Path?[Current_Path.Length - 1] == '/' ? filter_builder.Append(Current_Path).Append(selected_item?.name).ToString() : filter_builder.Append(Current_Path).Append('/').Append(selected_item?.name).ToString();
+                filter_builder.Clear();
+
+                if (current_path == selected_path)
+                    if (selected_item?.isDirectory == current_item?.isDirectory)
+                    {
+                        directories.Remove(current_item);
+                        length--;
+                    }
+            }
+
+
             StateHasChanged();
         }
     }
@@ -210,7 +230,7 @@
                 await module.DisposeAsync();
             }
 
-            string? selected_path = Current_Path?[Current_Path.Length - 1] == '/' ? new StringBuilder(Current_Path).Append(item?.name).ToString() : new StringBuilder(Current_Path).Append('/').Append(item?.name).ToString(); ;
+            string? selected_path = Current_Path?[Current_Path.Length - 1] == '/' ? new StringBuilder(Current_Path).Append(item?.name).ToString() : new StringBuilder(Current_Path).Append('/').Append(item?.name).ToString();
             StringBuilder? request_url = new StringBuilder();
 
             if (selected_item?.isDirectory == false)
@@ -311,23 +331,29 @@
     {
         if ((DateTime.Now - start).TotalSeconds >= 7)
         {
-            ((Timer?)obj)?.Dispose();
+            ((System.Timers.Timer?)obj)?.Dispose();
             CloseNotification();
         }
     }
 
-    private void CloseNotification()
+    private async void CloseNotification()
     {
-        if (NavigateToLogIn == true)
+        await InvokeAsync(() =>
         {
-            NavigationManager.NavigateTo("/log-in", true);
-        }
-        else if (refresh == true)
-        {
-            NavigationManager.Refresh(true);
-        }
+            if (Loaded == true)
+            {
+                if (NavigateToLogIn == true)
+                {
+                    NavigationManager.NavigateTo("/log-in", true);
+                }
+                else if (refresh == true)
+                {
+                    NavigationManager.Refresh(true);
+                }
 
-        ShowNotification = false;
-        StateHasChanged();
+                ShowNotification = false;
+                StateHasChanged();
+            }
+        });
     }
 }

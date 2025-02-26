@@ -1,4 +1,4 @@
-﻿namespace HallRentalSystem.Classes.StructuralAndBehavioralElements.Formaters
+﻿namespace ThetaFTP
 {
     using System.Buffers.Text;
     using System.Security.Cryptography;
@@ -6,33 +6,37 @@
 
     public class Sha512Hasher
     {
-        private const string salt = "djahwsDKLJASEGJVHBSERJ23029Q04YTIFPWOLE;";
-        public static Task<Tuple<string, Type>> Hash(string? password)
+        private readonly string? salt;
+        public Sha512Hasher(string? salt)
         {
-            StringBuilder hash_builder = new StringBuilder();
-            hash_builder.Append(salt);
-            hash_builder.Append(password);
+            this.salt = salt;
+        }
 
-            byte[] content = Encoding.UTF8.GetBytes(hash_builder.ToString());
-
-            SHA512 hash = SHA512.Create();
-
-            try
+        public async Task<string> Hash(string? value)
+        {
+            if (salt != null && value != null)
             {
-                byte[] hash_bytes = hash.ComputeHash(content);
-                password = Convert.ToBase64String(hash_bytes);
+                StringBuilder hash_builder = new StringBuilder();
+                hash_builder.Append(salt);
+                hash_builder.Append(value);
+
+                byte[] content = Encoding.UTF8.GetBytes(hash_builder.ToString());
+
+                using (SHA512 hash = SHA512.Create())
+                {
+                    using (MemoryStream ms = new MemoryStream(content))
+                    {
+                        byte[] hash_bytes = await hash.ComputeHashAsync(ms);
+                        value = Convert.ToBase64String(hash_bytes);
+                    }
+                }
             }
-            catch
+            else
             {
-                hash?.Dispose();
-                return Task.FromResult(new Tuple<string, Type>("Internal server error", typeof(Exception)));
-            }
-            finally
-            {
-                hash?.Dispose();
+                throw new Exception("Internal server error");
             }
 
-            return Task.FromResult(new Tuple<string, Type>(password, typeof(string)));
+            return value;
         }
     }
 }

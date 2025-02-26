@@ -39,12 +39,10 @@ export function InitBackgroundGradientFluctuation() {
 function MainPanelGeometry() {
     let index_panel = document.getElementById("index_panel");
     let index_panel_inner = document.getElementById("index_panel_inner");
-    console.log("OK");
     if (index_panel !== null) {
         if (index_panel_inner !== null) {
             let window_width = window.innerWidth;
-
-            if (navigator.maxTouchPoints > 0 || window_width <= 550) {
+            if (window_width <= 1000 || navigator.maxTouchPoints > 0) {
                 index_panel.style.marginTop = "0px";
                 index_panel.style.marginBottom = "0px";
                 index_panel_inner.style.width = "100vw";
