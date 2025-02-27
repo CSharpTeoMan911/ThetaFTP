@@ -271,6 +271,16 @@ else
                 notificationType = Notifications.NotificationType.Information;
                 OperationOnClose = true;
             }
+            else if (response.Contains("Password less than 100 characters") == true)
+            {
+                notificationType = Notifications.NotificationType.Error;
+                OperationOnClose = false;
+            }
+            else if (response.Contains("Password more than 100 characters") == true)
+            {
+                operation = OnCloseOperation.NavigateToLogInPage;
+                OperationOnClose = false;
+            }
             else
             {
                 notificationMessage = "Internal server error";
@@ -394,7 +404,7 @@ else
                 {
                     HttpResponseMessage responseMessage = await client.DeleteAsync(new StringBuilder("/validation/delete-account?").Append("value=").Append(System.Net.WebUtility.UrlEncode(code)).ToString());
                     string? response = await responseMessage.Content.ReadAsStringAsync();
-
+                    System.Diagnostics.Debug.WriteLine(response);
                     if (response.Contains("Internal server error") == true)
                     {
                         notificationType = Notifications.NotificationType.Error;

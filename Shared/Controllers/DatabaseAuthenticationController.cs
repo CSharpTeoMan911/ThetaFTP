@@ -535,47 +535,88 @@ namespace ThetaFTP.Shared.Controllers
                 {
                     if (value.new_password != null)
                     {
-                        MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
-
-                        try
+                        if (value?.new_password.Length >= 10)
                         {
-                            if (connection.State == System.Data.ConnectionState.Open)
+                            if (value?.new_password.Length <= 100)
                             {
-                                if (Shared.configurations?.twoStepAuth == true)
+                                MySqlConnection connection = await Shared.mysql.InitiateMySQLConnection();
+
+                                try
                                 {
-                                    if (Shared.sha512 != null)
+                                    if (connection.State == System.Data.ConnectionState.Open)
                                     {
-                                        string? code = await CodeGenerator.GenerateKey(10);
-                                        string hashed_code = await Shared.sha512.Hash(code);
-
-                                        bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Password update", $"Password update key: {code}");
-
-                                        if (smtps_operation_result == true)
+                                        if (Shared.configurations?.twoStepAuth == true)
                                         {
-                                            MySqlCommand account_update_command = connection.CreateCommand();
-                                            try
+                                            if (Shared.sha512 != null)
                                             {
-                                                account_update_command.CommandText = "INSERT INTO accounts_waiting_for_password_change VALUES(@Account_Password_Change_Code, @Email, @Expiration_Date)";
-                                                account_update_command.Parameters.AddWithValue("Account_Password_Change_Code", hashed_code);
-                                                account_update_command.Parameters.AddWithValue("Email", value?.email);
-                                                account_update_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddMinutes(2));
-                                                account_update_command.ExecuteNonQuery();
+                                                string? code = await CodeGenerator.GenerateKey(10);
+                                                string hashed_code = await Shared.sha512.Hash(code);
 
-                                                response = "Check the code sent to your email to approve the password change";
+                                                bool smtps_operation_result = SMTPS_Service.SendSMTPS(value?.email, "Password update", $"Password update key: {code}");
+
+                                                if (smtps_operation_result == true)
+                                                {
+                                                    MySqlCommand account_update_command = connection.CreateCommand();
+                                                    try
+                                                    {
+                                                        account_update_command.CommandText = "INSERT INTO accounts_waiting_for_password_change VALUES(@Account_Password_Change_Code, @Email, @Expiration_Date)";
+                                                        account_update_command.Parameters.AddWithValue("Account_Password_Change_Code", hashed_code);
+                                                        account_update_command.Parameters.AddWithValue("Email", value?.email);
+                                                        account_update_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddMinutes(2));
+                                                        account_update_command.ExecuteNonQuery();
+
+                                                        response = "Check the code sent to your email to approve the password change";
+                                                    }
+                                                    catch (Exception e)
+                                                    {
+                                                        Log.Error(e, "Password change code insertion API error");
+                                                        response = "Internal server error";
+                                                    }
+                                                    finally
+                                                    {
+                                                        await account_update_command.DisposeAsync();
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    response = "Internal server error";
+                                                }
                                             }
-                                            catch (Exception e)
+                                            else
                                             {
-                                                Log.Error(e, "Password change code insertion API error");
                                                 response = "Internal server error";
-                                            }
-                                            finally
-                                            {
-                                                await account_update_command.DisposeAsync();
                                             }
                                         }
                                         else
                                         {
-                                            response = "Internal server error";
+                                            if (Shared.sha512 != null)
+                                            {
+                                                string hashed_password = await Shared.sha512.Hash(value.new_password);
+
+                                                MySqlCommand password_update_command = connection.CreateCommand();
+                                                try
+                                                {
+                                                    password_update_command.CommandText = "UPDATE credentials SET Password = @Password WHERE Email = @Email";
+                                                    password_update_command.Parameters.AddWithValue("Email", value.email);
+                                                    password_update_command.Parameters.AddWithValue("Password", hashed_password);
+                                                    await password_update_command.ExecuteNonQueryAsync();
+
+                                                    response = "Password update successful";
+                                                }
+                                                catch (Exception e)
+                                                {
+                                                    Log.Error(e, "Password update API error");
+                                                    response = "Internal server error";
+                                                }
+                                                finally
+                                                {
+                                                    await password_update_command.DisposeAsync();
+                                                }
+                                            }
+                                            else
+                                            {
+                                                response = "Internal server error";
+                                            }
                                         }
                                     }
                                     else
@@ -583,51 +624,24 @@ namespace ThetaFTP.Shared.Controllers
                                         response = "Internal server error";
                                     }
                                 }
-                                else
+                                catch (Exception e)
                                 {
-                                    if (Shared.sha512 != null)
-                                    {
-                                        string hashed_password = await Shared.sha512.Hash(value.new_password);
-
-                                        MySqlCommand password_update_command = connection.CreateCommand();
-                                        try
-                                        {
-                                            password_update_command.CommandText = "UPDATE credentials SET Password = @Password WHERE Email = @Email";
-                                            password_update_command.Parameters.AddWithValue("Email", value.email);
-                                            password_update_command.Parameters.AddWithValue("Password", hashed_password);
-                                            await password_update_command.ExecuteNonQueryAsync();
-
-                                            response = "Password update successful";
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            Log.Error(e, "Password update API error");
-                                            response = "Internal server error";
-                                        }
-                                        finally
-                                        {
-                                            await password_update_command.DisposeAsync();
-                                        }
-                                    }
-                                    else
-                                    {
-                                        response = "Internal server error";
-                                    }
+                                    Log.Error(e, "Password update API error");
+                                    response = "Internal server error";
+                                }
+                                finally
+                                {
+                                    await connection.DisposeAsync();
                                 }
                             }
                             else
                             {
-                                response = "Internal server error";
+                                response = "Password more than 100 characters";
                             }
                         }
-                        catch (Exception e)
+                        else
                         {
-                            Log.Error(e, "Password update API error");
-                            response = "Internal server error";
-                        }
-                        finally
-                        {
-                            await connection.DisposeAsync();
+                            response = "Password less than 100 characters";
                         }
                     }
                     else
