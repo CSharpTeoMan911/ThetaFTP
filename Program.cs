@@ -4,6 +4,9 @@ using Serilog;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using System.Net;
 using ThetaFTP.Shared.Models;
+using Org.BouncyCastle.Tls;
+using System.Security.Cryptography.X509Certificates;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace ThetaFTP
 {
@@ -68,6 +71,18 @@ namespace ThetaFTP
 
                         var builder = WebApplication.CreateBuilder(args);
 
+                        builder.Services.AddRazorComponents()
+                                        .AddInteractiveServerComponents()
+                                        .AddHubOptions(options => options.MaximumReceiveMessageSize = 10 * 1024 * 1024);
+
+
+
+                        if (model.is_reverse_proxy == true)
+                            builder.Services.Configure<ForwardedHeadersOptions>(options =>
+                            {
+                                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                            });
+
                         builder.Services.AddHttpClient(HttpClientConfig, client => {
                             int timeout = 600;
                             if (model != null)
@@ -76,7 +91,7 @@ namespace ThetaFTP
 
                         }).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler()
                         {
-                            ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, cetChain, policyErrors) =>
+                            ServerCertificateCustomValidationCallback = (httpRequestMessage, cert, certChain, policyErrors) =>
                             {
                                 if (model?.validate_ssl_certificates == true)
                                 {
@@ -84,15 +99,29 @@ namespace ThetaFTP
                                         return true;
                                     else
                                     {
-                                        if (policyErrors == System.Net.Security.SslPolicyErrors.RemoteCertificateNameMismatch)
-                                        {
-                                            if (model.ensure_host_name_and_certificate_domain_name_match == false)
+                                        Log.Error($"SSL policyErrors: {policyErrors.ToString()}");
+                                        if (policyErrors == System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors && certChain != null)
+                                            if (model.validate_ssl_certificate_chain == true)
+                                            {
+                                                foreach (X509ChainStatus status in certChain.ChainStatus)
+                                                {
+                                                    Log.Error($"SSL chain policyErrors: {status.Status}");
+                                                }
+
+                                                return false;
+                                            }
+                                            else
                                                 return true;
+
+                                        if (policyErrors == System.Net.Security.SslPolicyErrors.RemoteCertificateNameMismatch)
+                                            {
+                                                if (model.ensure_host_name_and_certificate_domain_name_match == false)
+                                                    return true;
+                                                else
+                                                    return false;
+                                            }
                                             else
                                                 return false;
-                                        }
-                                        else
-                                            return false;
                                     }
                                 }
                                 else
@@ -112,43 +141,15 @@ namespace ThetaFTP
                             options.OutputFormatters.Add(new StreamOutputFormatter());
                         });
 
-
-                        //////////////////////////////////////////////
-                        //              !!! TO DO !!!               //
-                        //////////////////////////////////////////////
-                        //                                          //
-                        // COMFIGURE SERVER'S KESTER SERVICE LIMITS //
-                        //                                          //
-                        //////////////////////////////////////////////
-                        ///
-
                         int connection_timeout = 600;
                         if (model != null)
                             connection_timeout = model.ConnectionTimeoutSeconds;
 
 
-                        builder.WebHost.ConfigureKestrel(c =>
-                        {
-                            c.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(connection_timeout);
-                            c.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(connection_timeout);
-                            c.Limits.MinResponseDataRate = null;
-                            c.Limits.MaxConcurrentConnections = null;
-                            c.Limits.MinRequestBodyDataRate = null;
-                            c.Limits.MaxRequestBodySize = null;
-                            c.Limits.MaxConcurrentUpgradedConnections = null;
-                        });
-                        //////////////////////////////////////////////
-                        //              !!! TO DO !!!               //
-                        //////////////////////////////////////////////
-                        //                                          //
-                        // COMFIGURE SERVER'S KESTER SERVICE LIMITS //
-                        //                                          //
-                        //////////////////////////////////////////////
-
                         if (model?.enforce_https == true)
                             builder.Services.AddHsts(option =>
                             {
-                                option.MaxAge = TimeSpan.FromDays(double.MaxValue);
+                                option.MaxAge = TimeSpan.FromDays(model.hsts_max_age_days);
                                 option.Preload = true;
                                 option.IncludeSubDomains = true;
                             });
@@ -157,26 +158,41 @@ namespace ThetaFTP
                         {
                             builder.WebHost.ConfigureKestrel((context, serverOptions) =>
                             {
-                                IPAddress? iPAddress = IPAddress.Loopback;
-
                                 if (model != null)
-                                    if (model.server_ip_address != null)
-                                        iPAddress = IPAddress.Parse(model.server_ip_address);
-
-                                serverOptions.Listen(iPAddress, 8000, listenOptions =>
                                 {
-                                    if (model != null && model.use_custom_ssl_certificate == true && model.custom_server_certificate_path != null)
-                                        listenOptions.UseHttps(model.custom_server_certificate_path, model.custom_server_certificate_password);
-                                    else
-                                        listenOptions.UseHttps();
+                                    IPAddress? iPAddress = IPAddress.Loopback;
 
-                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
-                                });
+                                    if (model.server_ip_address != null)
+                                    {
+                                        iPAddress = IPAddress.Parse(model.server_ip_address);
+                                    }
+
+                                    if (model.use_custom_ip_kestrel_config == true)
+                                    {
+                                        serverOptions.Listen(iPAddress, model.server_port, listenOptions =>
+                                        {
+                                            if (model != null && model.use_custom_ssl_certificate == true && model.custom_server_certificate_path != null)
+                                                listenOptions.UseHttps(model.custom_server_certificate_path, model.custom_server_certificate_password);
+
+                                            listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+                                        });
+                                    }
+
+                                    serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(connection_timeout);
+                                    serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(connection_timeout);
+                                    serverOptions.Limits.MaxRequestBodySize = model.max_request_buffer_size;
+                                    serverOptions.Limits.MaxResponseBufferSize = model.max_response_buffer_size;
+                                    serverOptions.Limits.MaxRequestBufferSize = model.max_request_buffer_size > 10 * 1024 * 1024 * 2 ? model.max_request_buffer_size : 10 * 1024 * 1024 * 2;
+                                    serverOptions.Limits.MaxConcurrentConnections = model.max_concurent_connections;
+                                }
                             });
                         }
 
                         var app = builder.Build();
 
+
+                        if (model?.is_reverse_proxy == true)
+                            app.UseForwardedHeaders();
 
                         if (!app.Environment.IsDevelopment())
                         {
@@ -185,7 +201,6 @@ namespace ThetaFTP
                             if (model?.enforce_https == true)
                                 app.UseHsts();
                         }
-
 
                         app.MapControllers();
                         app.UseHttpsRedirection();

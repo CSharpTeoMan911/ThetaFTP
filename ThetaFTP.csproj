@@ -11,14 +11,27 @@
     <Content Remove="server_settings.json" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Remove="Theta_FTP.sql" />
-  </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Theta_FTP.sql">
+	<None Include="Theta_FTP.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    </None>
+	  
+	<None Include="Google Cloud Secrets Setup.txt">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+	  
+	<None Include="firebase_database_rules.json">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+	  
+	<None Include="DatabaseConfig.txt">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+	  
+	<None Include="LICENSE.txt">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
   </ItemGroup>
 
   <ItemGroup>
