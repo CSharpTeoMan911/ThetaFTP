@@ -8,12 +8,18 @@
             Firebase
         }
 
+        public bool DebugMode { get; set; }
         public bool use_google_secrets { get; set; }
-        public string? server_salt_url { get; set; } = "!!! REPLACE WITH SECRET URL !!!";
+        public string? server_salt_secret_url { get; set; } = "!!! REPLACE WITH SECRET URL !!!";
+        public string? server_salt_secret_version { get; set; } = "1";
         public string? firebase_admin_token_secret_url { get; set; } = "!!! REPLACE WITH SECRET URL !!!";
+        public string? firebase_admin_token_secret_version { get; set; } = "1";
         public string? mysql_user_password_secret_url { get; set; } = "!!! REPLACE WITH SECRET URL !!!";
+        public string? mysql_user_password_secret_version { get; set; } = "1";
         public string? smtp_password_secret_url { get; set; } = "!!! REPLACE WITH SECRET URL !!!";
+        public string? smtp_password_secret_version { get; set; } = "1";
         public string? custom_server_certificate_password_secret_url { get; set; } = "!!! REPLACE WITH SECRET URL !!!";
+        public string? custom_server_certificate_password_secret_version { get; set; } = "1";
         public string? server_ip_address { get; set; } = "127.0.0.1";
         public int server_port { get; set; } = 8000;
         public string? server_salt { get; set; } = "aaabbbccdddd";
@@ -31,8 +37,8 @@
         public bool twoStepAuth { get; set; } = false;
         public string? smtp_email { get; set; } = "!!! REPLACE WITH SMTPS EMAIL ADDRESS !!!";
         public string? smtp_password { get; set; } = "!!! REPLACE WITH SMTPS EMAIL PASSWORD !!!";
-        public string? smtp_server { get; set; } = "!!! REPLACE WITH SMTPS SERVER ADDRESS !!!";
-        public int smtp_port { get; set; }
+        public string? smtp_server { get; set; } = "smtp.gmail.com";
+        public int smtp_port { get; set; } = 587;
         public bool smtp_use_ssl { get; set; } = false;
         public int ReadAndWriteOperationsPerSecond { get; set; } = 1200;
         public int ConnectionTimeoutSeconds { get; set; } = 600;

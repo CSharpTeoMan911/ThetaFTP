@@ -9,35 +9,46 @@
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 @inject ProtectedLocalStorage protectedLocalStorage;
 
+
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#" @onclick=@(()=>Navigate("/", false))>
-            <img alt="Logo" width="30" height="24" class="d-inline-block align-text-top" src="./images/ThetaDrive logo.png" style="height:80px;width:120px;">
-        </a>
-        <button class="navbar-toggler" style="margin-right:40px;" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <div class="container-fluid" style="display: flex">
 
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav">
-                @if(AuthState == "Log out")
-                {
-                    <li class="nav-item">
-                        <a class="nav-link menu_label" style=@(new StringBuilder("margin-left:15px;color:").Append(first_menu_item_state).ToString()) aria-current="page" href="" @onclick=ActivateProfilePanel>Profile</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link menu_label" style=@(new StringBuilder("margin-top:16px;margin-left:15px;color:").Append(second_menu_item_state).ToString()) href="" @onclick=@(()=>Navigate("/log-in", true))>@AuthState</a>
-                    </li>
-                }
-            </ul>
+            <a class="navbar-brand" href="/" @onclick=@(()=>Navigate("/", false))>
+                <img alt="Logo" width="30" height="24" class="d-inline-block align-text-top" src="./images/ThetaDrive logo.png" style="height:80px;width:120px;">
+            </a>
+
+            <button class="navbar-toggler" style="margin-right:40px;" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    @if (AuthState == "Log out")
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link menu_label" style=@(new StringBuilder("margin-left:15px;color:").Append(first_menu_item_state).ToString()) aria-current="page" href="" @onclick=ActivateProfilePanel>Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link menu_label" style=@(new StringBuilder("margin-top:16px;margin-left:15px;color:").Append(second_menu_item_state).ToString()) href="" @onclick=@(()=>Navigate("/log-in", true))>@AuthState</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link menu_label" style="margin-top:16px;margin-left:15px;" href="https://github.com/CSharpTeoMan911/ThetaFTP">
+                                <img style="height: 40px" src="./images/github.webp" />
+                            </a
+                        </li>
+                    }
+                </ul>
+            </div>
+
         </div>
-    </div>
 
-    @if (ShowProfilePanel == true)
-    {
-        <ProfilePanel style="z-index:10" closePanel="new ProfilePanel.ClosePanel(CloseProfilePanel)"/>
-    }
+        @if (ShowProfilePanel == true)
+        {
+            <ProfilePanel style="z-index:10" closePanel="new ProfilePanel.ClosePanel(CloseProfilePanel)" />
+        }
 </nav>
+
 
 @code {
     private bool ShowProfilePanel { get; set; }

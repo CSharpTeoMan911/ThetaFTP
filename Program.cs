@@ -32,12 +32,32 @@ namespace ThetaFTP
                     {
                         if (model.use_google_secrets == true)
                         {
+                            GoogleSecretsManager googleSecretsManager = new GoogleSecretsManager();
+                            Dictionary<GoogleSecretsManager.SecretType, string?> secrets = await googleSecretsManager.GetSecrets(model);
 
+                            string? server_salt_secret_url = null;
+                            secrets.TryGetValue(GoogleSecretsManager.SecretType.HashSalt, out server_salt_secret_url);
+
+                            string? firebase_admin_token_secret_url = null;
+                            secrets.TryGetValue(GoogleSecretsManager.SecretType.FirebaseAdminToken, out firebase_admin_token_secret_url);
+
+                            string? mysql_user_password_secret_url = null;
+                            secrets.TryGetValue(GoogleSecretsManager.SecretType.MySqlPassword, out mysql_user_password_secret_url);
+
+                            string? smtp_password_secret_url = null;
+                            secrets.TryGetValue(GoogleSecretsManager.SecretType.SmtpPassword, out smtp_password_secret_url);
+
+                            string? custom_server_certificate_password_secret_url = null;
+                            secrets.TryGetValue(GoogleSecretsManager.SecretType.SslCertificatePassword, out custom_server_certificate_password_secret_url);
+
+                            model.server_salt_secret_url = server_salt_secret_url;
+                            model.firebase_admin_token_secret_url = firebase_admin_token_secret_url;
+                            model.mysql_user_password_secret_url = mysql_user_password_secret_url;
+                            model.smtp_password_secret_url = smtp_password_secret_url;
+                            model.custom_server_certificate_password_secret_url = custom_server_certificate_password_secret_url;
                         }
-                        else
-                        {
-                            sha512 = new Sha512Hasher(model.server_salt);
-                        }
+
+                        sha512 = new Sha512Hasher(model.server_salt);
 
                         configurations = model;
 
@@ -133,26 +153,27 @@ namespace ThetaFTP
                                 option.IncludeSubDomains = true;
                             });
 
-
-                        builder.WebHost.ConfigureKestrel((context, serverOptions) =>
+                        if (model?.DebugMode == false)
                         {
-                            IPAddress? iPAddress = IPAddress.Loopback;
-
-                            if (model != null)
-                                if (model.server_ip_address != null)
-                                    iPAddress = IPAddress.Parse(model.server_ip_address);
-
-                            serverOptions.Listen(iPAddress, 8000, listenOptions =>
+                            builder.WebHost.ConfigureKestrel((context, serverOptions) =>
                             {
-                                if (model != null && model.use_custom_ssl_certificate == true && model.custom_server_certificate_path != null)
-                                    listenOptions.UseHttps(model.custom_server_certificate_path, model.custom_server_certificate_password);
-                                else
-                                    listenOptions.UseHttps();
+                                IPAddress? iPAddress = IPAddress.Loopback;
 
-                                listenOptions.UseHttps();
-                                listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+                                if (model != null)
+                                    if (model.server_ip_address != null)
+                                        iPAddress = IPAddress.Parse(model.server_ip_address);
+
+                                serverOptions.Listen(iPAddress, 8000, listenOptions =>
+                                {
+                                    if (model != null && model.use_custom_ssl_certificate == true && model.custom_server_certificate_path != null)
+                                        listenOptions.UseHttps(model.custom_server_certificate_path, model.custom_server_certificate_password);
+                                    else
+                                        listenOptions.UseHttps();
+
+                                    listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+                                });
                             });
-                        });
+                        }
 
                         var app = builder.Build();
 
