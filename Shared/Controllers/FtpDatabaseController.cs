@@ -9,7 +9,7 @@ namespace ThetaFTP.Shared.Controllers
     {
 
         public Task<string?> Delete(FtpModel? value)
-        {
+        { 
             string result = "Internal server error";
 
             if(value != null)

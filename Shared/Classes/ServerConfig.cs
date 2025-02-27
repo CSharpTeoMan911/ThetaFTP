@@ -9,7 +9,7 @@ namespace ThetaFTP.Shared.Classes
     public class ServerConfig:Shared
     {
         private static string json_file = "server_settings.json";
-        public static async Task GetServerConfig()
+        public static async Task<ServerConfigModel?> GetServerConfig()
         {
             string? serialised_json = null;
 
@@ -37,22 +37,23 @@ namespace ThetaFTP.Shared.Classes
 
             if (model == null)
             {
-                await CreateServerConfig(new ServerConfigModel());
-                Console.WriteLine(new StringBuilder("\n\n\n\tGenerated app config file at: ").Append(Environment.CurrentDirectory).Append(FileSystemFormatter.PathSeparator()).Append(json_file).Append("\n\n\n"));
+                string path = new StringBuilder(Environment.CurrentDirectory).Append(FileSystemFormatter.PathSeparator()).Append(json_file).ToString();
+                await CreateServerConfig(new ServerConfigModel(), path);
+                Console.WriteLine(new StringBuilder("\n\n\n\tGenerated app config file at: ").Append(path).Append("\n\n\n"));
             }
             else
             {
                 credentials = new ServerCredentials(model);
-                configurations = new ServerConfigurations(model);
             }
+
+            return model;
         }
 
-        private static async Task CreateServerConfig(ServerConfigModel model)
+        private static async Task CreateServerConfig(ServerConfigModel model, string path)
         {
-            FileStream fileStream = File.OpenWrite(json_file);
+            FileStream fileStream = File.OpenWrite(path);
             try
             {
-
                 string? serialised_model = await JsonFormatter.JsonSerialiser(model);
                 if (serialised_model != null)
                 {

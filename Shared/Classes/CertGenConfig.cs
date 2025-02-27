@@ -113,7 +113,7 @@ namespace ThetaFTP.Shared.Classes
             try
             {
 
-                Org.BouncyCastle.Asn1.X509.X509Name subjectDN = new Org.BouncyCastle.Asn1.X509.X509Name($"CN={config.issuer_domain_name}");
+                Org.BouncyCastle.Asn1.X509.X509Name subjectDN = new Org.BouncyCastle.Asn1.X509.X509Name($"CN={config.CN}");
                 Org.BouncyCastle.Asn1.X509.X509Name issuerDN = subjectDN;
                 Org.BouncyCastle.Asn1.X509.X509Name alternativeDN = subjectDN;
 
@@ -124,8 +124,8 @@ namespace ThetaFTP.Shared.Classes
 
                 DerSequence subjectAlternativeNamesExtension = new DerSequence(new Asn1Encodable[]
                 {
-                     new GeneralName(GeneralName.DnsName, config.issuer_domain_name),
-                     new GeneralName(GeneralName.DnsName, "*")
+                     new GeneralName(GeneralName.DnsName, config.CN),
+                     new GeneralName(GeneralName.IPAddress, config.DN)
                 });
 
                 certificateGenerator.AddExtension(

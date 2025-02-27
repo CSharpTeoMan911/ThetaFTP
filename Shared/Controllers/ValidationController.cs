@@ -1,4 +1,4 @@
-﻿using HallRentalSystem.Classes.StructuralAndBehavioralElements.Formaters;
+﻿using ThetaFTP.Shared.Formatters;
 using Microsoft.AspNetCore.Mvc;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Models;
