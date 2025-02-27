@@ -80,7 +80,7 @@
                                 <button class="control_button">
                                     <img class="control_image" src="./images/update.webp" @onclick=ClearSearchFilter/>
                                 </button>
-                                <input style="margin-left: 10px" @bind=SearchContent placeholder="Search" />
+                                <input style="margin-left: 10px" @oninput=OnChanged placeholder="Search" />
                                 <button class="control_button" @onclick=Search>
                                     <img class="control_image" src="./images/search.webp" />
                                 </button>
@@ -95,7 +95,7 @@
                 <div style="width:100%; height:fit-content; display:flex; flex-direction:column;">
                     @if (ShowBackButton == true)
                     {
-                        <div style="display: flex; position:sticky; top:0px; flex-direction:row; background-color:white; width: 100%; padding: 10px 5px 25px 5px; z-index: 2">
+                        <div style="display: flex; position:sticky; top:0px; flex-direction:row; background-color:white; width: 100%; padding: 10px 5px 10px 5px; z-index: 2">
                             <div style="display: flex; align-self:center; align-content:center">
                                 <button style="display: flex; align-self:center; align-content:center; border-color: transparent; background-color: transparent; margin-left: 12px" @onclick=Back>
                                     <img src="./images/left-arrow.webp" style="height: 15px; align-self:center" />
@@ -105,10 +105,13 @@
                                 </p>
                             </div>
                         </div>
+                        <div style="background-color: #bfbfbf; height:2px"> </div>
                     }
-                    @for (int i = 0; i < items?.Count; i++)
+                    @if(items?.Count > 0)
                     {
-                        <DirectoryItemComponent directoryItem="@items.ElementAt(i)" operationDelegate=FileOperation/>
+                        <Virtualize Items="@items" Context="item">
+                            <DirectoryItemComponent directoryItem="@item" operationDelegate=FileOperation />
+                        </Virtualize>
                     }
                 </div>
             </div>
@@ -174,6 +177,12 @@
             GetDirectoryInfo(true);
         }
 
+    }
+
+    private void OnChanged(ChangeEventArgs e)
+    {
+        SearchContent = e.Value.ToString();
+        Search();
     }
 
     public async void GetDirectoryInfo(bool re_render)
@@ -542,15 +551,18 @@
 
     private async void CloseNotification()
     {
-        ShowNotification = false;
-        if (InvalidLogInSessionKey == true)
+        if (Loaded == true)
         {
-            await LogOut();
-            NavigationManager.NavigateTo("/log-in", true);
-        }
-        else
-        {
-            StateHasChanged();
+            ShowNotification = false;
+            if (InvalidLogInSessionKey == true)
+            {
+                await LogOut();
+                NavigationManager.NavigateTo("/log-in", true);
+            }
+            else
+            {
+                StateHasChanged();
+            }
         }
     }
 

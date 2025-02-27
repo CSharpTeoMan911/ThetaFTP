@@ -11,12 +11,9 @@ namespace ThetaFTP.Shared.Classes
             double timeout = GetTimeout();
 
             IMemoryOwner<byte> contingent_memory_buffer = MemoryPool<byte>.Shared.Rent(buffer_size);
-
             DateTime start = DateTime.UtcNow;
-
             try
             {
-
                 while (input_stream.CanRead == true && file_size > 0)
                 {
                     if (cancellation.IsCancellationRequested == false)
