@@ -16,11 +16,13 @@ namespace ThetaFTP.Shared.Classes
             {
                 while (input_stream.CanRead == true && file_size > 0)
                 {
+                    DateTime end = DateTime.UtcNow;
+
                     if (cancellation.IsCancellationRequested == false)
                     {
-                        if ((DateTime.UtcNow - start).TotalMicroseconds >= 1000 * timeout)
+                        if ((end - start).TotalMicroseconds >= 1000 * timeout)
                         {
-                            start = DateTime.UtcNow;
+                            start = end;
 
                             int bytes_read = await input_stream.ReadAsync(contingent_memory_buffer.Memory.Slice(0, buffer_size));
                             if (bytes_read > 0)

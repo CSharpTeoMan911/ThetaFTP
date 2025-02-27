@@ -400,12 +400,12 @@ p.path_label {
 
 p.dropdown_context_text {
     margin: 0px;
-    padding: 0px;
+    padding: 5px 0px 5px 0px;
     align-self: center;
     font-family: "Roboto", sans-serif;
     font-weight: 500;
     font-style: normal;
-    font-size: 18px;
+    font-size: 17px;
     color: #efecec;
 }
 
