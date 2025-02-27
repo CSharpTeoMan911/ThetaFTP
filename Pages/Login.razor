@@ -80,7 +80,7 @@
 
     private async void SignIn()
     {
-        if(Loaded)
+        if(Loaded == true)
         {
             AuthenticationModel authentication = new AuthenticationModel();
             authentication.email = Email;
@@ -214,7 +214,7 @@
 
     private async void ValidationProcedure(string? code, ValidationPanel.ValidationType validationType)
     {
-        if(Loaded)
+        if(Loaded == true)
         {
             ValidationModel model = new ValidationModel()
                 {
