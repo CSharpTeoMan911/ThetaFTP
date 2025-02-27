@@ -63,7 +63,8 @@
     // ADD CALLBACK METHODS FOR THE 'input' SECTIONS
     private void NavigateToRegister()
     {
-        NavigationManager.NavigateTo("register", false);
+        if(Loaded == true)
+            NavigationManager.NavigateTo("register", false);
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -183,17 +184,20 @@
 
     private void CloseNotification()
     {
-        if (ShowAccountsApprovalPanelOnClose == true)
-            ShowAccountsApprovalPanel = true;
-        if (ShowLogInSessionValidationPanelOnClose == true)
-            ShowLogInSessionValidationPanel = true;
-        ShowAccountsApprovalPanelOnClose = false;
-        ShowLogInSessionValidationPanelOnClose = false;
-        ShowNotification = false;
-        StateHasChanged();
+        if (Loaded == true)
+        {
+            if (ShowAccountsApprovalPanelOnClose == true)
+                ShowAccountsApprovalPanel = true;
+            if (ShowLogInSessionValidationPanelOnClose == true)
+                ShowLogInSessionValidationPanel = true;
+            ShowAccountsApprovalPanelOnClose = false;
+            ShowLogInSessionValidationPanelOnClose = false;
+            ShowNotification = false;
+            StateHasChanged();
 
-        if (NavigateToMainPageOnClose == true)
-            NavigationManager.NavigateTo(NavigationManager.BaseUri, true);
+            if (NavigateToMainPageOnClose == true)
+                NavigationManager.NavigateTo(NavigationManager.BaseUri, true);
+        }
     }
 
     private void CloseAccountValidation()

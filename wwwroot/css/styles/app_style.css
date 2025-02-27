@@ -90,7 +90,7 @@ p.label {
     font-family: sans-serif;
     color: #3e3e3e;
     font-weight: 400;
-    font-size: calc(11px + 0.4vw);
+    font-size: 16px;
     align-self:center;
     margin: 0px 0px 0px 0px;
     padding: 0px 0px 0px 0px;
@@ -105,17 +105,16 @@ input.input_style {
 input.input_style_small {
     font-size: calc(11px + 0.2vw);
     border-radius: 5px;
-    border-width: calc(1px + 0.1vw);
     width: calc(230px + 1vw);
-    border-color: dodgerblue;
-    border-width: 5px;
-    outline-color: dodgerblue;
+    border-color: black;
+    border-width: 1px;
+    outline-width: 1px;
+    outline-color: black;
 }
 
 .input_style_small:focus {
-    border-color: dodgerblue;
-    border-width: 1px;
-    outline-color: dodgerblue;
+    border-color: black;
+    outline-color: black;
     outline-width: 1px;
 }
 

@@ -40,10 +40,19 @@
     private string? NotificationMessage { get; set; }
 
     private bool NavigateToLogInOnPanelClose { get; set; }
+    private bool Loaded { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+        Loaded = true;
+        StateHasChanged();
+    }
 
     private void NavigateToLogIn()
     {
-        NavigationManager.NavigateTo("log-in", false);
+        if(Loaded == true)
+            NavigationManager.NavigateTo("log-in", false);
     }
 
     private void OnEmailValue(string? value)
@@ -104,10 +113,13 @@
 
     private void CloseNotification()
     {
-        ShowNotification = false;
-        StateHasChanged();
+        if (Loaded == true)
+        {
+            ShowNotification = false;
+            StateHasChanged();
 
-        if (NavigateToLogInOnPanelClose == true)
-            NavigationManager.NavigateTo("/log-in", true);
+            if (NavigateToLogInOnPanelClose == true)
+                NavigationManager.NavigateTo("/log-in", true);
+        }
     }
 }
