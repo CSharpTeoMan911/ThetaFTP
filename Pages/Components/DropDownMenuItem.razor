@@ -8,11 +8,9 @@
         </p>
     </div>
 
-    <p class="item_file_name">
-        @FormatFileName()
-    </p>
+    <input class="file-item-name" style="width:120px; padding: 0px; margin-left: 10px; margin-right: 8px; justify-self: center; align-self:center" value="@file_name" />
 
-    <button class="item_cancellation" @onclick=CancelOp>
+    <button class="item_cancellation" style="margin-left: 5px; justify-self: center" @onclick=CancelOp>
         <img class="item_cancellation_image" src="./images/cancel.webp"/>
     </button>
 </div>
