@@ -139,6 +139,7 @@ namespace ThetaFTP
                             options.InputFormatters.Add(new StreamFormatter());
                             options.InputFormatters.Add(new JsonTextInputFormatter());
                             options.OutputFormatters.Add(new StreamOutputFormatter());
+                            options.OutputFormatters.Add(new GzipStreamOutputFormatter());
                         });
 
                         int connection_timeout = 600;

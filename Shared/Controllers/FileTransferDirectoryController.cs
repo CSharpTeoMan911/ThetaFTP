@@ -11,62 +11,46 @@ namespace ThetaFTP.Shared.Controllers
         [HttpDelete("delete")]
         public async Task<ActionResult?> Delete([FromQuery]DirectoryOperationMetadata? query, [FromBody]string? body)
         {
-            string? result = "Internal server error";
+            PayloadModel? serverPayload = new PayloadModel();
 
-            string payload = String.Empty;
-
-            string? log_in_key_validation_result = "Internal server error";
-
-            if (Shared.configurations != null)
-                if (!Shared.configurations.use_firebase)
-                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
-                else
-                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
-
-            if (log_in_key_validation_result != "Internal server error")
+            try
             {
-                if (log_in_key_validation_result != "Invalid log in session key")
+                if (Shared.configurations != null)
                 {
-                    if (log_in_key_validation_result != "Log in session key expired")
+                    if (!Shared.configurations.use_firebase)
+                        serverPayload = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+                    else
+                        serverPayload = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
+
+                    if (query != null && serverPayload?.StatusCode == System.Net.HttpStatusCode.OK && serverPayload?.payload?.GetType() == typeof(string))
                     {
-                        if (log_in_key_validation_result != "Log in session not approved")
+                        FtpDirectoryModel ftpModel = new FtpDirectoryModel()
                         {
-                            if (query != null)
-                            {
-                                FtpDirectoryModel ftpModel = new FtpDirectoryModel()
-                                {
-                                    email = log_in_key_validation_result,
-                                    directory_name = query?.directory_name,
-                                    path = query?.path
-                                };
+                            email = (string)serverPayload.payload,
+                            directory_name = query?.directory_name,
+                            path = query?.path
+                        };
 
-                                result = await Shared.database_directory_ftp.Delete(ftpModel);
+                        serverPayload = await Shared.database_directory_ftp.Delete(ftpModel);
+                    }
 
-                                return Ok(result);
-                            }
-                            else
-                            {
-                                return Ok(result);
-                            }
-                        }
-                        else
-                        {
-                            return Ok(log_in_key_validation_result);
-                        }
+                    if (serverPayload?.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        return Ok(serverPayload);
                     }
                     else
                     {
-                        return Ok(log_in_key_validation_result);
+                        return StatusCode(500, serverPayload);
                     }
                 }
                 else
                 {
-                    return Ok(log_in_key_validation_result);
+                    return StatusCode(500, serverPayload);
                 }
             }
-            else
+            catch
             {
-                return Ok(log_in_key_validation_result);
+                return StatusCode(500, serverPayload);
             }
         }
 
@@ -79,238 +63,164 @@ namespace ThetaFTP.Shared.Controllers
         [HttpGet("get-directories")]
         public async Task<ActionResult?> GetInfo([FromQuery] Metadata? query)
         {
-            string? result = "Internal server error";
+            PayloadModel? serverPayload = new PayloadModel();
 
-            string payload = String.Empty;
-
-            string? log_in_key_validation_result = "Internal server error";
-
-            if (Shared.configurations != null)
-                if (!Shared.configurations.use_firebase)
-                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
-                else
-                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
-
-            if (log_in_key_validation_result != "Internal server error")
+            try
             {
-                if (log_in_key_validation_result != "Invalid log in session key")
+                if (Shared.configurations != null)
                 {
-                    if (log_in_key_validation_result != "Log in session key expired")
-                    {
-                        if (log_in_key_validation_result != "Log in session not approved")
-                        {
-                            if (query != null)
-                            {
-                                query.email = log_in_key_validation_result;
-
-                                result = await Shared.database_directory_ftp.GetInfo(query);
-
-                                return Ok(result);
-                            }
-                            else
-                            {
-                                return Ok(result);
-                            }
-                        }
-                        else
-                        {
-                            return Ok(log_in_key_validation_result);
-                        }
-                    }
+                    if (!Shared.configurations.use_firebase)
+                        serverPayload = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
                     else
+                        serverPayload = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
+
+                    if (query != null && serverPayload?.StatusCode == System.Net.HttpStatusCode.OK && serverPayload?.payload?.GetType() == typeof(string))
                     {
-                        return Ok(log_in_key_validation_result);
+                        query.email = (string)serverPayload.payload;
+                        serverPayload = await Shared.database_directory_ftp.GetInfo(query);
                     }
+                }
+
+                if (serverPayload?.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    return Ok(serverPayload);
                 }
                 else
                 {
-                    return Ok(log_in_key_validation_result);
+                    return StatusCode(500, serverPayload);
                 }
             }
-            else
+            catch
             {
-                return Ok(log_in_key_validation_result);
+                return StatusCode(500, serverPayload);
             }
         }
 
         [HttpPost("insert")]
         public async Task<ActionResult?> Insert([FromQuery] DirectoryOperationMetadata? query, [FromBody] string? body)
         {
-            string? result = "Internal server error";
+            PayloadModel? serverPayload = new PayloadModel();
 
-            string payload = String.Empty;
-
-            string? log_in_key_validation_result = "Internal server error";
-
-            if (Shared.configurations != null)
-                if (!Shared.configurations.use_firebase)
-                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
-                else
-                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
-
-            if (log_in_key_validation_result != "Internal server error")
+            try
             {
-                if (log_in_key_validation_result != "Invalid log in session key")
+                if (Shared.configurations != null)
                 {
-                    if (log_in_key_validation_result != "Log in session key expired")
-                    {
-                        if (log_in_key_validation_result != "Log in session not approved")
-                        {
-                            FtpDirectoryModel directoryModel = new FtpDirectoryModel()
-                            {
-                                email = log_in_key_validation_result,
-                                directory_name = query?.directory_name,
-                                path = query?.path,
-                            };
-
-                            result = await Shared.database_directory_ftp.Insert(directoryModel);
-
-                            return Ok(result);
-                        }
-                        else
-                        {
-                            return Ok(log_in_key_validation_result);
-                        }
-                    }
+                    if (!Shared.configurations.use_firebase)
+                        serverPayload = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
                     else
+                        serverPayload = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
+
+                    if (query != null && serverPayload?.StatusCode == System.Net.HttpStatusCode.OK && serverPayload?.payload?.GetType() == typeof(string))
                     {
-                        return Ok(log_in_key_validation_result);
+                        FtpDirectoryModel directoryModel = new FtpDirectoryModel()
+                        {
+                            email = (string)serverPayload.payload,
+                            directory_name = query?.directory_name,
+                            path = query?.path,
+                        };
+
+                        serverPayload = await Shared.database_directory_ftp.Insert(directoryModel);
                     }
+                }
+
+                if (serverPayload?.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    return Ok(serverPayload);
                 }
                 else
                 {
-                    return Ok(log_in_key_validation_result);
+                    return StatusCode(500, serverPayload);
                 }
             }
-            else
+            catch
             {
-                return Ok(log_in_key_validation_result);
+                return StatusCode(500, serverPayload);
             }
         }
 
         [HttpPut("relocate")]
         public async Task<ActionResult?> Update([FromQuery]DirectoryOperationMetadata? query, [FromBody]string? body)
         {
-            string? result = "Internal server error";
+            PayloadModel? serverPayload = new PayloadModel();
 
-            string payload = String.Empty;
-
-            string? log_in_key_validation_result = "Internal server error";
-
-            if (Shared.configurations != null)
-                if (!Shared.configurations.use_firebase)
-                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
-                else
-                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
-
-            if (query != null)
+            try
             {
-                if (log_in_key_validation_result != "Internal server error")
+                if (Shared.configurations != null)
                 {
-                    if (log_in_key_validation_result != "Invalid log in session key")
-                    {
-                        if (log_in_key_validation_result != "Log in session key expired")
-                        {
-                            if (log_in_key_validation_result != "Log in session not approved")
-                            {
-                                FtpDirectoryModel directoryModel = new FtpDirectoryModel()
-                                {
-                                    email = log_in_key_validation_result,
-                                    directory_name = query?.directory_name,
-                                    path = query?.path,
-                                    new_path = query?.new_path,
-                                };
-
-                                result = await Shared.database_directory_ftp.Update(directoryModel);
-
-                                return Ok(result);
-                            }
-                            else
-                            {
-                                return Ok(log_in_key_validation_result);
-                            }
-                        }
-                        else
-                        {
-                            return Ok(log_in_key_validation_result);
-                        }
-                    }
+                    if (!Shared.configurations.use_firebase)
+                        serverPayload = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
                     else
+                        serverPayload = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
+
+                    if (query != null && serverPayload?.StatusCode == System.Net.HttpStatusCode.OK && serverPayload?.payload?.GetType() == typeof(string))
                     {
-                        return Ok(log_in_key_validation_result);
+                        FtpDirectoryModel directoryModel = new FtpDirectoryModel()
+                        {
+                            email = (string)serverPayload.payload,
+                            directory_name = query?.directory_name,
+                            path = query?.path,
+                            new_path = query?.new_path,
+                        };
+
+                        serverPayload = await Shared.database_directory_ftp.Update(directoryModel);
                     }
+                }
+
+                if (serverPayload?.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    return Ok(serverPayload);
                 }
                 else
                 {
-                    return Ok(log_in_key_validation_result);
+                    return StatusCode(500, serverPayload);
                 }
             }
-            else
+            catch
             {
-                return Ok(result);
+                return StatusCode(500, serverPayload);
             }
         }
 
         [HttpPut("rename")]
         public async Task<ActionResult?> UpdateName([FromQuery] DirectoryOperationMetadata? query, string? body)
         {
-            string? result = "Internal server error";
+            PayloadModel? serverPayload = new PayloadModel();
 
-            string payload = String.Empty;
-
-            string? log_in_key_validation_result = "Internal server error";
-
-            if (Shared.configurations != null)
-                if (!Shared.configurations.use_firebase)
-                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
-                else
-                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
-
-            if (query != null)
+            try
             {
-                if (log_in_key_validation_result != "Internal server error")
+                if (Shared.configurations != null)
                 {
-                    if (log_in_key_validation_result != "Invalid log in session key")
-                    {
-                        if (log_in_key_validation_result != "Log in session key expired")
-                        {
-                            if (log_in_key_validation_result != "Log in session not approved")
-                            {
-                                FtpDirectoryModel directoryModel = new FtpDirectoryModel()
-                                {
-                                    email = log_in_key_validation_result,
-                                    directory_name = query?.directory_name,
-                                    directory_new_name = query?.new_directory_name,
-                                    path = query?.path,
-                                };
-
-                                result = await Shared.database_directory_ftp.Rename(directoryModel);
-
-                                return Ok(result);
-                            }
-                            else
-                            {
-                                return Ok(log_in_key_validation_result);
-                            }
-                        }
-                        else
-                        {
-                            return Ok(log_in_key_validation_result);
-                        }
-                    }
+                    if (!Shared.configurations.use_firebase)
+                        serverPayload = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
                     else
+                        serverPayload = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
+
+                    if (query != null && serverPayload?.StatusCode == System.Net.HttpStatusCode.OK && serverPayload?.payload?.GetType() == typeof(string))
                     {
-                        return Ok(log_in_key_validation_result);
+                        FtpDirectoryModel directoryModel = new FtpDirectoryModel()
+                        {
+                            email = (string)serverPayload.payload,
+                            directory_name = query?.directory_name,
+                            directory_new_name = query?.new_directory_name,
+                            path = query?.path,
+                        };
+
+                        serverPayload = await Shared.database_directory_ftp.Rename(directoryModel);
                     }
+                }
+
+                if (serverPayload?.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    return Ok(serverPayload);
                 }
                 else
                 {
-                    return Ok(log_in_key_validation_result);
+                    return StatusCode(500, serverPayload);
                 }
             }
-            else
+            catch
             {
-                return Ok(result);
+                return StatusCode(500, serverPayload);
             }
         }
     }

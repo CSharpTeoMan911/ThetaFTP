@@ -5,11 +5,11 @@ using Serilog;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class FtpDirectoryDatabaseController : CRUD_Interface<FtpDirectoryModel, Metadata,FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel>
+    public class FtpDirectoryDatabaseController : CRUD_Interface_Payload<FtpDirectoryModel, Metadata,FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel>
     {
-        public Task<string?> Delete(FtpDirectoryModel? value)
+        public Task<PayloadModel?> Delete(FtpDirectoryModel? value)
         {
-            string result = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
             if (value != null)
             {
@@ -30,55 +30,56 @@ namespace ThetaFTP.Shared.Controllers
                                     {
                                         if (value != null)
                                             FileSystemFormatter.DeleteDirectory(full_path);
-                                        result = "Directory deletion successful";
+                                        payloadModel.result = "Directory deletion successful";
+                                        payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                     }
                                     catch(Exception e)
                                     {
                                         Log.Error(e, "Directory FTP Controller delete error");
-                                        result = "Internal server error";
+                                        payloadModel.result = "Internal server error";
                                     }
                                 }
                                 else
                                 {
-                                    result = "Invalid path";
+                                    payloadModel.result = "Invalid path";
                                 }
                             }
                             else
                             {
-                                result = "Invalid path";
+                                payloadModel.result = "Invalid path";
                             }
                         }
                         else
                         {
-                            result = "Invalid directory name";
+                            payloadModel.result = "Invalid directory name";
                         }
                     }
                     else
                     {
-                        result = "Invalid path";
+                        payloadModel.result = "Invalid path";
                     }
                 }
                 else
                 {
-                    result = "Invalid email";
+                    payloadModel.result = "Invalid email";
                 }
             }
             else
             {
-                result = "Internal server error";
+                payloadModel.result = "Internal server error";
             }
 
-            return Task.FromResult<string?>(result);
+            return Task.FromResult<PayloadModel?>(payloadModel);
         }
 
-        public Task<string?> Get(FtpDirectoryModel? value)
+        public Task<PayloadModel?> Get(FtpDirectoryModel? value)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<string?> GetInfo(Metadata? value)
+        public Task<PayloadModel?> GetInfo(Metadata? value)
         {
-            string? result = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
             if (value != null)
             {
@@ -104,51 +105,52 @@ namespace ThetaFTP.Shared.Controllers
                                             isDirectory = true
                                         }));
 
-                                        string? serialised_directory_names = await JsonFormatter.JsonSerialiser(directories_info);
-                                        return serialised_directory_names;
+                                        payloadModel.payload = directories_info;
+                                        payloadModel.result = "Directories retrieval successful";
+                                        payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                     }
                                     catch (Exception e)
                                     {
                                         Log.Error(e, "Directory FTP Controller get info error");
-                                        result = "Internal server error";
+                                        payloadModel.payload = "Internal server error";
                                     }
                                 }
                                 else
                                 {
-                                    result = "Invalid path";
+                                    payloadModel.payload = "Invalid path";
                                 }
                             }
                             else
                             {
-                                result = "Invalid path";
+                                payloadModel.payload = "Invalid path";
                             }
                         }
                         else
                         {
-                            result = "Internal server error";
+                            payloadModel.payload = "Internal server error";
                         }
                     }
                     else
                     {
-                        result = "Invalid path";
+                        payloadModel.payload = "Invalid path";
                     }
                 }
                 else
                 {
-                    result = "Invalid path";
+                    payloadModel.payload = "Invalid path";
                 }
             }
             else
             {
-                result = "Internal server error";
+                payloadModel.payload = "Internal server error";
             }
 
-            return result;
+            return Task.FromResult<PayloadModel?>(payloadModel);
         }
 
-        public Task<string?> Insert(FtpDirectoryModel? value)
+        public Task<PayloadModel?> Insert(FtpDirectoryModel? value)
         {
-            string? result = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
             if (value?.directory_name != null)
             {
@@ -171,60 +173,61 @@ namespace ThetaFTP.Shared.Controllers
                                             try
                                             {
                                                 Directory.CreateDirectory(FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_name));
-                                                result = "Directory upload successful";
+                                                payloadModel.result = "Directory upload successful";
+                                                payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                             }
                                             catch (Exception e)
                                             {
                                                 Log.Error(e, "Directory FTP Controller upload error");
-                                                result = "Internal server error";
+                                                payloadModel.result = "Internal server error";
                                             }
                                         }
                                         else
                                         {
-                                            result = "Invalid path";
+                                            payloadModel.result = "Invalid path";
                                         }
                                     }
                                     else
                                     {
-                                        result = "Invalid path";
+                                        payloadModel.result = "Invalid path";
                                     }
                                 }
                                 else
                                 {
-                                    result = "Internal server error";
+                                    payloadModel.result = "Internal server error";
                                 }
                             }
                             else
                             {
-                                result = "Invalid path";
+                                payloadModel.result = "Invalid path";
                             }
                         }
                         else
                         {
-                            result = "Invalid directory name. Use only numbers, letters, '_', '-', ' ', and '.'";
+                            payloadModel.result = "Invalid directory name. Use only numbers, letters, '_', '-', ' ', and '.'";
                         }
                     }
                     else
                     {
-                        result = "Directory name more than 100 characters long";
+                        payloadModel.result = "Directory name more than 100 characters long";
                     }
                 }
                 else
                 {
-                    result = "Invalid path";
+                    payloadModel.result = "Invalid path";
                 }
             }
             else
             {
-                result = "Invalid directory name";
+                payloadModel.result = "Invalid directory name";
             }
 
-            return Task.FromResult<string?>(result);
+            return Task.FromResult<PayloadModel?>(payloadModel);
         }
 
-        public Task<string?> Rename(FtpDirectoryModel? value)
+        public Task<PayloadModel?> Rename(FtpDirectoryModel? value)
         {
-            string result = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
             if (value != null)
             {
@@ -252,65 +255,66 @@ namespace ThetaFTP.Shared.Controllers
                                                 {
                                                     if (value != null)
                                                         FileSystemFormatter.RenameDirectory(full_path, re_path);
-                                                    result = "Directory rename successful";
+                                                    payloadModel.result = "Directory rename successful";
+                                                    payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                                 }
                                                 catch (Exception e)
                                                 {
                                                     Log.Error(e, "Directory FTP Controller upload error");
-                                                    result = "Invalid directory name";
+                                                    payloadModel.result = "Invalid directory name";
                                                 }
                                             }
                                             else
                                             {
-                                                result = "Invalid directory name";
+                                                payloadModel.result = "Invalid directory name";
                                             }
                                         }
                                         else
                                         {
-                                            result = "Invalid path";
+                                            payloadModel.result = "Invalid path";
                                         }
                                     }
                                     else
                                     {
-                                        result = "Invalid path";
+                                        payloadModel.result = "Invalid path";
                                     }
                                 }
                                 else
                                 {
-                                    result = "Invalid path";
+                                    payloadModel.result = "Invalid path";
                                 }
                             }
                             else
                             {
-                                result = "Invalid path";
+                                payloadModel.result = "Invalid path";
                             }
                         }
                         else
                         {
-                            result = "Invalid directory name";
+                            payloadModel.result = "Invalid directory name";
                         }
                     }
                     else
                     {
-                        result = "Invalid directory";
+                        payloadModel.result = "Invalid directory";
                     }
                 }
                 else
                 {
-                    result = "Internal server error";
+                    payloadModel.result = "Internal server error";
                 }
             }
             else
             {
-                result = "Internal server error";
+                payloadModel.result = "Internal server error";
             }
 
-            return Task.FromResult<string?>(result);
+            return Task.FromResult<PayloadModel?>(payloadModel);
         }
 
-        public Task<string?> Update(FtpDirectoryModel? value)
+        public Task<PayloadModel?> Update(FtpDirectoryModel? value)
         {
-            string? result = "Internal server error";
+            PayloadModel payloadModel = new PayloadModel();
 
             if (value?.directory_name != null)
             {
@@ -342,74 +346,75 @@ namespace ThetaFTP.Shared.Controllers
                                                             string old_full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.directory_name);
                                                             string new_full_path = FileSystemFormatter.FullPathBuilder(converted_new_path, value?.directory_name);
                                                             FileSystemFormatter.MoveDirectory(old_full_path, new_full_path);
-                                                            result = "Directory relocation successful";
+                                                            payloadModel.result = "Directory relocation successful";
+                                                            payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                                         }
                                                         catch (Exception e)
                                                         {
                                                             Log.Error(e, "Directory FTP controller relocation error");
 
                                                             if (e.Message.Contains("already exists") == true)
-                                                                result = "File already exist";
+                                                                payloadModel.result = "File already exist";
                                                             else
-                                                                result = "Internal server error";
+                                                                payloadModel.result = "Internal server error";
                                                         }
                                                     }
                                                     else
                                                     {
-                                                        result = "Invalid path";
+                                                        payloadModel.result = "Invalid path";
                                                     }
                                                 }
                                                 else
                                                 {
-                                                    result = "Invalid path";
+                                                    payloadModel.result = "Invalid path";
                                                 }
                                             }
                                             else
                                             {
-                                                result = "Invalid path";
+                                                payloadModel.result = "Invalid path";
                                             }
                                         }
                                         else
                                         {
-                                            result = "Invalid path";
+                                            payloadModel.result = "Invalid path";
                                         }
                                     }
                                     else
                                     {
-                                        result = "Internal server error";
+                                        payloadModel.result = "Internal server error";
                                     }
                                 }
                                 else
                                 {
-                                    result = "Invalid path";
+                                    payloadModel.result = "Invalid path";
                                 }
                             }
                             else
                             {
-                                result = "Invalid path";
+                                payloadModel.result = "Invalid path";
                             }
                         }
                         else
                         {
-                            result = "Invalid file name. Use only numbers, letters, '-', '/', '_', ' ', and '.'";
+                            payloadModel.result = "Invalid file name. Use only numbers, letters, '-', '/', '_', ' ', and '.'";
                         }
                     }
                     else
                     {
-                        result = "Invalid path";
+                        payloadModel.result = "Invalid path";
                     }
                 }
                 else
                 {
-                    result = "Invalid path";
+                    payloadModel.result = "Invalid path";
                 }
             }
             else
             {
-                result = "Invalid file name";
+                payloadModel.result = "Invalid file name";
             }
 
-            return Task.FromResult<string?>(result);
+            return Task.FromResult<PayloadModel?>(payloadModel);
         }
     }
 }

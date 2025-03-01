@@ -80,7 +80,7 @@
 
     private async void SignIn()
     {
-        if(Loaded == true)
+        if (Loaded == true)
         {
             AuthenticationModel authentication = new AuthenticationModel();
             authentication.email = Email;
@@ -94,78 +94,79 @@
 
             HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
             HttpResponseMessage message = await client.GetAsync(builder.ToString());
-            string response = await message.Content.ReadAsStringAsync();
+            PayloadModel response = await message.Content.ReadAsAsync<PayloadModel>();
 
-            ServerPayloadModel? serverPayload = await JsonFormatter.JsonDeserialiser<ServerPayloadModel>(response);
-
-            if (serverPayload != null)
+            if (message?.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                if (serverPayload.response_message?.Contains("Account not approved") == true)
+                if (response?.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    if (Shared.configurations?.use_secure_local_storage == true)
+                    if (response?.result?.Contains("Account not approved") == true)
                     {
-                        if (serverPayload.content != null)
-                            await protectedLocalStorage.SetAsync("AuthCache", serverPayload.content);
+                        if (Shared.configurations?.use_secure_local_storage == true)
+                        {
+                            await protectedLocalStorage.SetAsync("AuthCache", (string)response.payload);
+                        }
+                        else
+                        {
+                            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                            await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", (string)response.payload);
+                            await module.DisposeAsync();
+                        }
+
+                        NotificationType = Notifications.NotificationType.Information;
+                        NotificationMessage = "Account not approved. Verify the inbox of your email address used for this account.";
+                        ShowAccountsApprovalPanelOnClose = true;
+                    }
+                    else if (response?.result?.Contains("Authentication successful") == true)
+                    {
+                        if (Shared.configurations?.use_secure_local_storage == true)
+                        {
+                            await protectedLocalStorage.SetAsync("AuthCache", (string)response.payload);
+                        }
+                        else
+                        {
+                            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                            await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", (string)response.payload);
+                            await module.DisposeAsync();
+                        }
+
+                        NotificationType = Notifications.NotificationType.Information;
+                        NotificationMessage = response.result;
+                        NavigateToMainPageOnClose = true;
+                    }
+                    else if (response?.result?.Contains("Check the code sent to your email address to approve your log in session") == true)
+                    {
+                        if (Shared.configurations?.use_secure_local_storage == true)
+                        {
+                            await protectedLocalStorage.SetAsync("AuthCache", (string)response.payload);
+                        }
+                        else
+                        {
+                            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                            await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", (string)response.payload);
+                            await module.DisposeAsync();
+                        }
+
+                        NotificationType = Notifications.NotificationType.Information;
+                        NotificationMessage = response.result;
+                        ShowLogInSessionValidationPanelOnClose = true;
                     }
                     else
                     {
-                        IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                        await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
-                        await module.DisposeAsync();
+                        NotificationType = Notifications.NotificationType.Error;
+                        NotificationMessage = "Internal server error";
                     }
-
-                    NotificationType = Notifications.NotificationType.Information;
-                    NotificationMessage = "Account not approved. Verify the inbox of your email address used for this account.";
-                    ShowAccountsApprovalPanelOnClose = true;
                 }
-                else if (serverPayload.response_message?.Contains("Authentication successful") == true)
-                {
-                    if (Shared.configurations?.use_secure_local_storage == true)
-                    {
-                        if (serverPayload.content != null)
-                            await protectedLocalStorage.SetAsync("AuthCache", serverPayload.content);
-                    }
-                    else
-                    {
-                        IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                        await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
-                        await module.DisposeAsync();
-                    }
-
-                    NotificationType = Notifications.NotificationType.Information;
-                    NotificationMessage = serverPayload.response_message;
-                    NavigateToMainPageOnClose = true;
-                }
-                else if (serverPayload.response_message?.Contains("Check the code sent to your email address to approve your log in session") == true)
-                {
-                    if (Shared.configurations?.use_secure_local_storage == true)
-                    {
-                        if (serverPayload.content != null)
-                            await protectedLocalStorage.SetAsync("AuthCache", serverPayload.content);
-                    }
-                    else
-                    {
-                        IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                        await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
-                        await module.DisposeAsync();
-                    }
-
-                    NotificationType = Notifications.NotificationType.Information;
-                    NotificationMessage = serverPayload.response_message;
-                    ShowLogInSessionValidationPanelOnClose = true;
-                }
-                else if (serverPayload.response_message?.Contains("Invalid email") == true || serverPayload.response_message?.Contains("Invalid password") == true || serverPayload.response_message?.Contains("Invalid credentials") == true || serverPayload.response_message?.Contains("Internal server error") == true)
-                {
-                    NotificationType = Notifications.NotificationType.Error;
-                    NotificationMessage = serverPayload.response_message;
-                }
-
             }
             else
             {
                 NotificationType = Notifications.NotificationType.Error;
-                NotificationMessage = "Internal server error";
+                if (response.result != null)
+                    NotificationMessage = response.result;
+                else
+                    NotificationMessage = "Internal server error";
             }
+
 
             ShowNotification = true;
             StateHasChanged();
@@ -214,13 +215,13 @@
 
     private async void ValidationProcedure(string? code, ValidationPanel.ValidationType validationType)
     {
-        if(Loaded == true)
+        if (Loaded == true)
         {
             ValidationModel model = new ValidationModel()
-                {
-                    email = Email,
-                    code = code
-                };
+            {
+                email = Email,
+                code = code
+            };
 
             string formatted_model = await QueryParsing.QueryParser<ValidationModel>(model);
 
@@ -243,45 +244,37 @@
             client.BaseAddress = new Uri(NavigationManager.BaseUri);
             HttpResponseMessage result = await client.GetAsync(validation_query);
 
-            string result_message = await result.Content.ReadAsStringAsync();
-            ServerPayloadModel? serverPayload = await JsonFormatter.JsonDeserialiser<ServerPayloadModel>(result_message);
+            PayloadModel? response = await result.Content.ReadAsAsync<PayloadModel>();
 
-            if (serverPayload != null)
+            if (result?.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                if (serverPayload.response_message?.Contains("Account authorised") == true)
+                if (response?.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    if (Shared.configurations?.use_secure_local_storage == true)
+                    if (response.result.Contains("Account authorised") == true || response.result.Contains("Authentication successful") == true)
                     {
-                        if (serverPayload.content != null)
-                            await protectedLocalStorage.SetAsync("AuthCache", serverPayload.content);
+                        NotificationType = Notifications.NotificationType.Information;
+                        NotificationMessage = "Authentication successful.";
+                        NavigateToMainPageOnClose = true;
                     }
                     else
                     {
-                        IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                        await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", serverPayload.content);
-                        await module.DisposeAsync();
+                        NotificationType = Notifications.NotificationType.Error;
+                        NotificationMessage = response.result;
                     }
-
-                    NotificationType = Notifications.NotificationType.Information;
-                    NotificationMessage = "Authentication successful.";
-                    NavigateToMainPageOnClose = true;
                 }
-                else if (serverPayload.response_message?.Contains("Authentication successful") == true)
-                {
-                    NotificationType = Notifications.NotificationType.Information;
-                    NotificationMessage = "Authentication successful.";
-                    NavigateToMainPageOnClose = true;
-                }
-                else if (serverPayload.response_message?.Contains("Invalid email") == true || serverPayload.response_message?.Contains("Invalid code") == true || serverPayload.response_message?.Contains("Internal server error") == true)
+                else
                 {
                     NotificationType = Notifications.NotificationType.Error;
-                    NotificationMessage = serverPayload.response_message;
+                    NotificationMessage = "Internal server error";
                 }
             }
             else
             {
                 NotificationType = Notifications.NotificationType.Error;
-                NotificationMessage = "Internal server error";
+                if (response.result != null)
+                    NotificationMessage = response.result;
+                else
+                    NotificationMessage = "Internal server error";
             }
 
             ShowNotification = true;
