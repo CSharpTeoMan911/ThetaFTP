@@ -92,19 +92,30 @@
 
                 HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
                 HttpResponseMessage message = await client.PostAsync(builder.ToString(), null);
-                string message_string = await message.Content.ReadAsStringAsync();
+                PayloadModel response = await message.Content.ReadAsAsync<PayloadModel>();
 
-                if (message_string.Contains("Registration successful") == true)
+                if (message.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    NotificationType = Notifications.NotificationType.Information;
-                    NavigateToLogInOnPanelClose = true;
+                    if (response.StatusCode == System.Net.HttpStatusCode.OK && response?.result?.Contains("Registration successful") == true)
+                    {
+                        NotificationType = Notifications.NotificationType.Information;
+                        NavigateToLogInOnPanelClose = true;
+                    }
+                    else
+                    {
+                        NotificationType = Notifications.NotificationType.Error;
+                    }
+
+                    NotificationMessage = response.result;
                 }
                 else
                 {
                     NotificationType = Notifications.NotificationType.Error;
+                    if(response.result != null)
+                        NotificationMessage = response.result;
+                    else
+                        NotificationMessage = "Internal server error";
                 }
-
-                NotificationMessage = message_string;
             }
             else
             {
