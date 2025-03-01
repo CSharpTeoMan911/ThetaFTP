@@ -13,129 +13,88 @@ namespace ThetaFTP.Shared.Controllers
         [HttpDelete("delete")]
         public async Task<ActionResult?> Delete([FromQuery] FileOperationMetadata? query, [FromBody] Stream? body)
         {
-            string? result = "Internal server error";
+            PayloadModel? serverPayload = new PayloadModel();
 
-            string payload = String.Empty;
-
-            string? log_in_key_validation_result = "Internal server error";
-
-            if(Shared.configurations != null)
-                if (!Shared.configurations.use_firebase)
-                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
-                else
-                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
-
-
-            if (log_in_key_validation_result != "Internal server error")
+            try
             {
-                if (log_in_key_validation_result != "Invalid log in session key")
+                if (Shared.configurations != null && query != null)
                 {
-                    if (log_in_key_validation_result != "Log in session key expired")
-                    {
-                        if (log_in_key_validation_result != "Log in session not approved")
-                        {
-                            if (query != null)
-                            {
-                                long file_size = 0;
-                                if (query != null)
-                                    file_size = query.file_length;
-
-                                FtpModel ftpModel = new FtpModel()
-                                {
-                                    email = log_in_key_validation_result,
-                                    file_name = query?.file_name,
-                                    path = query?.path,
-                                    operation_cancellation = HttpContext.RequestAborted,
-                                    size = file_size
-                                };
-
-                                result = await Shared.database_ftp.Delete(ftpModel);
-
-                                return Ok(result);
-                            }
-                            else
-                            {
-                                return Ok(result);
-                            }
-                        }
-                        else
-                        {
-                            return Ok(log_in_key_validation_result);
-                        }
-                    }
+                    if (!Shared.configurations.use_firebase)
+                        serverPayload = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
                     else
+                        serverPayload = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
+
+                    if (serverPayload?.StatusCode == System.Net.HttpStatusCode.OK && serverPayload?.payload?.GetType() == typeof(string))
                     {
-                        return Ok(log_in_key_validation_result);
+                        long file_size = 0;
+                        if (query != null)
+                            file_size = query.file_length;
+
+                        FtpModel ftpModel = new FtpModel()
+                        {
+                            email = (string)serverPayload.payload,
+                            file_name = query?.file_name,
+                            path = query?.path,
+                            operation_cancellation = HttpContext.RequestAborted,
+                            size = file_size
+                        };
+
+                        serverPayload = await Shared.database_ftp.Delete(ftpModel);
                     }
+                }
+
+                if (serverPayload?.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    return Ok(serverPayload);
                 }
                 else
                 {
-                    return Ok(log_in_key_validation_result);
+                    return StatusCode(500, serverPayload);
                 }
             }
-            else
+            catch
             {
-                return Ok(log_in_key_validation_result);
+                return StatusCode(500, serverPayload);
             }
         }
 
         [HttpGet("get")]
         public async Task<Stream?> GetFile([FromQuery] FileOperationMetadata? query, string? body)
         {
-            string? result = "Internal server error";
-
+            PayloadModel? payloadModel = new PayloadModel();
             Stream? stream = null;
 
-            string? log_in_key_validation_result = "Internal server error";
-
-            if (Shared.configurations != null)
-                if (!Shared.configurations.use_firebase)
-                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
-                else
-                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
-
-            if (log_in_key_validation_result != "Internal server error")
+            try
             {
-                if (log_in_key_validation_result != "Invalid log in session key")
+                if (Shared.configurations != null)
                 {
-                    if (log_in_key_validation_result != "Log in session key expired")
+                    if (!Shared.configurations.use_firebase)
+                        payloadModel = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
+                    else
+                        payloadModel = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
+
+                    if (query != null && payloadModel?.StatusCode == System.Net.HttpStatusCode.OK && payloadModel?.payload?.GetType() == typeof(string))
                     {
-                        if (log_in_key_validation_result != "Log in session not approved")
+                        FtpModel ftpModel = new FtpModel()
                         {
-                            if (query != null)
-                            {
-                                FtpModel ftpModel = new FtpModel()
-                                {
-                                    email = log_in_key_validation_result,
-                                    file_name = query.file_name,
-                                    path = query.path,
-                                    size = query.file_length,
-                                    operation_cancellation = HttpContext.RequestAborted
-                                };
+                            email = (string)payloadModel.payload,
+                            file_name = query.file_name,
+                            path = query.path,
+                            size = query.file_length,
+                            operation_cancellation = HttpContext.RequestAborted
+                        };
 
-                                result = await Shared.database_ftp.Get(ftpModel);
+                        payloadModel = await Shared.database_ftp.Get(ftpModel);
 
-                                if (result != null)
-                                {
-                                    if (result != "Internal server error")
-                                    {
-                                        if (result != "Invalid file name")
-                                        {
-                                            if (result != "Invalid path")
-                                            {
-                                                if (result != "File size exceeds 500 MB")
-                                                {
-                                                    stream = System.IO.File.OpenRead(result);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
+                        if (payloadModel?.StatusCode == System.Net.HttpStatusCode.OK)
+                        {
+                            if (payloadModel?.payload?.GetType() == typeof(string))
+                                stream = System.IO.File.OpenRead((string)payloadModel.payload);
                         }
                     }
                 }
             }
+            catch { }
 
             return stream;
         }
@@ -143,57 +102,39 @@ namespace ThetaFTP.Shared.Controllers
         [HttpGet("get-files")]
         public async Task<ActionResult?> Get([FromQuery] Metadata? query, string? body)
         {
-            string? result = "Internal server error";
+            PayloadModel? serverPayload = new PayloadModel();
 
-            string payload = String.Empty;
-
-            string? log_in_key_validation_result = "Internal server error";
-
-            if (Shared.configurations != null)
-                if (!Shared.configurations.use_firebase)
-                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
-                else
-                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
-
-            if (log_in_key_validation_result != "Internal server error")
+            try
             {
-                if (log_in_key_validation_result != "Invalid log in session key")
+
+                if (Shared.configurations != null)
                 {
-                    if (log_in_key_validation_result != "Log in session key expired")
-                    {
-                        if (log_in_key_validation_result != "Log in session not approved")
-                        {
-                            if (query != null)
-                            {
-                                query.email = log_in_key_validation_result;
-
-                                result = await Shared.database_ftp.GetInfo(query);
-
-                                return Ok(result);
-                            }
-                            else
-                            {
-                                return Ok(result);
-                            }
-                        }
-                        else
-                        {
-                            return Ok(log_in_key_validation_result);
-                        }
-                    }
+                    if (!Shared.configurations.use_firebase)
+                        serverPayload = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
                     else
+                        serverPayload = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
+
+                    if (query != null && serverPayload?.StatusCode == System.Net.HttpStatusCode.OK && serverPayload?.payload?.GetType() == typeof(string))
                     {
-                        return Ok(log_in_key_validation_result);
+                        query.email = (string)serverPayload.payload;
+
+                        serverPayload = await Shared.database_ftp.GetInfo(query);
                     }
+                }
+
+
+                if (serverPayload?.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    return Ok(serverPayload);
                 }
                 else
                 {
-                    return Ok(log_in_key_validation_result);
+                    return StatusCode(500, serverPayload);
                 }
             }
-            else
+            catch
             {
-                return Ok(log_in_key_validation_result);
+                return StatusCode(500, serverPayload);
             }
         }
 
@@ -201,202 +142,136 @@ namespace ThetaFTP.Shared.Controllers
         [HttpPost("insert")]
         public async Task<ActionResult?> Insert([FromQuery] FileOperationMetadata? query, [FromBody] Stream? body)
         {
-            string? result = "Internal server error";
+            PayloadModel? serverPayload = new PayloadModel();
 
-            string payload = String.Empty;
-
-            string? log_in_key_validation_result = "Internal server error";
-
-            if (Shared.configurations != null)
-                if (!Shared.configurations.use_firebase)
-                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
-                else
-                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
-
-            if (body != null)
+            try
             {
-                if (query != null)
+                if (Shared.configurations != null)
                 {
-                    if (log_in_key_validation_result != "Internal server error")
-                    {
-                        if (log_in_key_validation_result != "Invalid log in session key")
-                        {
-                            if (log_in_key_validation_result != "Log in session key expired")
-                            {
-                                if (log_in_key_validation_result != "Log in session not approved")
-                                {
-                                    long file_size = 0;
-                                    if (query != null)
-                                        file_size = query.file_length;
-
-                                    FtpModel ftpModel = new FtpModel()
-                                    {
-                                        email = log_in_key_validation_result,
-                                        file_name = query?.file_name,
-                                        path = query?.path,
-                                        fileStream = body,
-                                        operation_cancellation = HttpContext.RequestAborted,
-                                        size = file_size
-                                    };
-
-                                    result = await Shared.database_ftp.Insert(ftpModel);
-                                    return Ok(result);
-                                }
-                                else
-                                {
-                                    return Ok(log_in_key_validation_result);
-                                }
-                            }
-                            else
-                            {
-                                return Ok(log_in_key_validation_result);
-                            }
-                        }
-                        else
-                        {
-                            return Ok(log_in_key_validation_result);
-                        }
-                    }
+                    if (!Shared.configurations.use_firebase)
+                        serverPayload = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
                     else
+                        serverPayload = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
+
+                    if (query != null && serverPayload?.StatusCode == System.Net.HttpStatusCode.OK && serverPayload?.payload?.GetType() == typeof(string))
                     {
-                        return Ok(log_in_key_validation_result);
+                        long file_size = 0;
+                        if (query != null)
+                            file_size = query.file_length;
+
+                        FtpModel ftpModel = new FtpModel()
+                        {
+                            email = (string)serverPayload.payload,
+                            file_name = query?.file_name,
+                            path = query?.path,
+                            fileStream = body,
+                            operation_cancellation = HttpContext.RequestAborted,
+                            size = file_size
+                        };
+
+                        serverPayload = await Shared.database_ftp.Insert(ftpModel);
                     }
+                }
+
+                if (serverPayload?.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    return Ok(serverPayload);
                 }
                 else
                 {
-                    return Ok(result);
+                    return StatusCode(500, serverPayload);
                 }
             }
-            else
+            catch
             {
-                return Ok(result);
+                return StatusCode(500, serverPayload);
             }
         }
 
         [HttpPut("relocate")]
         public async Task<ActionResult?> Update([FromQuery] FileOperationMetadata? query, [FromBody] Stream? body)
         {
-            string? result = "Internal server error";
+            PayloadModel? serverPayload = new PayloadModel();
 
-            string payload = String.Empty;
-
-            string? log_in_key_validation_result = "Internal server error";
-
-            if (Shared.configurations != null)
-                if (!Shared.configurations.use_firebase)
-                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
-                else
-                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
-
-            if (query != null)
+            try
             {
-                if (log_in_key_validation_result != "Internal server error")
+                if (Shared.configurations != null)
                 {
-                    if (log_in_key_validation_result != "Invalid log in session key")
-                    {
-                        if (log_in_key_validation_result != "Log in session key expired")
-                        {
-                            if (log_in_key_validation_result != "Log in session not approved")
-                            {
-                                FtpModel ftpModel = new FtpModel()
-                                {
-                                    email = log_in_key_validation_result,
-                                    file_name = query?.file_name,
-                                    path = query?.path,
-                                    new_path = query?.new_path,
-                                };
-
-                                result = await Shared.database_ftp.Update(ftpModel);
-
-                                return Ok(result);
-                            }
-                            else
-                            {
-                                return Ok(log_in_key_validation_result);
-                            }
-                        }
-                        else
-                        {
-                            return Ok(log_in_key_validation_result);
-                        }
-                    }
+                    if (!Shared.configurations.use_firebase)
+                        serverPayload = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
                     else
+                        serverPayload = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
+
+                    if (query != null && serverPayload?.StatusCode == System.Net.HttpStatusCode.OK && serverPayload?.payload?.GetType() == typeof(string))
                     {
-                        return Ok(log_in_key_validation_result);
+                        FtpModel ftpModel = new FtpModel()
+                        {
+                            email = (string)serverPayload.payload,
+                            file_name = query?.file_name,
+                            path = query?.path,
+                            new_path = query?.new_path,
+                        };
+
+                        serverPayload = await Shared.database_ftp.Update(ftpModel);
                     }
+                }
+
+                if (serverPayload?.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    return Ok(serverPayload);
                 }
                 else
                 {
-                    return Ok(log_in_key_validation_result);
+                    return StatusCode(500, serverPayload);
                 }
             }
-            else
+            catch
             {
-                return Ok(result);
+                return StatusCode(500, serverPayload);
             }
         }
 
         [HttpPut("rename")]
         public async Task<ActionResult?> UpdateName([FromQuery] RenameModel? query, [FromBody] Stream? body)
         {
-            string? result = "Internal server error";
+            PayloadModel? serverPayload = new PayloadModel();
 
-            string payload = String.Empty;
-
-            string? log_in_key_validation_result = "Internal server error";
-
-            if (Shared.configurations != null)
-                if (!Shared.configurations.use_firebase)
-                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
-                else
-                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
-
-            if (query != null)
+            try
             {
-                if (log_in_key_validation_result != "Internal server error")
+                if (Shared.configurations != null)
                 {
-                    if (log_in_key_validation_result != "Invalid log in session key")
-                    {
-                        if (log_in_key_validation_result != "Log in session key expired")
-                        {
-                            if (log_in_key_validation_result != "Log in session not approved")
-                            {
-                                FtpModel ftpModel = new FtpModel()
-                                {
-                                    email = log_in_key_validation_result,
-                                    file_name = query?.file_name,
-                                    new_name = query?.new_name,
-                                    path = query?.path,
-                                    operation_cancellation = HttpContext.RequestAborted,
-                                };
-
-                                result = await Shared.database_ftp.Rename(ftpModel);
-
-                                return Ok(result);
-                            }
-                            else
-                            {
-                                return Ok(log_in_key_validation_result);
-                            }
-                        }
-                        else
-                        {
-                            return Ok(log_in_key_validation_result);
-                        }
-                    }
+                    if (!Shared.configurations.use_firebase)
+                        serverPayload = await Shared.database_validation.ValidateLogInSessionKey(query?.key);
                     else
+                        serverPayload = await Shared.firebase_database_validation.ValidateLogInSessionKey(query?.key);
+
+                    if (query != null && serverPayload?.StatusCode == System.Net.HttpStatusCode.OK && serverPayload?.payload?.GetType() == typeof(string))
                     {
-                        return Ok(log_in_key_validation_result);
+                        FtpModel ftpModel = new FtpModel()
+                        {
+                            email = (string)serverPayload.payload,
+                            file_name = query?.file_name,
+                            new_name = query?.new_name,
+                            path = query?.path,
+                            operation_cancellation = HttpContext.RequestAborted,
+                        };
+
+                        serverPayload = await Shared.database_ftp.Rename(ftpModel);
                     }
+                }
+
+                if (serverPayload?.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    return Ok(serverPayload);
                 }
                 else
                 {
-                    return Ok(log_in_key_validation_result);
+                    return StatusCode(500, serverPayload);
                 }
             }
-            else
+            catch
             {
-                return Ok(result);
+                return StatusCode(500, serverPayload);
             }
         }
     }

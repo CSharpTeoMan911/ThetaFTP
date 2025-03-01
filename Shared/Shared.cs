@@ -14,11 +14,14 @@ namespace ThetaFTP.Shared
         public static ServerConfigModel? configurations { get; set; }
         public static Classes.MySql mysql= new Classes.MySql();
         public static FirebaseDatabase firebase = new FirebaseDatabase();
-        public static CRUD_Strategy<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string> firebase_database_auth = new CRUD_Strategy<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string>(new FirebaseDatabaseAuthenticationController());
-        //public static CRUD_Payload_Strategy<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string> database_auth = new CRUD_Payload_Strategy<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string>(new DatabaseAuthenticationController());
-        public static CRUD_Strategy<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string> database_auth = new CRUD_Strategy<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string>(new DatabaseAuthenticationController());
-        public static CRUD_Strategy<FtpModel, Metadata, FtpModel, FtpModel, FtpModel, FtpModel> database_ftp = new CRUD_Strategy<FtpModel, Metadata, FtpModel, FtpModel, FtpModel, FtpModel>(new FtpDatabaseController());
-        public static CRUD_Strategy<FtpDirectoryModel, Metadata, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel> database_directory_ftp = new CRUD_Strategy<FtpDirectoryModel, Metadata, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel>(new FtpDirectoryDatabaseController());
+
+        public static CRUD_Payload_Strategy<FtpModel, Metadata, FtpModel, FtpModel, FtpModel, FtpModel> database_ftp = new CRUD_Payload_Strategy<FtpModel, Metadata, FtpModel, FtpModel, FtpModel, FtpModel>(new FtpDatabaseController());
+        public static CRUD_Payload_Strategy<FtpDirectoryModel, Metadata, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel> database_directory_ftp = new CRUD_Payload_Strategy<FtpDirectoryModel, Metadata, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel>(new FtpDirectoryDatabaseController());
+
+        public static CRUD_Auth_Strategy<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string> firebase_database_auth = new CRUD_Auth_Strategy<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string>(new FirebaseDatabaseAuthenticationController());
+        public static CRUD_Auth_Strategy<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string> database_auth = new CRUD_Auth_Strategy<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string>(new DatabaseAuthenticationController());
+
+        
         public static DatabaseServerFunctionsController databaseServerFunctions = new DatabaseServerFunctionsController();
         public static FirebaseDatabaseServerFunctionsController fireabseDatabaseServerFunctions = new FirebaseDatabaseServerFunctionsController();
         public static DatabaseValidationController database_validation = new DatabaseValidationController();

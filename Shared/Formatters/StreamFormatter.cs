@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Formatters;
+using System.IO.Compression;
 
 namespace ThetaFTP.Shared.Formatters
 {
@@ -11,7 +12,7 @@ namespace ThetaFTP.Shared.Formatters
 
         protected override bool CanReadType(Type type)
         {
-            return typeof(Stream) == type;
+            return typeof(Stream) == type || typeof(GZipStream) == type;
         }
 
         public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)

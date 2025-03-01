@@ -42,13 +42,13 @@
     [Parameter] public ClosePanel? closePanel { get; set; }
     public void Close() => closePanel?.Invoke();
 
-    public delegate void FileManipulation(string? result);
+    public delegate void FileManipulation(PayloadModel? result);
     [Parameter] public FileManipulation? fileManipulation { get; set; }
     public void Manipulation() => fileManipulation?.Invoke(operation_result);
 
     [Parameter] public string? Path { get; set; }
 
-    private string? operation_result { get; set; }
+    private PayloadModel? operation_result { get; set; }
 
     private bool Loaded { get; set; }
 
@@ -115,8 +115,9 @@
 
             HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
             client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
             HttpResponseMessage response = await client.PutAsync(formatted_url, null);
-            operation_result = await response.Content.ReadAsStringAsync();
+            operation_result = await response.Content.ReadAsAsync<PayloadModel>();
             Manipulation();
         }
     }

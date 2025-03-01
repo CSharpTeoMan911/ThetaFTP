@@ -1,9 +1,8 @@
-﻿using Org.BouncyCastle.Tls;
-using ThetaFTP.Shared.Models;
+﻿using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Classes
 {
-    public interface CRUD_Interface_Payload<InsertType, GetInfoType, GetType, UpdateType, RenameType, DeleteType>
+    public interface CRUD_Auth_Interface<InsertType, GetInfoType, GetType, UpdateType, RenameType, DeleteType>
     {
         public Task<PayloadModel?> GetInfo(GetInfoType? value);
         public Task<PayloadModel?> Get(GetType? value);
