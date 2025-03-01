@@ -7,19 +7,15 @@ using Serilog;
 using System.Data.Common;
 using System.Text;
 using ThetaFTP.Shared.Classes;
-using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Controllers
 {
     public class FirebaseDatabaseValidationController
     {
-        public async Task<string?> ValidateAccount(ValidationModel? value)
+        public async Task<PayloadModel?> ValidateAccount(ValidationModel? value)
         {
-
-            string? response = String.Empty;
-            ServerPayloadModel serverPayload = new ServerPayloadModel();
-            serverPayload.response_message = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
             try
             {
@@ -62,54 +58,52 @@ namespace ThetaFTP.Shared.Controllers
 
                                         await client.Child("Log_In_Sessions").PostAsync(firebaseLogInSessionModel, false);
 
-                                        serverPayload.response_message = "Account authorised";
-                                        serverPayload.content = log_in_session_key;
+                                        payloadModel.result = "Account authorised";
+                                        payloadModel.payload= log_in_session_key;
+                                        payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                     }
                                     else
                                     {
-                                        serverPayload.response_message = "Invalid code";
+                                        payloadModel.result = "Invalid code";
                                     }
                                 }
                                 else
                                 {
-                                    serverPayload.response_message = "Invalid code";
+                                    payloadModel.result = "Invalid code";
                                 }
                             }
                             else
                             {
-                                serverPayload.response_message = "Internal server error";
+                                payloadModel.result = "Internal server error";
                             }
                         }
                         else
                         {
-                            serverPayload.response_message = "Internal server error";
+                            payloadModel.result = "Internal server error";
                         }
                     }
                     else
                     {
-                        serverPayload.response_message = "Invalid code";
+                        payloadModel.result = "Invalid code";
                     }
                 }
                 else
                 {
-                    serverPayload.response_message = "Invalid email";
+                    payloadModel.result = "Invalid email";
                 }
             }
             catch (Exception e)
             {
                 Log.Error(e, "Account validation API error");
-                serverPayload.response_message = "Internal server error";
+                payloadModel.result = "Internal server error";
             }
 
-            response = await JsonFormatter.JsonSerialiser(serverPayload);
-            return response;
+            return payloadModel;
         }
 
-        public async Task<string?> ValidateLogInSession(ValidationModel? value)
+        public async Task<PayloadModel?> ValidateLogInSession(ValidationModel? value)
         {
-            string? response = String.Empty;
-            ServerPayloadModel serverPayload = new ServerPayloadModel();
-            serverPayload.response_message = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
             try
             {
@@ -132,46 +126,46 @@ namespace ThetaFTP.Shared.Controllers
                                 if (deserialised_log_in_session?.Keys.Count() > 0)
                                 {
                                     await client.Child("Log_In_Sessions_Waiting_For_Approval").Child(deserialised_log_in_session?.Keys.ElementAt(0)).DeleteAsync();
-                                    serverPayload.response_message = "Authentication successful";
+                                    payloadModel.result = "Authentication successful";
+                                    payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                 }
                                 else
                                 {
-                                    serverPayload.response_message = "Invalid code";
+                                    payloadModel.result = "Invalid code";
                                 }
                             }
                             else
                             {
-                                serverPayload.response_message = "Internal server error";
+                                payloadModel.result = "Internal server error";
                             }
                         }
                         else
                         {
-                            serverPayload.response_message = "Internal server error";
+                            payloadModel.result = "Internal server error";
                         }
                     }
                     else
                     {
-                        serverPayload.response_message = "Invalid code";
+                        payloadModel.result = "Invalid code";
                     }
                 }
                 else
                 {
-                    serverPayload.response_message = "Invalid email";
+                    payloadModel.result = "Invalid email";
                 }
             }
             catch (Exception e)
             {
                 Log.Error(e, "Log in session validation API error");
-                serverPayload.response_message = "Internal server error";
+                payloadModel.result = "Internal server error";
             }
 
-            response = await JsonFormatter.JsonSerialiser(serverPayload);
-            return response;
+            return payloadModel;
         }
 
-        public async Task<string> ValidateLogInSessionKey(string? code)
+        public async Task<PayloadModel?> ValidateLogInSessionKey(string? code)
         {
-            string? response = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
             try
             {
@@ -201,56 +195,60 @@ namespace ThetaFTP.Shared.Controllers
 
                                         if (deserialised_log_in_session_waiting_for_approval?.Keys.Count() == 0)
                                         {
-                                            response = utf8_email;
+                                            payloadModel.payload = utf8_email;
+                                            payloadModel.result = "Log in session approved";
+                                            payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                         }
                                         else
                                         {
-                                            response = "Log in session not approved";
+                                            payloadModel.payload = "Log in session not approved";
                                         }
                                     }
                                     else
                                     {
-                                        response = utf8_email;
+                                        payloadModel.payload = utf8_email;
+                                        payloadModel.result = "Log in session approved";
+                                        payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                     }
                                 }
                                 else
                                 {
-                                    response = "Log in session key expired";
+                                    payloadModel.result = "Log in session key expired";
                                 }
                             }
                             else
                             {
-                                response = "Invalid log in session key";
+                                payloadModel.result = "Invalid log in session key";
                             }
 
                         }
                         else
                         {
-                            response = "Internal server error";
+                            payloadModel.result = "Internal server error";
                         }
                     }
                     else
                     {
-                        response = "Internal server error";
+                        payloadModel.result = "Internal server error";
                     }
                 }
                 else
                 {
-                    response = "Invalid log in session key";
+                    payloadModel.result = "Invalid log in session key";
                 }
             }
             catch (Exception e)
             {
                 Log.Error(e, "Log in session key validation API error");
-                response = "Internal server error";
+                payloadModel.result = "Internal server error";
             }
 
-            return response;
+            return payloadModel;
         }
 
-        public async Task<string?> DeleteLogInSession(string? code)
+        public async Task<PayloadModel?> DeleteLogInSession(string? code)
         {
-            string? response = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
             try
             {
@@ -273,42 +271,44 @@ namespace ThetaFTP.Shared.Controllers
                                 if (deserialised_log_in_session?.Keys.Count() > 0)
                                 {
                                     await client.Child("Log_In_Sessions").Child(deserialised_log_in_session.Keys.ElementAt(0)).DeleteAsync();
+                                    payloadModel.result = "Log out successful";
+                                    payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                 }
                                 else
                                 {
-                                    response = "Invalid code";
+                                    payloadModel.result = "Invalid code";
                                 }
                             }
                             catch { }
                         }
                         else
                         {
-                            response = "Internal server error";
+                            payloadModel.result = "Internal server error";
                         }
                     }
                     else
                     {
-                        response = "Internal server error";
+                        payloadModel.result = "Internal server error";
                     }
                 }
                 else
                 {
-                    response = "Invalid code";
+                    payloadModel.result = "Invalid code";
                 }
             }
             catch (Exception e)
             {
                 Log.Error(e, "Account log out API error");
-                response = "Internal server error";
+                payloadModel.result = "Internal server error";
             }
 
-            return response;
+            return payloadModel;
         }
 
 
-        public async Task<string?> ValidateAccountDeletion(string? code)
+        public async Task<PayloadModel?> ValidateAccountDeletion(string? code)
         {
-            string? response = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
             try
             {
@@ -335,51 +335,51 @@ namespace ThetaFTP.Shared.Controllers
 
                                     if (Convert.ToInt64(DateTime.Now.ToString("yyyyMMddHHmm")) < account.expiry_date)
                                     {
-                                        response = await DeleteAccount(account?.email);
+                                        return await DeleteAccount(account?.email);
                                     }
                                     else
                                     {
-                                        response = "Account deletion code expired";
+                                        payloadModel.result = "Account deletion code expired";
                                     }
                                 }
                                 else
                                 {
-                                    response = "Invalid code";
+                                    payloadModel.result = "Invalid code";
                                 }
                             }
                             catch
                             {
-                                response = "Internal server error";
+                                payloadModel.result = "Internal server error";
                             }
                         }
                         else
                         {
-                            response = "Internal server error";
+                            payloadModel.result = "Internal server error";
                         }
                     }
                     else
                     {
-                        response = "Internal server error";
+                        payloadModel.result = "Internal server error";
                     }
                 }
                 else
                 {
-                    response = "Invalid code";
+                    payloadModel.result = "Invalid code";
                 }
             }
             catch (Exception e)
             {
                 Log.Error(e, "Account deletion validation API error");
-                response = "Internal server error";
+                payloadModel.result = "Internal server error";
             }
 
-            return response;
+            return payloadModel;
         }
 
 
-        private async Task<string> DeleteAccount(string? base64_email)
+        private async Task<PayloadModel?> DeleteAccount(string? base64_email)
         {
-            string? response = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
             try
             {
@@ -441,31 +441,32 @@ namespace ThetaFTP.Shared.Controllers
                         for (int i = 0; i < deserialised_extracted_accounts_waiting_for_password_change?.Keys.Count(); i++)
                             await client.Child("Accounts_Waiting_For_Password_Change").Child(deserialised_extracted_accounts_waiting_for_password_change.Keys.ElementAt(i)).DeleteAsync();
 
-                        response = "Account deletion successful";
+                        payloadModel.result = "Account deletion successful";
+                        payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                     }
                     else
                     {
-                        response = "Account does not exists";
+                        payloadModel.result = "Account does not exists";
                     }
                 }
                 else
                 {
-                    response = "Internal server error";
+                    payloadModel.result = "Internal server error";
                 }
             }
             catch (Exception e)
             {
                 Log.Error(e, "Account deletion validation API error");
-                response = "Internal server error";
+                payloadModel.result = "Internal server error";
             }
 
-            return response;
+            return payloadModel;
         }
 
 
-        public async Task<string> ValidateAccountUpdate(PasswordUpdateValidationModel? value)
+        public async Task<PayloadModel?> ValidateAccountUpdate(PasswordUpdateValidationModel? value)
         {
-            string? response = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
             try
             {
@@ -500,61 +501,64 @@ namespace ThetaFTP.Shared.Controllers
 
                                             if (deserialised_credentials?.Keys.Count() == 1)
                                             {
-                                                string base64_password = await Base64Formatter.FromUtf8ToBase64(value.new_password);
+                                                string hashed_password = await Shared.sha512.Hash(value.new_password);
+                                                string base64_password = await Base64Formatter.FromUtf8ToBase64(hashed_password);
+
                                                 FirebaseCredentialModel credentials = deserialised_credentials.Values.ElementAt(0);
                                                 credentials.password = base64_password;
 
                                                 await client.Child("Credentials").Child(deserialised_credentials?.Keys.ElementAt(0)).PutAsync(credentials);
 
-                                                response = "Password update successful";
+                                                payloadModel.result = "Password update successful";
+                                                payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                             }
                                             else
                                             {
-                                                response = "Account does not exist";
+                                                payloadModel.result = "Account does not exist";
                                             }
                                         }
                                         else
                                         {
-                                            response = "Password update code expired";
+                                            payloadModel.result = "Password update code expired";
                                         }
                                     }
                                     else
                                     {
-                                        response = "Invalid code";
+                                        payloadModel.result = "Invalid code";
                                     }
                                 }
                                 else
                                 {
-                                    response = "Internal server error";
+                                    payloadModel.result = "Internal server error";
                                 }
                             }
                             else
                             {
-                                response = "Internal server error";
+                                payloadModel.result = "Internal server error";
                             }
                         }
                         else
                         {
-                            response = "Invalid password";
+                            payloadModel.result = "Invalid password";
                         }
                     }
                     else
                     {
-                        response = "Invalid code";
+                        payloadModel.result = "Invalid code";
                     }
                 }
                 else
                 {
-                    response = "Internal server error";
+                    payloadModel.result = "Internal server error";
                 }
             }
             catch (Exception e)
             {
                 Log.Error(e, "Password update validation API error");
-                response = "Internal server error";
+                payloadModel.result = "Internal server error";
             }
 
-            return response;
+            return payloadModel;
         }
     }
 }

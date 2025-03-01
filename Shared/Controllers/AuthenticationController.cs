@@ -2,179 +2,163 @@
 using Microsoft.AspNetCore.Mvc;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Models;
+using static Google.Rpc.Context.AttributeContext.Types;
 
 
 namespace ThetaFTP.Shared.Controllers
 {
     [Route("/authentication")]
     [ApiController]
-    public class AuthenticationController : Controller, CRUD_Interface<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string>
+    public class AuthenticationController : Controller, CRUD_Auth_Api_Interface<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string>
     {
         [HttpDelete("delete")]
-        public async Task<string?> Delete([FromQuery] string? value)
+        public async Task<ActionResult?> Delete([FromQuery] string? value)
         {
-            string? result = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
-            string? log_in_key_validation_result = "Internal server error";
 
             if (Shared.configurations != null)
-                if (!Shared.configurations.use_firebase)
-                    log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(value);
-                else
-                    log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(value);
-
-
-            if (log_in_key_validation_result != "Internal server error")
             {
-                if (log_in_key_validation_result != "Invalid log in session key")
+                if (!Shared.configurations.use_firebase)
+                    payloadModel = await Shared.database_validation.ValidateLogInSessionKey(value);
+                else
+                    payloadModel = await Shared.firebase_database_validation.ValidateLogInSessionKey(value);
+
+                if (payloadModel?.StatusCode == System.Net.HttpStatusCode.OK && payloadModel?.payload?.GetType() == typeof(string))
                 {
-                    if (log_in_key_validation_result != "Log in session key expired")
+                    if (!Shared.configurations.use_firebase)
                     {
-                        if (log_in_key_validation_result != "Log in session not approved")
-                        {
-
-                            if (Shared.configurations != null)
-                                if (!Shared.configurations.use_firebase)
-                                {
-                                    result = await Shared.database_auth.Delete(log_in_key_validation_result);
-                                }
-                                else
-                                {
-                                    result = await Shared.firebase_database_auth.Delete(log_in_key_validation_result);
-                                }
-
-                            return result;
-                        }
-                        else
-                        {
-                            return log_in_key_validation_result;
-                        }
+                        payloadModel = await Shared.database_auth.Delete((string)payloadModel.payload);
                     }
                     else
                     {
-                        return log_in_key_validation_result;
+                        payloadModel = await Shared.firebase_database_auth.Delete((string)payloadModel.payload);
                     }
                 }
-                else
-                {
-                    return log_in_key_validation_result;
-                }
+            }
+
+            if (payloadModel?.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return Ok(payloadModel);
             }
             else
             {
-                return log_in_key_validation_result;
+                return StatusCode(500, payloadModel);
             }
         }
 
         [HttpGet("get")]
-        public async Task<string?> Get([FromQuery] AuthenticationModel? value)
+        public async Task<ActionResult?> Get([FromQuery] AuthenticationModel? value)
         {
-            string? response = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
             if (Shared.configurations != null)
                 if (!Shared.configurations.use_firebase)
                 {
-                    response = await Shared.database_auth.Get(value);
+                    payloadModel = await Shared.database_auth.Get(value);
                 }
                 else
                 {
-                    response = await Shared.firebase_database_auth.Get(value);
+                    payloadModel = await Shared.firebase_database_auth.Get(value);
                 }
-            return response;
+
+            if (payloadModel?.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return Ok(payloadModel);
+            }
+            else
+            {
+                return StatusCode(500, payloadModel);
+            }
         }
 
         [HttpGet("get-info")]
-        public async Task<string?> GetInfo([FromQuery]string? value)
+        public async Task<ActionResult?> GetInfo([FromQuery]string? value)
         {
-            string? result = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
             if (Shared.configurations != null)
                 if (!Shared.configurations.use_firebase)
-                    result = await Shared.database_validation.ValidateLogInSessionKey(value);
+                    payloadModel = await Shared.database_validation.ValidateLogInSessionKey(value);
                 else
-                    result = await Shared.firebase_database_validation.ValidateLogInSessionKey(value);
+                    payloadModel = await Shared.firebase_database_validation.ValidateLogInSessionKey(value);
 
-            return result;
+            if (payloadModel?.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return Ok(payloadModel);
+            }
+            else
+            {
+                return StatusCode(500, payloadModel);
+            }
         }
 
         [HttpPost("insert")]
-        public async Task<string?> Insert([FromQuery] AuthenticationModel? value)
+        public async Task<ActionResult?> Insert([FromQuery] AuthenticationModel? value)
         {
-            string? response = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
             if (Shared.configurations != null)
                 if (!Shared.configurations.use_firebase)
                 {
-                    response = await Shared.database_auth.Insert(value);
+                    payloadModel = await Shared.database_auth.Insert(value);
                 }
                 else
                 {
-                    response = await Shared.firebase_database_auth.Insert(value);
+                    payloadModel = await Shared.firebase_database_auth.Insert(value);
                 }
-            return response;
+
+            if (payloadModel?.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return Ok(payloadModel);
+            }
+            else
+            {
+                return StatusCode(500, payloadModel);
+            }
         }
 
         [HttpPut("rename")]
-        public Task<string?> Rename(string? value)
+        public Task<ActionResult?> Rename(string? value)
         {
             throw new NotImplementedException();
         }
 
         [HttpPut("update")]
-        public async Task<string?> Update([FromQuery] PasswordUpdateModel? value)
+        public async Task<ActionResult?> Update([FromQuery] PasswordUpdateModel? value)
         {
-            string? result = "Internal server error";
+            PayloadModel? payloadModel = new PayloadModel();
 
-            string? log_in_key_validation_result = "Internal server error";
-
-            if (value != null)
-                if (Shared.configurations != null)
-                    if (!Shared.configurations.use_firebase)
-                        log_in_key_validation_result = await Shared.database_validation.ValidateLogInSessionKey(value.log_in_session_key);
-                    else
-                        log_in_key_validation_result = await Shared.firebase_database_validation.ValidateLogInSessionKey(value.log_in_session_key);
-
-            if (log_in_key_validation_result != "Internal server error")
+            if (value != null && Shared.configurations != null)
             {
-                if (log_in_key_validation_result != "Invalid log in session key")
-                {
-                    if (log_in_key_validation_result != "Log in session key expired")
-                    {
-                        if (log_in_key_validation_result != "Log in session not approved")
-                        {
-                            if(value != null)
-                                value.email = log_in_key_validation_result;
+                if (!Shared.configurations.use_firebase)
+                    payloadModel = await Shared.database_validation.ValidateLogInSessionKey(value.log_in_session_key);
+                else
+                    payloadModel = await Shared.firebase_database_validation.ValidateLogInSessionKey(value.log_in_session_key);
 
-                            if (Shared.configurations != null)
-                                if (!Shared.configurations.use_firebase)
-                                {
-                                    result = await Shared.database_auth.Update(value);
-                                }
-                                else
-                                {
-                                    result = await Shared.firebase_database_auth.Update(value);
-                                }
-                            return result;
-                        }
-                        else
-                        {
-                            return log_in_key_validation_result;
-                        }
+                if (payloadModel?.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    if (!Shared.configurations.use_firebase)
+                    {
+                        payloadModel = await Shared.database_auth.Update(value);
                     }
                     else
                     {
-                        return log_in_key_validation_result;
+                        payloadModel = await Shared.firebase_database_auth.Update(value);
                     }
                 }
-                else
-                {
-                    return log_in_key_validation_result;
-                }
+            }
+
+
+            if (payloadModel?.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return Ok(payloadModel);
             }
             else
             {
-                return log_in_key_validation_result;
+                return StatusCode(500, payloadModel);
             }
         }
+
     }
 }

@@ -8,11 +8,11 @@ using Serilog;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class DatabaseAuthenticationController : CRUD_Interface<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string>
+    public class DatabaseAuthenticationController : CRUD_Auth_Interface<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string>
     {
-        public async Task<string?> Delete(string? value)
+        public async Task<PayloadModel?> Delete(string? value)
         {
-            string? response = "Internal server error";
+            PayloadModel payloadModel = new PayloadModel();
 
             if (value != null)
             {
@@ -40,12 +40,13 @@ namespace ThetaFTP.Shared.Controllers
                                     account_waiting_for_deletion_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddMinutes(2));
                                     await account_waiting_for_deletion_command.ExecuteNonQueryAsync();
 
-                                    response = "Check the code sent to your email to approve the account deletion";
+                                    payloadModel.result = "Check the code sent to your email to approve the account deletion";
+                                    payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                 }
                                 catch(Exception e)
                                 {
                                     Log.Error(e, "Deletion code insertion API error");
-                                    response = "Internal server error";
+                                    payloadModel.result = "Internal server error";
                                 }
                                 finally
                                 {
@@ -54,12 +55,12 @@ namespace ThetaFTP.Shared.Controllers
                             }
                             else
                             {
-                                response = "Internal server error";
+                                payloadModel.result = "Internal server error";
                             }
                         }
                         else
                         {
-                            response = "Internal server error";
+                            payloadModel.result = "Internal server error";
                         }
                     }
                     else
@@ -79,12 +80,13 @@ namespace ThetaFTP.Shared.Controllers
                             account_deletion_command.Parameters.AddWithValue("Email", value);
                             await account_deletion_command.ExecuteNonQueryAsync();
 
-                            response = "Account deletion successful";
+                            payloadModel.result = "Account deletion successful";
+                            payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                         }
                         catch (Exception e)
                         {
                             Log.Error(e, "User account deletion API error");
-                            response = "Internal server error";
+                            payloadModel.result = "Internal server error";
                         }
                         finally
                         {
@@ -95,7 +97,7 @@ namespace ThetaFTP.Shared.Controllers
                 catch (Exception e)
                 {
                     Log.Error(e, "Account deletion API error");
-                    response = "Internal server error";
+                    payloadModel.result = "Internal server error";
                 }
                 finally
                 {
@@ -104,18 +106,15 @@ namespace ThetaFTP.Shared.Controllers
             }
             else
             {
-                response = "Internal server error";
+                payloadModel.result = "Internal server error";
             }
 
-            return response;
+            return payloadModel;
         }
 
-        public async Task<string?> Get(AuthenticationModel? value)
+        public async Task<PayloadModel?> Get(AuthenticationModel? value)
         {
-            string? response = String.Empty;
-
-            ServerPayloadModel serverPayload = new ServerPayloadModel();
-            serverPayload.response_message = "Internal server error";
+            PayloadModel payloadModel = new PayloadModel();
 
             if (value != null)
             {
@@ -159,7 +158,8 @@ namespace ThetaFTP.Shared.Controllers
                                                         {
                                                             if (await check_if_account_is_approved_command_reader.ReadAsync() == true)
                                                             {
-                                                                serverPayload.response_message = "Account not approved";
+                                                                payloadModel.result = "Account not approved";
+                                                                payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                                                 goto End;
                                                             }
 
@@ -168,7 +168,7 @@ namespace ThetaFTP.Shared.Controllers
                                                         catch (Exception e)
                                                         {
                                                             Log.Error(e, "User account approval checkup API error");
-                                                            response = "Internal server error";
+                                                            payloadModel.result = "Internal server error";
                                                         }
                                                         finally
                                                         {
@@ -178,7 +178,7 @@ namespace ThetaFTP.Shared.Controllers
                                                     catch (Exception e)
                                                     {
                                                         Log.Error(e, "User account approval checkup API error");
-                                                        response = "Internal server error";
+                                                        payloadModel.result = "Internal server error";
                                                     }
                                                     finally
                                                     {
@@ -216,8 +216,9 @@ namespace ThetaFTP.Shared.Controllers
 
                                                             if (smtps_operation_result == true)
                                                             {
-                                                                serverPayload.content = log_in_session_key;
-                                                                serverPayload.response_message = "Check the code sent to your email address to approve your log in session";
+                                                                payloadModel.payload = log_in_session_key;
+                                                                payloadModel.result = "Check the code sent to your email address to approve your log in session";
+                                                                payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                                             }
                                                             else
                                                             {
@@ -231,20 +232,20 @@ namespace ThetaFTP.Shared.Controllers
                                                                 catch (Exception e)
                                                                 {
                                                                     Log.Error(e, "Log in session deletion API error");
-                                                                    response = "Internal server error";
+                                                                    payloadModel.result = "Internal server error";
                                                                 }
                                                                 finally
                                                                 {
                                                                     await delete_log_in_session.DisposeAsync();
                                                                 }
 
-                                                                serverPayload.response_message = "Internal server error";
+                                                                payloadModel.result = "Internal server error";
                                                             }
                                                         }
                                                         catch (Exception e)
                                                         {
                                                             Log.Error(e, "Log in code insertion API error");
-                                                            response = "Internal server error";
+                                                            payloadModel.result = "Internal server error";
                                                         }
                                                         finally
                                                         {
@@ -253,14 +254,15 @@ namespace ThetaFTP.Shared.Controllers
                                                     }
                                                     else
                                                     {
-                                                        serverPayload.content = log_in_session_key;
-                                                        serverPayload.response_message = "Authentication successful";
+                                                        payloadModel.payload = log_in_session_key;
+                                                        payloadModel.result = "Authentication successful";
+                                                        payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                                     }
                                                 }
                                                 catch (Exception e)
                                                 {
                                                     Log.Error(e, "Log in session key insertion API error");
-                                                    response = "Internal server error";
+                                                    payloadModel.result = "Internal server error";
                                                 }
                                                 finally
                                                 {
@@ -271,23 +273,23 @@ namespace ThetaFTP.Shared.Controllers
                                             }
                                             else
                                             {
-                                                serverPayload.response_message = "Invalid password";
+                                                payloadModel.result = "Invalid password";
                                             }
                                         }
                                         else
                                         {
-                                            serverPayload.response_message = "Internal server error";
+                                            payloadModel.result = "Internal server error";
                                         }
                                     }
                                     else
                                     {
-                                        serverPayload.response_message = "Invalid email";
+                                        payloadModel.result = "Invalid email";
                                     }
                                 }
                                 catch (Exception e)
                                 {
                                     Log.Error(e, "User account checkup API error");
-                                    response = "Internal server error";
+                                    payloadModel.result = "Internal server error";
                                 }
                                 finally
                                 {
@@ -297,7 +299,7 @@ namespace ThetaFTP.Shared.Controllers
                             catch (Exception e)
                             {
                                 Log.Error(e, "User account checkup API error");
-                                response = "Internal server error";
+                                payloadModel.result = "Internal server error";
                             }
                             finally
                             {
@@ -308,7 +310,7 @@ namespace ThetaFTP.Shared.Controllers
                         catch(Exception e)
                         {
                             Log.Error(e, "User log in API error");
-                            response = "Internal server error";
+                            payloadModel.result = "Internal server error";
                         }
                         finally
                         {
@@ -317,32 +319,30 @@ namespace ThetaFTP.Shared.Controllers
                     }
                     else
                     {
-                        serverPayload.response_message = "Invalid password";
+                        payloadModel.result = "Invalid password";
                     }
                 }
                 else
                 {
-                    serverPayload.response_message = "Invalid email";
+                    payloadModel.result = "Invalid email";
                 }
             }
             else
             {
-                serverPayload.response_message = "Invalid credentials";
+                payloadModel.result = "Invalid credentials";
             }
 
-            response = await JsonFormatter.JsonSerialiser(serverPayload);
-
-            return response;
+            return payloadModel;
         }
 
-        public Task<string?> GetInfo(string? value)
+        public Task<PayloadModel?> GetInfo(string? value)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<string?> Insert(AuthenticationModel? value)
+        public async Task<PayloadModel?> Insert(AuthenticationModel? value)
         {
-            string? response = "Internal server error";
+            PayloadModel payloadModel = new PayloadModel();
 
             if (value != null)
             {
@@ -404,7 +404,8 @@ namespace ThetaFTP.Shared.Controllers
                                                                         account_validation_code_insertion_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddHours(1));
                                                                         await account_validation_code_insertion_command.ExecuteNonQueryAsync();
 
-                                                                        response = "Registration successful";
+                                                                        payloadModel.result = "Registration successful";
+                                                                        payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                                                     }
                                                                     else
                                                                     {
@@ -418,20 +419,20 @@ namespace ThetaFTP.Shared.Controllers
                                                                         catch (Exception e)
                                                                         {
                                                                             Log.Error(e, "Account deletion API error");
-                                                                            response = "Internal server error";
+                                                                            payloadModel.result = "Internal server error";
                                                                         }
                                                                         finally
                                                                         {
                                                                             await delete_account.DisposeAsync();
                                                                         }
 
-                                                                        response = "Internal server error";
+                                                                        payloadModel.result = "Internal server error";
                                                                     }
                                                                 }
                                                                 catch (Exception e)
                                                                 {
                                                                     Log.Error(e, "Validation code insertion API error");
-                                                                    response = "Internal server error";
+                                                                    payloadModel.result = "Internal server error";
                                                                 }
                                                                 finally
                                                                 {
@@ -440,13 +441,14 @@ namespace ThetaFTP.Shared.Controllers
                                                             }
                                                             else
                                                             {
-                                                                response = "Registration successful";
+                                                                payloadModel.result = "Registration successful";
+                                                                payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                                             }
                                                         }
                                                         catch (Exception e)
                                                         {
                                                             Log.Error(e, "Account insertion API error");
-                                                            response = "Internal server error";
+                                                            payloadModel.result = "Internal server error";
                                                         }
                                                         finally
                                                         {
@@ -456,13 +458,13 @@ namespace ThetaFTP.Shared.Controllers
                                                 }
                                                 else
                                                 {
-                                                    response = "Account already exists";
+                                                    payloadModel.result = "Account already exists";
                                                 }
                                             }
                                             catch (Exception e)
                                             {
                                                 Log.Error(e, "Account checkup API error");
-                                                response = "Internal server error";
+                                                payloadModel.result = "Internal server error";
                                             }
                                             finally
                                             {
@@ -473,7 +475,7 @@ namespace ThetaFTP.Shared.Controllers
                                         catch (Exception e)
                                         {
                                             Log.Error(e, "Registration API error");
-                                            response = "Internal server error";
+                                            payloadModel.result = "Internal server error";
                                         }
                                         finally
                                         {
@@ -483,51 +485,51 @@ namespace ThetaFTP.Shared.Controllers
                                     }
                                     else
                                     {
-                                        response = "Password more than 100 characters";
+                                        payloadModel.result = "Password more than 100 characters";
                                     }
                                 }
                                 else
                                 {
-                                    response = "Password less than 10 characters";
+                                    payloadModel.result = "Password less than 10 characters";
                                 }
                             }
                             else
                             {
-                                response = "Invalid password";
+                                payloadModel.result = "Invalid password";
                             }
                         }
                         else
                         {
-                            response = "Email more than 100 characters";
+                            payloadModel.result = "Email more than 100 characters";
                         }
                     }
                     else
                     {
-                        response = "Invalid email";
+                        payloadModel.result = "Invalid email";
                     }
                 }
                 else
                 {
-                    response = "Invalid email";
+                    payloadModel.result = "Invalid email";
                 }
             }
             else
             {
-                response = "Invalid credentials";
+                payloadModel.result = "Invalid credentials";
             }
 
-            return response;
+            return payloadModel;
         }
 
 
-        public Task<string?> Rename(string? value)
+        public Task<PayloadModel?> Rename(string? value)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<string?> Update(PasswordUpdateModel? value)
+        public async Task<PayloadModel?> Update(PasswordUpdateModel? value)
         {
-            string? response = "Internal server error";
+            PayloadModel payloadModel = new PayloadModel();
 
             if (value != null)
             {
@@ -565,12 +567,13 @@ namespace ThetaFTP.Shared.Controllers
                                                         account_update_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddMinutes(2));
                                                         account_update_command.ExecuteNonQuery();
 
-                                                        response = "Check the code sent to your email to approve the password change";
+                                                        payloadModel.result = "Check the code sent to your email to approve the password change";
+                                                        payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                                     }
                                                     catch (Exception e)
                                                     {
                                                         Log.Error(e, "Password change code insertion API error");
-                                                        response = "Internal server error";
+                                                        payloadModel.result = "Internal server error";
                                                     }
                                                     finally
                                                     {
@@ -579,12 +582,12 @@ namespace ThetaFTP.Shared.Controllers
                                                 }
                                                 else
                                                 {
-                                                    response = "Internal server error";
+                                                    payloadModel.result = "Internal server error";
                                                 }
                                             }
                                             else
                                             {
-                                                response = "Internal server error";
+                                                payloadModel.result = "Internal server error";
                                             }
                                         }
                                         else
@@ -601,12 +604,13 @@ namespace ThetaFTP.Shared.Controllers
                                                     password_update_command.Parameters.AddWithValue("Password", hashed_password);
                                                     await password_update_command.ExecuteNonQueryAsync();
 
-                                                    response = "Password update successful";
+                                                    payloadModel.result = "Password update successful";
+                                                    payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                                 }
                                                 catch (Exception e)
                                                 {
                                                     Log.Error(e, "Password update API error");
-                                                    response = "Internal server error";
+                                                    payloadModel.result = "Internal server error";
                                                 }
                                                 finally
                                                 {
@@ -615,19 +619,19 @@ namespace ThetaFTP.Shared.Controllers
                                             }
                                             else
                                             {
-                                                response = "Internal server error";
+                                                payloadModel.result = "Internal server error";
                                             }
                                         }
                                     }
                                     else
                                     {
-                                        response = "Internal server error";
+                                        payloadModel.result = "Internal server error";
                                     }
                                 }
                                 catch (Exception e)
                                 {
                                     Log.Error(e, "Password update API error");
-                                    response = "Internal server error";
+                                    payloadModel.result = "Internal server error";
                                 }
                                 finally
                                 {
@@ -636,30 +640,30 @@ namespace ThetaFTP.Shared.Controllers
                             }
                             else
                             {
-                                response = "Password more than 100 characters";
+                                payloadModel.result = "Password more than 100 characters";
                             }
                         }
                         else
                         {
-                            response = "Password less than 100 characters";
+                            payloadModel.result = "Password less than 100 characters";
                         }
                     }
                     else
                     {
-                        response = "Invalid password";
+                        payloadModel.result = "Invalid password";
                     }
                 }
                 else
                 {
-                    response = "Invalid email";
+                    payloadModel.result = "Invalid email";
                 }
             }
             else
             {
-                response = "Internal server error";
+                payloadModel.result = "Internal server error";
             }
 
-            return response;
+            return payloadModel;
         }
     }
 }

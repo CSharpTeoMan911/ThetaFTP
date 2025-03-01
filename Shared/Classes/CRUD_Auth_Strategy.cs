@@ -1,13 +1,12 @@
-﻿using Org.BouncyCastle.Tls;
-using ThetaFTP.Shared.Models;
+﻿using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Classes
 {
-    public class CRUD_Payload_Strategy<InsertType, GetInfoType, GetType, UpdateType, RenameType, DeleteType> : CRUD_Interface_Payload<InsertType, GetInfoType, GetType, UpdateType, RenameType, DeleteType>
+    public class CRUD_Auth_Strategy<InsertType, GetInfoType, GetType, UpdateType, RenameType, DeleteType> : CRUD_Auth_Interface<InsertType, GetInfoType, GetType, UpdateType, RenameType, DeleteType>
     {
-        CRUD_Interface_Payload<InsertType, GetInfoType, GetType, UpdateType, RenameType, DeleteType> strategy;
+        CRUD_Auth_Interface<InsertType, GetInfoType, GetType, UpdateType, RenameType, DeleteType> strategy;
 
-        public CRUD_Payload_Strategy(CRUD_Interface_Payload<InsertType, GetInfoType, GetType, UpdateType, RenameType, DeleteType> strategy_)
+        public CRUD_Auth_Strategy(CRUD_Auth_Interface<InsertType, GetInfoType, GetType, UpdateType, RenameType, DeleteType> strategy_)
         {
             strategy = strategy_;
         }
