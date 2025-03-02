@@ -99,7 +99,9 @@ p.label {
 input.input_style {
     font-size: calc(10px + 0.5vw);
     border-radius: 5px;
-    border-width: calc(1px + 0.1vw);
+    border-width: calc(1px);
+    outline-width: 1px;
+    outline-color: black;
 }
 
 input.input_style_small {

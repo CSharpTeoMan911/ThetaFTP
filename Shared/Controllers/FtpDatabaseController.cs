@@ -253,7 +253,18 @@ namespace ThetaFTP.Shared.Controllers
                                                                 FileStream file_stream = File.OpenWrite(full_path);
                                                                 try
                                                                 {
-                                                                    bool file_upload_result = await StreamOperations.ReadAsync(value.fileStream, value.size, file_stream, 102400, 3, value.operation_cancellation);
+                                                                    bool file_upload_result = false;
+
+                                                                    if (Shared.configurations?.use_file_encryption == false)
+                                                                    {
+                                                                        await StreamOperations.ReadAsync(value.fileStream, value.size, file_stream, 102400, 3, value.operation_cancellation);
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        AesFileEncryption? fileEncryption = Shared.GetAes();
+                                                                        if (fileEncryption != null)
+                                                                            file_upload_result = await fileEncryption.EncryptFile(value.fileStream, value.size, file_stream, 102400, 3, value.operation_cancellation);
+                                                                    }
 
                                                                     FileInfo uploaded_file = new FileInfo(full_path);
 

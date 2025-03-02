@@ -65,13 +65,21 @@ namespace ThetaFTP
                                 model.custom_server_certificate_password = custom_server_certificate_password_secret;
 
                                 if (await AesKeyLoadup.LoadAesKey(aes_encryption_key_secret, false) == false)
+                                {
+                                    Console.WriteLine("Corrupt AES key. Disable file encryption or check if\nGoogle Secrets API url is valid");
                                     throw new Exception("Corrupted AES key");
+                                }
+                            }
+                            else
+                            {
+                                if (await AesKeyLoadup.LoadAesKey(model?.aes_encryption_key_location, false) == false)
+                                {
+                                    Console.WriteLine("Corrupt AES key. Disable file encryption or check if\nthe path to the AES key is valid");
+                                    throw new Exception("Corrupted AES key");
+                                }
                             }
 
-                            sha512 = new Sha512Hasher(model.server_salt);
-
-                            if(await AesKeyLoadup.LoadAesKey(model?.aes_encryption_key_location, false) == false)
-                                throw new Exception("Corrupted AES key");
+                            sha512 = new Sha512Hasher(model?.server_salt);
 
                             configurations = model;
 
@@ -265,11 +273,6 @@ namespace ThetaFTP
                 await Log.CloseAndFlushAsync();
             }
 
-            return true;
-        }
-
-        private static async Task<bool> LoadAesKey(string? value, bool is_path)
-        {
             return true;
         }
 
