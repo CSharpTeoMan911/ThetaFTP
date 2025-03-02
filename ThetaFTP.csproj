@@ -7,8 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+	<Content Remove="aes_key.json" />
     <Content Remove="certificate_generation.json" />
-	<Content Remove="certificate_generation.json" />
+	<Content Remove="server_settings.json" />
     <Content Remove="encryption_key_generation_file.json" />
   </ItemGroup>
 
