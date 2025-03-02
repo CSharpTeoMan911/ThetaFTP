@@ -100,3 +100,21 @@ System.NotSupportedException: Stream does not support seeking.
    at System.Security.Cryptography.CryptoStream.get_Length()
    at ThetaFTP.Shared.Classes.AesFileEncryption.EncryptFile(Stream input_stream, Int64 file_size, Stream output_stream, Int32 buffer_size, Int32 buffer_count_flush, CancellationToken cancellation) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Classes\AesFileEncryption.cs:line 73
    at ThetaFTP.Shared.Controllers.FtpDatabaseController.Insert(FtpModel value) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Controllers\FtpDatabaseController.cs:line 266
+2025-03-02 19:44:15.181 +00:00 [ERR] Error reading encryption key configurations
+System.IO.FileNotFoundException: Could not find file 'C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\encryption_key_generation_file.json'.
+File name: 'C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\encryption_key_generation_file.json'
+   at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+   at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.File.OpenRead(String path)
+   at ThetaFTP.Shared.Classes.FileEncryptionKeyGen.KeyGen() in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Classes\FileEncryptionKeyGen.cs:line 39
+2025-03-02 19:45:20.790 +00:00 [ERR] Error reading encryption key configurations
+System.IO.FileNotFoundException: Could not find file 'C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\encryption_key_generation_file.json'.
+File name: 'C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\encryption_key_generation_file.json'
+   at Microsoft.Win32.SafeHandles.SafeFileHandle.CreateFile(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options)
+   at Microsoft.Win32.SafeHandles.SafeFileHandle.Open(String fullPath, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.Strategies.OSFileStreamStrategy..ctor(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.Strategies.FileStreamHelpers.ChooseStrategyCore(String path, FileMode mode, FileAccess access, FileShare share, FileOptions options, Int64 preallocationSize, Nullable`1 unixCreateMode)
+   at System.IO.File.OpenRead(String path)
+   at ThetaFTP.Shared.Classes.FileEncryptionKeyGen.KeyGen() in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Classes\FileEncryptionKeyGen.cs:line 39
