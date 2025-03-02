@@ -1,11 +1,7 @@
-﻿namespace ThetaFTP.Shared.Classes
-{
-    using Firebase.Database;
-    using Firebase.Auth;
-    using Firebase.Auth.Providers;
-    using MySqlX.XDevAPI;
-    using Newtonsoft.Json;
+﻿using Firebase.Database;
 
+namespace ThetaFTP.Shared.Classes
+{
     public class FirebaseDatabase:Shared
     {
         private FirebaseClient? firebaseClient { get; set; }
@@ -28,6 +24,6 @@
             }
         }
 
-        private Task<string> AdminAuth() => configurations == null || credentials == null ? Task.FromResult(String.Empty) : Task.FromResult(credentials.firebase_admin_token);
+        private Task<string> AdminAuth() => configurations == null ? Task.FromResult(String.Empty) : Task.FromResult(configurations.firebase_admin_token);
     }
 }

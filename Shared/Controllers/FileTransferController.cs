@@ -88,8 +88,11 @@ namespace ThetaFTP.Shared.Controllers
 
                         if (payloadModel?.StatusCode == System.Net.HttpStatusCode.OK)
                         {
-                            if (payloadModel?.payload?.GetType() == typeof(string))
-                                stream = System.IO.File.OpenRead((string)payloadModel.payload);
+                            if (payloadModel?.result == "File path extraction successful")
+                            {
+                                if (payloadModel?.payload?.GetType() == typeof(string))
+                                    stream = System.IO.File.OpenRead((string)payloadModel.payload);
+                            }
                         }
                     }
                 }
