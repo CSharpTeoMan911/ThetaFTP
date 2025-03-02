@@ -9,7 +9,6 @@ namespace ThetaFTP.Shared
     public class Shared
     {
         public const string HttpClientConfig = "Default";
-        protected static ServerCredentials? credentials { get; set; }
         public static Sha512Hasher? sha512 { get; set; }
         public static ServerConfigModel? configurations { get; set; }
         public static Classes.MySql mysql= new Classes.MySql();

@@ -600,36 +600,42 @@ else
 
     private async void CloseNotification()
     {
-        if (Loaded == true)
+        try
         {
-            await InvokeAsync(async() =>
+            if (Loaded == true)
             {
-                if (OperationOnClose == true)
+                await InvokeAsync(async () =>
                 {
-                    switch (operation)
+                    if (OperationOnClose == true)
                     {
-                        case OnCloseOperation.NavigateToLogInPage:
-                            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "././js/functions.js");
+                        switch (operation)
+                        {
+                            case OnCloseOperation.NavigateToLogInPage:
+                                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "././js/functions.js");
 
-                            if (Shared.configurations?.use_secure_local_storage == true)
-                            {
-                                await protectedLocalStorage.DeleteAsync("AuthCache");
-                            }
-                            else
-                            {
-                                await module.InvokeVoidAsync("Delete_Cache", "auth", "AuthCache");
-                            }
+                                if (Shared.configurations?.use_secure_local_storage == true)
+                                {
+                                    await protectedLocalStorage.DeleteAsync("AuthCache");
+                                }
+                                else
+                                {
+                                    await module.InvokeVoidAsync("Delete_Cache", "auth", "AuthCache");
+                                }
 
-                            NavigationManager.NavigateTo("/log-in", true);
-                            break;
-                        case OnCloseOperation.OpenValidationPanel:
-                            ShowValidationPanel = true;
-                            break;
+                                NavigationManager.NavigateTo("/log-in", true);
+                                break;
+                            case OnCloseOperation.OpenValidationPanel:
+                                ShowValidationPanel = true;
+                                break;
+                        }
+
+                        OperationOnClose = false;
                     }
-                }
-                ShowNotification = false;
-                StateHasChanged();
-            });
+                    ShowNotification = false;
+                    StateHasChanged();
+                });
+            }
         }
+        catch { }
     }
 }
