@@ -53,9 +53,10 @@ namespace ThetaFTP.Shared.Classes
             try
             {
                 SecretManagerServiceClient client = SecretManagerServiceClient.Create();
-                try
+
+                for (int i = 0; i < secrets.Keys.Count; i++)
                 {
-                    for (int i = 0; i < secrets.Keys.Count; i++)
+                    try
                     {
                         SecretType secretType = secrets.Keys.ElementAt(i);
 
@@ -69,9 +70,7 @@ namespace ThetaFTP.Shared.Classes
                         string secret_data = result.Payload.Data.ToStringUtf8();
                         secrets[secretType] = secret_data;
                     }
-                }
-                catch
-                {
+                    catch { }
                 }
             }
             catch 
