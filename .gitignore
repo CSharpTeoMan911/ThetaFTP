@@ -384,3 +384,5 @@ certificate_generation.json
 *.crt
 *.pfx
 
+/encryption_key_generation_file.json
+/aes_key.json
