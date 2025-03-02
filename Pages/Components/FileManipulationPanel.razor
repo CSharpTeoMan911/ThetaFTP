@@ -72,53 +72,59 @@
 
     public async void Rename()
     {
-        if(Loaded)
+        try
         {
-            string? log_in_session_key = null;
-
-            if (Shared.configurations?.use_secure_local_storage == true)
+            if (Loaded)
             {
-                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-                log_in_session_key = log_in_session_key_result.Value;
-            }
-            else
-            {
-                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-                await module.DisposeAsync();
-            }
+                string? log_in_session_key = null;
 
-            string formatted_url = String.Empty;
+                if (Shared.configurations?.use_secure_local_storage == true)
+                {
+                    ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                    log_in_session_key = log_in_session_key_result.Value;
+                }
+                else
+                {
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                    log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                    await module.DisposeAsync();
+                }
 
-            if (item?.isDirectory == false)
-            {
-                string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
-                    {
-                        key = log_in_session_key,
-                        file_name = item.name,
-                        new_name = _new_name,
-                        path = Path,
-                    });
-                formatted_url = new StringBuilder("/files/rename?").Append(formated_query_content).ToString();
+                string formatted_url = String.Empty;
+
+                if (item?.isDirectory == false)
+                {
+                    string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
+                        {
+                            key = log_in_session_key,
+                            file_name = item.name,
+                            new_name = _new_name,
+                            path = Path,
+                        });
+                    formatted_url = new StringBuilder("/files/rename?").Append(formated_query_content).ToString();
+                }
+                else
+                {
+                    string formated_query_content = await QueryParsing.QueryParser(new DirectoryOperationMetadata()
+                        {
+                            key = log_in_session_key,
+                            directory_name = item?.name,
+                            new_directory_name = _new_name,
+                            path = Path,
+                        });
+                    formatted_url = new StringBuilder("/directories/rename?").Append(formated_query_content).ToString();
+                }
+
+                using (HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig))
+                {
+                    client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
+                    HttpResponseMessage response = await client.PutAsync(formatted_url, null);
+                    operation_result = await response.Content.ReadAsAsync<PayloadModel>();
+                    Manipulation();
+                }
             }
-            else
-            {
-                string formated_query_content = await QueryParsing.QueryParser(new DirectoryOperationMetadata()
-                    {
-                        key = log_in_session_key,
-                        directory_name = item?.name,
-                        new_directory_name = _new_name,
-                        path = Path,
-                    });
-                formatted_url = new StringBuilder("/directories/rename?").Append(formated_query_content).ToString();
-            }
-
-            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
-            client.BaseAddress = new Uri(NavigationManager.BaseUri);
-
-            HttpResponseMessage response = await client.PutAsync(formatted_url, null);
-            operation_result = await response.Content.ReadAsAsync<PayloadModel>();
-            Manipulation();
         }
+        catch{}
     }
 }

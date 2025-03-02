@@ -64,11 +64,14 @@ namespace ThetaFTP
                                 model.smtp_password = smtp_password_secret;
                                 model.custom_server_certificate_password = custom_server_certificate_password_secret;
 
-                                await LoadAesKey(aes_encryption_key_secret, false);
+                                if (await AesKeyLoadup.LoadAesKey(aes_encryption_key_secret, false) == false)
+                                    throw new Exception("Corrupted AES key");
                             }
 
                             sha512 = new Sha512Hasher(model.server_salt);
 
+                            if(await AesKeyLoadup.LoadAesKey(model?.aes_encryption_key_location, false) == false)
+                                throw new Exception("Corrupted AES key");
 
                             configurations = model;
 
@@ -94,7 +97,7 @@ namespace ThetaFTP
 
 
 
-                            if (model.is_reverse_proxy == true)
+                            if (model?.is_reverse_proxy == true)
                                 builder.Services.Configure<ForwardedHeadersOptions>(options =>
                                 {
                                     options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
@@ -146,7 +149,7 @@ namespace ThetaFTP
                                         return true;
                                     }
                                 }
-                            }).SetHandlerLifetime(TimeSpan.FromSeconds(model.ConnectionTimeoutSeconds));
+                            }).SetHandlerLifetime(TimeSpan.FromSeconds(model != null ? model.ConnectionTimeoutSeconds : 600));
 
                             builder.Services.AddRazorPages();
                             builder.Services.AddServerSideBlazor();
