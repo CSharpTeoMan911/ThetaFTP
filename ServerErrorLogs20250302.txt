@@ -1,0 +1,6 @@
+2025-03-02 01:44:02.227 +00:00 [ERR] File FTP Controller delete error
+System.IO.IOException: The process cannot access the file 'C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\FTP_Server\teodormihail07@gmail.com\Xan 3 Xan 3 an 3 Xan 3 Xan 3 Xan 3 1 1.mp4' because it is being used by another process.
+   at System.IO.FileSystem.DeleteFile(String fullPath)
+   at System.IO.FileInfo.Delete()
+   at ThetaFTP.Shared.Formatters.FileSystemFormatter.DeleteFile(String path)
+   at ThetaFTP.Shared.Controllers.FtpDatabaseController.Delete(FtpModel value)

@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Models;
 using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
-using ThetaFTP.Pages.Components;
 
 namespace ThetaFTP.Shared.Controllers
 {

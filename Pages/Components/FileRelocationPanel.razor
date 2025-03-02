@@ -126,125 +126,131 @@
 
     private async void GetDirectories()
     {
-        if (Loaded == true)
+        try
         {
-            Tuple<bool, string?> last_dir_ = await FileSystemFormatter.GetLastDir(Current_Path);
-
-            ShowBackButton = last_dir_.Item1;
-            last_dir = last_dir_.Item2;
-
-            string? log_in_session_key = null;
-
-            if (Shared.configurations?.use_secure_local_storage == true)
+            if (Loaded == true)
             {
-                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-                log_in_session_key = log_in_session_key_result.Value;
-            }
-            else
-            {
-                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-                await module.DisposeAsync();
-            }
+                Tuple<bool, string?> last_dir_ = await FileSystemFormatter.GetLastDir(Current_Path);
 
-            Metadata metadata = new Metadata()
-            {
-                path = Current_Path,
-                key = log_in_session_key
-            };
+                ShowBackButton = last_dir_.Item1;
+                last_dir = last_dir_.Item2;
 
-            string? url = new StringBuilder().Append("/directories/get-directories?").Append(await QueryParsing.QueryParser(metadata)).ToString();
+                string? log_in_session_key = null;
 
-            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
-            client.BaseAddress = new Uri(NavigationManager.BaseUri);
-
-            HttpResponseMessage result = await client.GetAsync(url);
-            PayloadModel? response = await result.Content.ReadAsAsync<PayloadModel>();
-
-            if (result?.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                if (response?.StatusCode == System.Net.HttpStatusCode.OK && response?.result?.Contains("Directories retrieval successful") == true)
+                if (Shared.configurations?.use_secure_local_storage == true)
                 {
-                    StringBuilder filter_builder = new StringBuilder();
-                    directories = ((Newtonsoft.Json.Linq.JArray)response.payload).ToObject<List<DirectoryItem>>();
-                    if (Current_Path == "/")
-                        directories.Add(new DirectoryItem()
-                            {
-                                isDirectory = true,
-                                name = Current_Path
-                            });
+                    ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                    log_in_session_key = log_in_session_key_result.Value;
+                }
+                else
+                {
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                    log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                    await module.DisposeAsync();
+                }
 
-                    directories = new List<DirectoryItem>(directories);
-                    int length = directories.Count;
-
-                    for (int i = 0; i < length; i++)
+                Metadata metadata = new Metadata()
                     {
-                        DirectoryItem current_item = directories.ElementAt(i);
+                        path = Current_Path,
+                        key = log_in_session_key
+                    };
 
-                        string current_path = Current_Path?[Current_Path.Length - 1] == '/' ? filter_builder.Append(Current_Path).Append(current_item?.name).ToString() : filter_builder.Append(Current_Path).Append('/').Append(current_item?.name).ToString();
-                        filter_builder.Clear();
+                string? url = new StringBuilder().Append("/directories/get-directories?").Append(await QueryParsing.QueryParser(metadata)).ToString();
 
-                        string selected_path = Current_Path?[Current_Path.Length - 1] == '/' ? filter_builder.Append(Current_Path).Append(selected_item?.name).ToString() : filter_builder.Append(Current_Path).Append('/').Append(selected_item?.name).ToString();
-                        filter_builder.Clear();
+                using (HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig))
+                {
+                    client.BaseAddress = new Uri(NavigationManager.BaseUri);
 
-                        if (current_path == selected_path)
-                            if (selected_item?.isDirectory == current_item?.isDirectory)
+                    HttpResponseMessage result = await client.GetAsync(url);
+                    PayloadModel? response = await result.Content.ReadAsAsync<PayloadModel>();
+
+                    if (result?.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        if (response?.StatusCode == System.Net.HttpStatusCode.OK && response?.result?.Contains("Directories retrieval successful") == true)
+                        {
+                            StringBuilder filter_builder = new StringBuilder();
+                            directories = ((Newtonsoft.Json.Linq.JArray)response.payload).ToObject<List<DirectoryItem>>();
+                            if (Current_Path == "/")
+                                directories.Add(new DirectoryItem()
+                                    {
+                                        isDirectory = true,
+                                        name = Current_Path
+                                    });
+
+                            directories = new List<DirectoryItem>(directories);
+                            int length = directories.Count;
+
+                            for (int i = 0; i < length; i++)
                             {
-                                directories.Remove(current_item);
-                                length--;
+                                DirectoryItem current_item = directories.ElementAt(i);
+
+                                string current_path = Current_Path?[Current_Path.Length - 1] == '/' ? filter_builder.Append(Current_Path).Append(current_item?.name).ToString() : filter_builder.Append(Current_Path).Append('/').Append(current_item?.name).ToString();
+                                filter_builder.Clear();
+
+                                string selected_path = Current_Path?[Current_Path.Length - 1] == '/' ? filter_builder.Append(Current_Path).Append(selected_item?.name).ToString() : filter_builder.Append(Current_Path).Append('/').Append(selected_item?.name).ToString();
+                                filter_builder.Clear();
+
+                                if (current_path == selected_path)
+                                    if (selected_item?.isDirectory == current_item?.isDirectory)
+                                    {
+                                        directories.Remove(current_item);
+                                        length--;
+                                    }
                             }
+
+                            StateHasChanged();
+                        }
+                        else
+                        {
+                            notificationType = Notifications.NotificationType.Error;
+
+                            start = DateTime.Now;
+
+                            timer = new System.Timers.Timer();
+                            timer.Interval = 100;
+                            timer.Elapsed += Elapsed;
+                            timer.Start();
+
+                            if (response.result != null)
+                            {
+                                if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
+                                    NavigateToLogIn = true;
+                                notificationMessage = response.result;
+                            }
+                            else
+                                notificationMessage = "Internal server error";
+
+                            ShowNotification = true;
+                        }
+                    }
+                    else
+                    {
+                        notificationType = Notifications.NotificationType.Error;
+
+                        start = DateTime.Now;
+
+                        timer = new System.Timers.Timer();
+                        timer.Interval = 100;
+                        timer.Elapsed += Elapsed;
+                        timer.Start();
+
+                        if (response.result != null)
+                        {
+                            if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
+                                NavigateToLogIn = true;
+                            notificationMessage = response.result;
+                        }
+                        else
+                            notificationMessage = "Internal server error";
+
+                        ShowNotification = true;
                     }
 
                     StateHasChanged();
                 }
-                else
-                {
-                    notificationType = Notifications.NotificationType.Error;
-
-                    start = DateTime.Now;
-
-                    timer = new System.Timers.Timer();
-                    timer.Interval = 100;
-                    timer.Elapsed += Elapsed;
-                    timer.Start();
-
-                    if (response.result != null)
-                    {
-                        if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
-                            NavigateToLogIn = true;
-                        notificationMessage = response.result;
-                    }
-                    else
-                        notificationMessage = "Internal server error";
-
-                    ShowNotification = true;
-                }
             }
-            else
-            {
-                notificationType = Notifications.NotificationType.Error;
-
-                start = DateTime.Now;
-
-                timer = new System.Timers.Timer();
-                timer.Interval = 100;
-                timer.Elapsed += Elapsed;
-                timer.Start();
-
-                if (response.result != null)
-                {
-                    if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
-                        NavigateToLogIn = true;
-                    notificationMessage = response.result;
-                }
-                else
-                    notificationMessage = "Internal server error";
-
-                ShowNotification = true;
-            }
-
-            StateHasChanged();
         }
+        catch{}
     }
 
 
@@ -264,95 +270,101 @@
 
     private async void Select(DirectoryItem? item)
     {
-        if(Loaded == true)
+        try
         {
-            string? log_in_session_key = null;
-
-            if (Shared.configurations?.use_secure_local_storage == true)
+            if (Loaded == true)
             {
-                ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-                log_in_session_key = log_in_session_key_result.Value;
-            }
-            else
-            {
-                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-                await module.DisposeAsync();
-            }
+                string? log_in_session_key = null;
 
-            string? selected_path = Current_Path?[Current_Path.Length - 1] == '/' ? new StringBuilder(Current_Path).Append(item?.name).ToString() : new StringBuilder(Current_Path).Append('/').Append(item?.name).ToString();
-            StringBuilder? request_url = new StringBuilder();
-
-            if (selected_item?.isDirectory == false)
-            {
-                FileOperationMetadata fileOperationMetadata = new FileOperationMetadata()
-                    {
-                        key = log_in_session_key,
-                        file_name = selected_item?.name,
-                        path = Path,
-                        new_path = selected_path
-                    };
-                request_url.Append("/files/relocate?").Append(await QueryParsing.QueryParser(fileOperationMetadata));
-            }
-            else
-            {
-                DirectoryOperationMetadata directoryOperationMetadata = new DirectoryOperationMetadata()
-                    {
-                        key = log_in_session_key,
-                        directory_name = selected_item?.name,
-                        path = Path,
-                        new_path = selected_path
-                    };
-                request_url.Append("/directories/relocate?").Append(await QueryParsing.QueryParser(directoryOperationMetadata));
-            }
-
-            HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig);
-            client.BaseAddress = new Uri(NavigationManager.BaseUri);
-
-            HttpResponseMessage result = await client.PutAsync(request_url.ToString(), null);
-            PayloadModel? response = await result.Content.ReadAsAsync<PayloadModel>();
-
-            if (result.StatusCode == System.Net.HttpStatusCode.OK)
-            {
-                if (response.StatusCode == System.Net.HttpStatusCode.OK && response.result.Contains("relocation successful") == true)
+                if (Shared.configurations?.use_secure_local_storage == true)
                 {
-                    notificationType = Notifications.NotificationType.Information;
-                    refresh = true;
+                    ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                    log_in_session_key = log_in_session_key_result.Value;
                 }
                 else
                 {
-                    notificationType = Notifications.NotificationType.Error;
-
-                    if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
-                        NavigateToLogIn = true;
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                    log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                    await module.DisposeAsync();
                 }
 
-                notificationMessage = response.result;
-            }
-            else
-            {
-                notificationType = Notifications.NotificationType.Error;
+                string? selected_path = Current_Path?[Current_Path.Length - 1] == '/' ? new StringBuilder(Current_Path).Append(item?.name).ToString() : new StringBuilder(Current_Path).Append('/').Append(item?.name).ToString();
+                StringBuilder? request_url = new StringBuilder();
 
-                if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
-                    NavigateToLogIn = true;
-
-                if (response.result != null)
-                    notificationMessage = response.result;
+                if (selected_item?.isDirectory == false)
+                {
+                    FileOperationMetadata fileOperationMetadata = new FileOperationMetadata()
+                        {
+                            key = log_in_session_key,
+                            file_name = selected_item?.name,
+                            path = Path,
+                            new_path = selected_path
+                        };
+                    request_url.Append("/files/relocate?").Append(await QueryParsing.QueryParser(fileOperationMetadata));
+                }
                 else
-                    notificationMessage = "Internal server error";
+                {
+                    DirectoryOperationMetadata directoryOperationMetadata = new DirectoryOperationMetadata()
+                        {
+                            key = log_in_session_key,
+                            directory_name = selected_item?.name,
+                            path = Path,
+                            new_path = selected_path
+                        };
+                    request_url.Append("/directories/relocate?").Append(await QueryParsing.QueryParser(directoryOperationMetadata));
+                }
+
+                using (HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig))
+                {
+                    client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
+                    HttpResponseMessage result = await client.PutAsync(request_url.ToString(), null);
+                    PayloadModel? response = await result.Content.ReadAsAsync<PayloadModel>();
+
+                    if (result.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        if (response.StatusCode == System.Net.HttpStatusCode.OK && response.result.Contains("relocation successful") == true)
+                        {
+                            notificationType = Notifications.NotificationType.Information;
+                            refresh = true;
+                        }
+                        else
+                        {
+                            notificationType = Notifications.NotificationType.Error;
+
+                            if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
+                                NavigateToLogIn = true;
+                        }
+
+                        notificationMessage = response.result;
+                    }
+                    else
+                    {
+                        notificationType = Notifications.NotificationType.Error;
+
+                        if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
+                            NavigateToLogIn = true;
+
+                        if (response.result != null)
+                            notificationMessage = response.result;
+                        else
+                            notificationMessage = "Internal server error";
+                    }
+
+
+                    start = DateTime.Now;
+
+                    timer = new System.Timers.Timer();
+                    timer.Interval = 100;
+                    timer.Elapsed += Elapsed;
+                    timer.Start();
+
+                    ShowNotification = true;
+                    StateHasChanged();
+                }
             }
-
-
-            start = DateTime.Now;
-
-            timer = new System.Timers.Timer();
-            timer.Interval = 100;
-            timer.Elapsed += Elapsed;
-            timer.Start();
-
-            ShowNotification = true;
-            StateHasChanged();
         }
+        catch{ }
     }
 
     private void Elapsed(object? obj, System.Timers.ElapsedEventArgs args)
