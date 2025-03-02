@@ -8,7 +8,8 @@
 
   <ItemGroup>
     <Content Remove="certificate_generation.json" />
-    <Content Remove="server_settings.json" />
+	<Content Remove="certificate_generation.json" />
+    <Content Remove="encryption_key_generation_file.json" />
   </ItemGroup>
 
 
