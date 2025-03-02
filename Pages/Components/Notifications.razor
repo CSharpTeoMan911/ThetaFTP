@@ -42,7 +42,8 @@ else
     [Parameter] public NotificationType notificationType { get; set; }
     [Parameter] public string? style { get; set; }
 
-    private System.Timers.Timer timer = new System.Timers.Timer();
+    private System.Timers.Timer timer { get; set; }
+    private bool Loaded { get; set; }
 
     protected override void OnAfterRender(bool firstRender)
     {
@@ -50,10 +51,20 @@ else
 
         if (firstRender == true)
         {
+            Loaded = true;
+            StateHasChanged();
+        }
+
+        if (Loaded == true)
+        {
             render_time = DateTime.Now;
-            timer.Elapsed += ElapsedTime;
-            timer.Interval = 100;
-            timer.Start();
+            if (timer == null)
+            {
+                timer = new System.Timers.Timer();
+                timer.Elapsed += ElapsedTime;
+                timer.Interval = 100;
+                timer.Start();
+            }
         }
     }
 

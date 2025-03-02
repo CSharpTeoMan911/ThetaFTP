@@ -5,7 +5,6 @@ using System.Data.Common;
 using System.Text;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Models;
-using ThetaFTP.Pages.Components;
 
 namespace ThetaFTP.Shared.Controllers
 {
