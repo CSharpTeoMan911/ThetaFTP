@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Google.Protobuf.WellKnownTypes;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
+using Newtonsoft.Json.Linq;
 using System.Text;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Models;
@@ -91,7 +93,20 @@ namespace ThetaFTP.Shared.Controllers
                             if (payloadModel?.result == "File path extraction successful")
                             {
                                 if (payloadModel?.payload?.GetType() == typeof(string))
-                                    stream = System.IO.File.OpenRead((string)payloadModel.payload);
+                                {
+                                    Stream file_stream = System.IO.File.OpenRead((string)payloadModel.payload);
+
+                                    if (Shared.configurations?.use_file_encryption == true)
+                                    {
+                                        AesFileEncryption? fileDecryption = Shared.GetAes();
+                                        if (fileDecryption != null)
+                                            stream = fileDecryption.DecryptFile(file_stream);
+                                    }
+                                    else
+                                    {
+                                        stream = file_stream;
+                                    }
+                                }
                             }
                         }
                     }

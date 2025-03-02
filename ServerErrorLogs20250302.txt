@@ -1,6 +1,102 @@
-2025-03-02 01:44:02.227 +00:00 [ERR] File FTP Controller delete error
-System.IO.IOException: The process cannot access the file 'C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\FTP_Server\teodormihail07@gmail.com\Xan 3 Xan 3 an 3 Xan 3 Xan 3 Xan 3 1 1.mp4' because it is being used by another process.
+2025-03-02 13:13:56.995 +00:00 [FTL] Fatal error
+System.Exception: Corrupted AES key
+   at ThetaFTP.Program.Main_OP(String[] args) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Program.cs:line 68
+2025-03-02 13:17:01.531 +00:00 [FTL] Fatal error
+System.Exception: Corrupted AES key
+   at ThetaFTP.Program.Main_OP(String[] args) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Program.cs:line 70
+2025-03-02 13:17:24.494 +00:00 [FTL] Fatal error
+System.Exception: Corrupted AES key
+   at ThetaFTP.Program.Main_OP(String[] args) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Program.cs:line 70
+2025-03-02 13:17:49.013 +00:00 [FTL] Fatal error
+System.Exception: Corrupted AES key
+   at ThetaFTP.Program.Main_OP(String[] args) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Program.cs:line 79
+2025-03-02 13:18:48.302 +00:00 [FTL] Fatal error
+System.Exception: Corrupted AES key
+   at ThetaFTP.Program.Main_OP(String[] args) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Program.cs:line 70
+2025-03-02 13:20:40.519 +00:00 [FTL] Fatal error
+System.Exception: Corrupted AES key
+   at ThetaFTP.Program.Main_OP(String[] args)
+2025-03-02 13:21:11.485 +00:00 [FTL] Fatal error
+System.Exception: Corrupted AES key
+   at ThetaFTP.Program.Main_OP(String[] args) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Program.cs:line 79
+2025-03-02 13:21:55.827 +00:00 [FTL] Fatal error
+System.Exception: Corrupted AES key
+   at ThetaFTP.Program.Main_OP(String[] args) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Program.cs:line 79
+2025-03-02 14:02:58.627 +00:00 [ERR] Reading and writing FTP file error
+System.NullReferenceException: Object reference not set to an instance of an object.
+   at System.Runtime.InteropServices.Marshalling.SafeHandleMarshaller`1.ManagedToUnmanagedIn.FromManaged(T handle)
+   at Interop.BCrypt.BCryptEncrypt(SafeKeyHandle hKey, Byte* pbInput, Int32 cbInput, IntPtr paddingInfo, Byte[] pbIV, Int32 cbIV, Byte* pbOutput, Int32 cbOutput, Int32& cbResult, Int32 dwFlags)
+   at Interop.BCrypt.BCryptEncrypt(SafeKeyHandle hKey, ReadOnlySpan`1 input, Byte[] iv, Span`1 output)
+   at System.Security.Cryptography.BasicSymmetricCipherLiteBCrypt.Transform(ReadOnlySpan`1 input, Span`1 output)
+   at System.Security.Cryptography.BasicSymmetricCipherBCrypt.TransformFinal(ReadOnlySpan`1 input, Span`1 output)
+   at System.Security.Cryptography.UniversalCryptoEncryptor.UncheckedTransformFinalBlock(ReadOnlySpan`1 inputBuffer, Span`1 outputBuffer)
+   at System.Security.Cryptography.UniversalCryptoEncryptor.UncheckedTransformFinalBlock(Byte[] inputBuffer, Int32 inputOffset, Int32 inputCount)
+   at System.Security.Cryptography.UniversalCryptoTransform.TransformFinalBlock(Byte[] inputBuffer, Int32 inputOffset, Int32 inputCount)
+   at System.Security.Cryptography.CryptoStream.FlushFinalBlockAsync(Boolean useAsync, CancellationToken cancellationToken)
+   at System.Security.Cryptography.CryptoStream.FlushFinalBlock()
+   at System.Security.Cryptography.CryptoStream.Dispose(Boolean disposing)
+   at System.IO.Stream.Close()
+   at ThetaFTP.Shared.Classes.AesFileEncryption.FinishEncryption() in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Classes\AesFileEncryption.cs:line 51
+   at ThetaFTP.Shared.Classes.StreamOperations.ReadAsync(Stream input_stream, Int64 file_size, Stream output_stream, Int32 buffer_size, Int32 buffer_count_flush, CancellationToken cancellation) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Classes\StreamOperations.cs:line 72
+2025-03-02 14:03:30.960 +00:00 [ERR] Reading and writing FTP file error
+System.NotSupportedException: Stream does not support writing.
+   at ThetaFTP.Shared.Classes.AesFileEncryption.Encrypt(Memory`1 input)
+   at ThetaFTP.Shared.Classes.StreamOperations.ReadAsync(Stream input_stream, Int64 file_size, Stream output_stream, Int32 buffer_size, Int32 buffer_count_flush, CancellationToken cancellation)
+2025-03-02 14:03:36.193 +00:00 [ERR] Reading and writing FTP file error
+System.NotSupportedException: Stream does not support writing.
+   at ThetaFTP.Shared.Classes.AesFileEncryption.Encrypt(Memory`1 input)
+   at ThetaFTP.Shared.Classes.StreamOperations.ReadAsync(Stream input_stream, Int64 file_size, Stream output_stream, Int32 buffer_size, Int32 buffer_count_flush, CancellationToken cancellation)
+2025-03-02 14:45:58.298 +00:00 [ERR] Reading and writing FTP file error
+System.NotSupportedException: FlushFinalBlock() method was called twice on a CryptoStream. It can only be called once.
+   at System.Security.Cryptography.CryptoStream.FlushFinalBlockAsync(Boolean useAsync, CancellationToken cancellationToken)
+   at ThetaFTP.Shared.Classes.AesFileEncryption.EncryptFlush() in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Classes\AesFileEncryption.cs:line 64
+   at ThetaFTP.Shared.Classes.StreamOperations.ReadAsync(Stream input_stream, Int64 file_size, Stream output_stream, Int32 buffer_size, Int32 buffer_count_flush, CancellationToken cancellation) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Classes\StreamOperations.cs:line 38
+2025-03-02 15:00:38.496 +00:00 [ERR] Error creating encryption key file
+System.Exception: Encryption keys is corrupted
+   at ThetaFTP.Shared.Classes.FileEncryptionKeyGen.GenerateKeys(KeyGenModel model) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Classes\FileEncryptionKeyGen.cs:line 149
+2025-03-02 15:04:02.111 +00:00 [ERR] File FTP Controller delete error
+System.IO.IOException: The process cannot access the file 'C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\FTP_Server\teodormihail07@gmail.com\1740282160767.gif' because it is being used by another process.
    at System.IO.FileSystem.DeleteFile(String fullPath)
    at System.IO.FileInfo.Delete()
-   at ThetaFTP.Shared.Formatters.FileSystemFormatter.DeleteFile(String path)
-   at ThetaFTP.Shared.Controllers.FtpDatabaseController.Delete(FtpModel value)
+   at ThetaFTP.Shared.Formatters.FileSystemFormatter.DeleteFile(String path) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Formatters\FileSystemFormatter.cs:line 22
+   at ThetaFTP.Shared.Controllers.FtpDatabaseController.Delete(FtpModel value) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Controllers\FtpDatabaseController.cs:line 35
+2025-03-02 15:04:05.978 +00:00 [ERR] File FTP Controller delete error
+System.IO.IOException: The process cannot access the file 'C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\FTP_Server\teodormihail07@gmail.com\1740282160767.gif' because it is being used by another process.
+   at System.IO.FileSystem.DeleteFile(String fullPath)
+   at System.IO.FileInfo.Delete()
+   at ThetaFTP.Shared.Formatters.FileSystemFormatter.DeleteFile(String path) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Formatters\FileSystemFormatter.cs:line 22
+   at ThetaFTP.Shared.Controllers.FtpDatabaseController.Delete(FtpModel value) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Controllers\FtpDatabaseController.cs:line 35
+2025-03-02 15:04:16.472 +00:00 [ERR] File FTP Controller delete error
+System.IO.IOException: The process cannot access the file 'C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\FTP_Server\teodormihail07@gmail.com\1740282160767.gif' because it is being used by another process.
+   at System.IO.FileSystem.DeleteFile(String fullPath)
+   at System.IO.FileInfo.Delete()
+   at ThetaFTP.Shared.Formatters.FileSystemFormatter.DeleteFile(String path) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Formatters\FileSystemFormatter.cs:line 22
+   at ThetaFTP.Shared.Controllers.FtpDatabaseController.Delete(FtpModel value) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Controllers\FtpDatabaseController.cs:line 35
+2025-03-02 15:05:20.531 +00:00 [ERR] File FTP Controller delete error
+System.IO.IOException: The process cannot access the file 'C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\FTP_Server\teodormihail07@gmail.com\1740282160767.gif' because it is being used by another process.
+   at System.IO.FileSystem.DeleteFile(String fullPath)
+   at System.IO.FileInfo.Delete()
+   at ThetaFTP.Shared.Formatters.FileSystemFormatter.DeleteFile(String path) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Formatters\FileSystemFormatter.cs:line 22
+   at ThetaFTP.Shared.Controllers.FtpDatabaseController.Delete(FtpModel value) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Controllers\FtpDatabaseController.cs:line 35
+2025-03-02 15:05:22.882 +00:00 [ERR] File FTP Controller delete error
+System.IO.IOException: The process cannot access the file 'C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\FTP_Server\teodormihail07@gmail.com\1740282160767.gif' because it is being used by another process.
+   at System.IO.FileSystem.DeleteFile(String fullPath)
+   at System.IO.FileInfo.Delete()
+   at ThetaFTP.Shared.Formatters.FileSystemFormatter.DeleteFile(String path) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Formatters\FileSystemFormatter.cs:line 22
+   at ThetaFTP.Shared.Controllers.FtpDatabaseController.Delete(FtpModel value) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Controllers\FtpDatabaseController.cs:line 35
+2025-03-02 15:05:56.743 +00:00 [ERR] File FTP Controller delete error
+System.IO.IOException: The process cannot access the file 'C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\FTP_Server\teodormihail07@gmail.com\1740282160767.gif' because it is being used by another process.
+   at System.IO.FileSystem.DeleteFile(String fullPath)
+   at System.IO.FileInfo.Delete()
+   at ThetaFTP.Shared.Formatters.FileSystemFormatter.DeleteFile(String path) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Formatters\FileSystemFormatter.cs:line 22
+   at ThetaFTP.Shared.Controllers.FtpDatabaseController.Delete(FtpModel value) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Controllers\FtpDatabaseController.cs:line 35
+2025-03-02 17:36:08.194 +00:00 [ERR] File FTP controller upload error
+System.NotSupportedException: Stream does not support seeking.
+   at System.Security.Cryptography.CryptoStream.get_Length()
+   at ThetaFTP.Shared.Classes.AesFileEncryption.EncryptFile(Stream input_stream, Int64 file_size, Stream output_stream, Int32 buffer_size, Int32 buffer_count_flush, CancellationToken cancellation)
+   at ThetaFTP.Shared.Controllers.FtpDatabaseController.Insert(FtpModel value)
+2025-03-02 17:47:36.533 +00:00 [ERR] File FTP controller upload error
+System.NotSupportedException: Stream does not support seeking.
+   at System.Security.Cryptography.CryptoStream.get_Length()
+   at ThetaFTP.Shared.Classes.AesFileEncryption.EncryptFile(Stream input_stream, Int64 file_size, Stream output_stream, Int32 buffer_size, Int32 buffer_count_flush, CancellationToken cancellation) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Classes\AesFileEncryption.cs:line 73
+   at ThetaFTP.Shared.Controllers.FtpDatabaseController.Insert(FtpModel value) in C:\Users\teodo\source\repos\CSharpTeoMan911\ThetaFTP\Shared\Controllers\FtpDatabaseController.cs:line 266
