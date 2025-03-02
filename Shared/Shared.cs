@@ -25,5 +25,7 @@ namespace ThetaFTP.Shared
         public static FirebaseDatabaseServerFunctionsController fireabseDatabaseServerFunctions = new FirebaseDatabaseServerFunctionsController();
         public static DatabaseValidationController database_validation = new DatabaseValidationController();
         public static FirebaseDatabaseValidationController firebase_database_validation = new FirebaseDatabaseValidationController();
+
+        public static AesFileEncryption? aes = null;
     }
 }

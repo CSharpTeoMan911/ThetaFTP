@@ -10,6 +10,6 @@ namespace ThetaFTP.Shared.Classes
             this.aesKey = aesKey;
         }
 
-
+        //public Task<>
     }
 }
