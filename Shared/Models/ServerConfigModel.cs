@@ -11,6 +11,8 @@
         public bool is_reverse_proxy {  get; set; }
         public bool DebugMode { get; set; }
         public bool use_google_secrets { get; set; }
+        public string? aes_encryption_key_secret_url { get; set; } = "!!! REPLACE WITH SECRET URL !!!";
+        public string? aes_encryption_key_version { get; set; } = "1";
         public string? server_salt_secret_url { get; set; } = "!!! REPLACE WITH SECRET URL !!!";
         public string? server_salt_secret_version { get; set; } = "1";
         public string? firebase_admin_token_secret_url { get; set; } = "!!! REPLACE WITH SECRET URL !!!";
@@ -26,7 +28,7 @@
         public string? server_salt { get; set; } = "aaabbbccdddd";
         public bool use_secure_local_storage { get; set; } = true;
         public bool use_firebase { get; set; } = false;
-        public string firebase_admin_token { get; set; } = "!!! REPLACE WITH FIREBASE DATABASE ADMIN TOKEN !!!";
+        public string? firebase_admin_token { get; set; } = "!!! REPLACE WITH FIREBASE DATABASE ADMIN TOKEN !!!";
         public string? firebase_database_url {  get; set; } = "!!! REPLACE WITH FIREBASE DATABASE URL !!!";
         public string? firebase_api_key { get; set; } = "!!! REPLACE WITH THE APP'S API KEY !!!";
         public string? firebase_auth_domain { get; set; } = "!!! REPLACE WITH THE APP'S AUTH DOMAIN !!!";
@@ -42,7 +44,7 @@
         public string? smtp_server { get; set; } = "smtp.gmail.com";
         public int smtp_port { get; set; } = 587;
         public bool smtp_use_ssl { get; set; } = false;
-        public int ReadAndWriteOperationsPerSecond { get; set; } = 1200;
+        public int WriteOperationsPerSecond { get; set; } = 1200;
         public int ConnectionTimeoutSeconds { get; set; } = 600;
         public bool enforce_https { get; set; } = true;
         public int logs_expiration_days { get; set; } = 10;
@@ -51,10 +53,12 @@
         public bool use_custom_ssl_certificate { get; set; }
         public bool ensure_host_name_and_certificate_domain_name_match { get; set; }
         public string? custom_server_certificate_path { get; set; } = "!!! REPLACE WITH THE PATH TO THE SERVER PRIVATE CERTIFICATE !!!";
-        public string? custom_server_certificate_password{ get; set; } = "!!! REPLACE WITH THE PATH TO THE SERVER PRIVATE CERTIFICATE !!!";
+        public string? custom_server_certificate_password { get; set; } = "!!! REPLACE WITH SERVER PRIVATE CERTIFICATE PASSWORD !!!";
         public long hsts_max_age_days { get; set; } = 365 * 2;
         public long? max_concurent_connections { get; set; } = null;
         public long? max_request_buffer_size { get; set; } = null;
         public long? max_response_buffer_size { get; set; } = null;
+        public bool use_file_encryption { get; set; } = false;
+        public string? aes_encryption_key_location { get; set; } = "!!! REPLACE WITH THE PATH TO THE SERVER FILE ENCRYPTION KEY !!!";
     }
 }

@@ -101,7 +101,8 @@ namespace ThetaFTP.Shared.Controllers
                                 {
                                     if (FileSystemFormatter.IsValidUserDir(converted_path))
                                     {
-                                        serverPayload.result = FileSystemFormatter.FullPathBuilder(converted_path, value.file_name);
+                                        serverPayload.result = "File path extraction successful";
+                                        serverPayload.payload = FileSystemFormatter.FullPathBuilder(converted_path, value.file_name);
                                         serverPayload.StatusCode = System.Net.HttpStatusCode.OK;
                                     }
                                     else
