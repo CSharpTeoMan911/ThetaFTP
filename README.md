@@ -55,6 +55,20 @@
 ## 🔐 Connection encryption
 The application uses SSL/TLS encryption to secure the client-server connection, preventing unauthorized access. You can configure it with either self-signed certificates or trusted publisher certificates.
 
+## 🔐 File encryption
+The application uses state of the art AES 256 (Advanced Encryption Standard) encryption algorithm to encrypt files.
+
+## 🔐 Path traversal attack prevention
+
+* Each user has a dedicated directory.
+* The server validates any file path to ensure it is within the user’s directory.
+* Invalid paths are rejected to prevent unauthorized file access.
+
+## 🔐 SQL injection prevention
+
+* The application uses parameterized queries to prevent SQL injection attacks.
+* Special characters are escaped to ensure safe SQL command execution.
+
 <br/>
 <br/>
 
@@ -137,26 +151,10 @@ For every operation requested by the user, such as uploading or downloading a fi
 
 ## 🧂➕#️⃣ Salting and hashing
 
-All sensitive information stored in the database is hashed using the **SHA-512** algorithm and salted for added security. This ensures that even if the database is compromised, the data remains unreadable
+All sensitive information stored in the database is hashed using the **SHA-512** algorithm and salted, for added security. This ensures that even if the database is compromised, the data remains unreadable
 
 <br/>
 <br/>
-
-## 🔐 Path traversal attack prevention
-
-* Each user has a dedicated directory.
-* The server validates any file path to ensure it is within the user’s directory.
-* Invalid paths are rejected to prevent unauthorized file access.
-
-<br/>
-<br/>
-
-## 🔐 SQL injection prevention
-
-* The application uses parameterized queries to prevent SQL injection attacks.
-* Special characters are escaped to ensure safe SQL command execution.
-
-![SQL command C#](https://github.com/user-attachments/assets/9b6d7a8b-76b8-474e-bbba-8ff9e62c2a83)
 
 
 
