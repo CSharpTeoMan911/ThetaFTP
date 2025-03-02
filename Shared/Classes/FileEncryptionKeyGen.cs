@@ -4,7 +4,7 @@ using System.Text;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
 
-namespace ThetaFTP
+namespace ThetaFTP.Shared.Classes
 {
     public class FileEncryptionKeyGen
     {
