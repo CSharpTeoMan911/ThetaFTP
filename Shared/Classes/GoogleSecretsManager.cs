@@ -13,7 +13,8 @@ namespace ThetaFTP.Shared.Classes
             FirebaseAdminToken,
             MySqlPassword,
             SmtpPassword,
-            SslCertificatePassword
+            SslCertificatePassword,
+            AesEncryptionKey
         }
 
         public async Task<Dictionary<SecretType, string?>> GetSecrets(ServerConfigModel model)
@@ -24,7 +25,8 @@ namespace ThetaFTP.Shared.Classes
                 {SecretType.FirebaseAdminToken, null},
                 {SecretType.MySqlPassword, null},
                 {SecretType.SmtpPassword, null},
-                {SecretType.SslCertificatePassword, null}
+                {SecretType.SslCertificatePassword, null},
+                {SecretType.AesEncryptionKey, null}
             };
 
             Dictionary<SecretType, string?> secret_urls = new Dictionary<SecretType, string?>()
@@ -33,7 +35,8 @@ namespace ThetaFTP.Shared.Classes
                 {SecretType.FirebaseAdminToken, model.firebase_admin_token_secret_url},
                 {SecretType.MySqlPassword, model.mysql_user_password_secret_url},
                 {SecretType.SmtpPassword, model.smtp_password_secret_url},
-                {SecretType.SslCertificatePassword, model.custom_server_certificate_password_secret_url}
+                {SecretType.SslCertificatePassword, model.custom_server_certificate_password_secret_url},
+                {SecretType.AesEncryptionKey, model.aes_encryption_key_secret_url}
             };
 
             Dictionary<SecretType, string?> secret_versions = new Dictionary<SecretType, string?>()
@@ -42,7 +45,8 @@ namespace ThetaFTP.Shared.Classes
                 {SecretType.FirebaseAdminToken, model.firebase_admin_token_secret_version},
                 {SecretType.MySqlPassword, model.mysql_user_password_secret_version},
                 {SecretType.SmtpPassword, model.smtp_password_secret_version},
-                {SecretType.SslCertificatePassword, model.custom_server_certificate_password_secret_version}
+                {SecretType.SslCertificatePassword, model.custom_server_certificate_password_secret_version},
+                {SecretType.AesEncryptionKey, model.aes_encryption_key_version}
             };
 
 

@@ -1,4 +1,4 @@
-﻿namespace ThetaFTP.Shared.Models
+﻿namespace ThetaFTP.Pages.Components
 {
     public class ValidationModel
     {

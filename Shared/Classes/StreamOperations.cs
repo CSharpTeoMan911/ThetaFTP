@@ -27,13 +27,18 @@ namespace ThetaFTP.Shared.Classes
                             int bytes_read = await input_stream.ReadAsync(contingent_memory_buffer.Memory.Slice(0, buffer_size));
                             if (bytes_read > 0)
                             {
-                                await output_stream.WriteAsync(contingent_memory_buffer.Memory.Slice(0, bytes_read));
-
-                                if (output_stream.Length >= buffer_size * buffer_count_flush)
+                                if (Shared.configurations?.use_file_encryption == true)
                                 {
-                                    await output_stream.FlushAsync();
                                 }
-                                file_size -= bytes_read;
+                                else
+                                {
+                                    await output_stream.WriteAsync(contingent_memory_buffer.Memory.Slice(0, bytes_read));
+                                    if (output_stream.Length >= buffer_size * buffer_count_flush)
+                                    {
+                                        await output_stream.FlushAsync();
+                                    }
+                                    file_size -= bytes_read;
+                                }
                             }
                             else
                             {
@@ -70,7 +75,7 @@ namespace ThetaFTP.Shared.Classes
 
         private static double GetTimeout()
         {
-            double? timeout = 1000 / Shared.configurations?.ReadAndWriteOperationsPerSecond;
+            double? timeout = 1000 / Shared.configurations?.WriteOperationsPerSecond;
             return timeout == null ? 2500 : (double)timeout;
         }
     }
