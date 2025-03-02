@@ -12,7 +12,7 @@ namespace ThetaFTP.Shared.Classes
             bool result = false;
             try
             {
-                if (Loaded == true)
+                if (Loaded == false)
                 {
                     if (value != null)
                     {
@@ -22,7 +22,7 @@ namespace ThetaFTP.Shared.Classes
                             model = await JsonFormatter.JsonDeserialiser<AesKeyModel>(value);
                             if (model != null)
                             {
-                                Shared.aes = new AesFileEncryption(model);
+                                Shared.SetAes(new AesFileEncryption(model));
                                 result = true;
                             }
                         }
@@ -37,12 +37,14 @@ namespace ThetaFTP.Shared.Classes
                                 model = await JsonFormatter.JsonDeserialiser<AesKeyModel>(value);
                                 if (model != null)
                                 {
-                                    Shared.aes = new AesFileEncryption(model);
+                                    Shared.SetAes(new AesFileEncryption(model));
                                     result = true;
                                 }
                             }
                         }
                     }
+
+                    Loaded = true;
                 }
             }
             catch { }

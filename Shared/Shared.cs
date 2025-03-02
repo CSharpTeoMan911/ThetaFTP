@@ -1,13 +1,26 @@
-﻿using System.Collections.Concurrent;
+﻿using System.Runtime.CompilerServices;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Controllers;
 using ThetaFTP.Shared.Models;
-using static ThetaFTP.Shared.Models.ServerConfigModel;
 
 namespace ThetaFTP.Shared
 {
     public class Shared
     {
+        private static bool AesLoaded { get; set; }
+        private static AesFileEncryption? aes;
+
+        public static void SetAes(AesFileEncryption? _aes)
+        {
+            if(AesLoaded == false)
+            {
+                AesLoaded = true;
+                aes = _aes;
+            }
+        }
+
+        public static AesFileEncryption? GetAes() => aes;
+
         public const string HttpClientConfig = "Default";
         public static Sha512Hasher? sha512 { get; set; }
         public static ServerConfigModel? configurations { get; set; }
@@ -25,7 +38,5 @@ namespace ThetaFTP.Shared
         public static FirebaseDatabaseServerFunctionsController fireabseDatabaseServerFunctions = new FirebaseDatabaseServerFunctionsController();
         public static DatabaseValidationController database_validation = new DatabaseValidationController();
         public static FirebaseDatabaseValidationController firebase_database_validation = new FirebaseDatabaseValidationController();
-
-        public static AesFileEncryption? aes = null;
     }
 }

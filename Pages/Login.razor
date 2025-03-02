@@ -11,7 +11,7 @@
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 @inject ProtectedLocalStorage protectedLocalStorage;
 
-<PanelComponent Id="auth_panel" style="padding:calc(46px + 0.5vw) calc(26px + 0.3vw) calc(46px + 0.5vw) calc(26px + 0.3vw);">
+<PanelComponent Id="auth_panel" style="padding:calc(40px + 0.5vw) calc(20px + 0.3vw) calc(40px + 0.5vw) calc(20px + 0.3vw);">
     <Component>
         @if (ShowAccountsApprovalPanel == true)
         {
@@ -28,7 +28,9 @@
         <TitleSection title="Log In" />
         <InputSection inputSectionTitle="Email" placeholder="Email" inputValue="new InputSection.InputValue(OnEmailValue)" isPassword="false" input_with_button="false" />
         <br/>
+
         <InputSection inputSectionTitle="Password" placeholder="Password" inputValue="new InputSection.InputValue(OnPasswordValue)" isPassword="true" input_with_button="false" />
+
         <div style="display:flex;flex-direction:column;margin-top:40px;">
             <button class="auth_action" @onclick=SignIn>
                 Sign In
@@ -41,6 +43,8 @@
 </PanelComponent>
 
 @code {
+
+    private bool visiblity { get; set; }
 
     private string? Email { get; set; }
     private string? Password { get; set; }
