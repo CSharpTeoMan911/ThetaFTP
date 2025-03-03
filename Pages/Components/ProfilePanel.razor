@@ -33,9 +33,13 @@
                         <button class="profile_function profile_function_upload" style="margin-top: 20px" @onclick=UpdatePassword>
                             Change password
                         </button>
-                        <button class="profile_function profile_function_delete" style="margin-top: 10px; margin-bottom:5px" @onclick="DeleteAccount">
-                            Delete account
-                        </button>
+
+                        @if (only_update_password == false)
+                        {
+                            <button class="profile_function profile_function_delete" style="margin-top: 10px; margin-bottom:5px" @onclick="DeleteAccount">
+                                Delete account
+                            </button>
+                        }
                     </div>
                 </Component>
             </PanelComponent>
@@ -51,6 +55,12 @@ else
 
 @code {
     private System.Timers.Timer? timer { get; set; }
+
+    [Parameter] public string? Email { get; set; }
+
+    [Parameter] public bool use_key_validation { get; set; }
+
+    [Parameter] public bool only_update_password { get; set; }
 
     [Parameter] public string? style { get; set; }
     public delegate void ClosePanel();
@@ -125,28 +135,53 @@ else
             if (Loaded == true)
             {
                 timer?.Dispose();
-                string? log_in_session_key = await GetCache();
 
-                using (HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig))
+                if (use_key_validation == true)
                 {
-                    client.BaseAddress = new Uri(NavigationManager.BaseUri);
-                    HttpResponseMessage responseMessage = await client.GetAsync(new StringBuilder("/authentication/get-info?").Append("value=").Append(System.Net.WebUtility.UrlEncode(log_in_session_key)).ToString());
-                    PayloadModel? response = await responseMessage.Content.ReadAsAsync<PayloadModel>();
+                    string? log_in_session_key = await GetCache();
 
-                    if (responseMessage.StatusCode == System.Net.HttpStatusCode.OK)
+                    using (HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig))
                     {
-                        if (response.StatusCode == System.Net.HttpStatusCode.OK && response.result.Contains("Log in session approved") == true)
+                        client.BaseAddress = new Uri(NavigationManager.BaseUri);
+                        HttpResponseMessage responseMessage = await client.GetAsync(new StringBuilder("/authentication/get-info?").Append("value=").Append(System.Net.WebUtility.UrlEncode(log_in_session_key)).ToString());
+                        PayloadModel? response = await responseMessage.Content.ReadAsAsync<PayloadModel>();
+
+                        if (responseMessage.StatusCode == System.Net.HttpStatusCode.OK)
                         {
-                            email = (string)response.payload;
+                            if (response.StatusCode == System.Net.HttpStatusCode.OK && response.result.Contains("Log in session approved") == true)
+                            {
+                                email = (string)response.payload;
+                            }
+                            else
+                            {
+                                notificationMessage = response.result;
+
+                                operation = OnCloseOperation.NavigateToLogInPage;
+                                notificationType = Notifications.NotificationType.Error;
+                                OperationOnClose = true;
+                                ShowNotification = true;
+
+                                timer = new System.Timers.Timer();
+                                timer.Interval = 100;
+                                timer.Elapsed += Elapased;
+                                timer.Start();
+                            }
                         }
                         else
                         {
-                            notificationMessage = response.result;
+                            if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
+                            {
+                                operation = OnCloseOperation.NavigateToLogInPage;
+                                OperationOnClose = true;
+                            }
 
-                            operation = OnCloseOperation.NavigateToLogInPage;
-                            notificationType = Notifications.NotificationType.Error;
-                            OperationOnClose = true;
                             ShowNotification = true;
+                            notificationType = Notifications.NotificationType.Error;
+
+                            if (response.result != null)
+                                notificationMessage = response.result;
+                            else
+                                notificationMessage = "Internal server error";
 
                             timer = new System.Timers.Timer();
                             timer.Interval = 100;
@@ -154,30 +189,13 @@ else
                             timer.Start();
                         }
                     }
-                    else
-                    {
-                        if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
-                        {
-                            operation = OnCloseOperation.NavigateToLogInPage;
-                            OperationOnClose = true;
-                        }
-
-                        ShowNotification = true;
-                        notificationType = Notifications.NotificationType.Error;
-
-                        if (response.result != null)
-                            notificationMessage = response.result;
-                        else
-                            notificationMessage = "Internal server error";
-
-                        timer = new System.Timers.Timer();
-                        timer.Interval = 100;
-                        timer.Elapsed += Elapased;
-                        timer.Start();
-                    }
-
-                    StateHasChanged();
                 }
+                else
+                {
+                    email = Email;
+                }
+
+                StateHasChanged();
             }
         }
         catch{}
@@ -202,11 +220,10 @@ else
                 string? log_in_session_key = await GetCache();
 
                 PasswordUpdateModel passwordUpdate = new PasswordUpdateModel()
-                    {
-                        email = this.email,
-                        log_in_session_key = log_in_session_key,
-                        new_password = password
-                    };
+                {
+                    email = this.email,
+                    new_password = password
+                };
 
                 string query = await QueryParser.QueryParsing.QueryParser(passwordUpdate);
 
@@ -216,7 +233,6 @@ else
                     client.BaseAddress = new Uri(NavigationManager.BaseUri);
                     HttpResponseMessage responseMessage = await client.PutAsync(new StringBuilder("/authentication/update?").Append(query).ToString(), null);
                     PayloadModel? response = await responseMessage.Content.ReadAsAsync<PayloadModel>();
-
                     if (responseMessage.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         if (response.StatusCode == System.Net.HttpStatusCode.OK && response.result.Contains("Password update successful") == true)
@@ -235,25 +251,7 @@ else
                             {
                                 notificationType = Notifications.NotificationType.Error;
                             }
-                            else if (response.result.Contains("Invalid log in session key") == true)
-                            {
-                                operation = OnCloseOperation.NavigateToLogInPage;
-                                notificationType = Notifications.NotificationType.Error;
-                                OperationOnClose = true;
-                            }
                             else if (response.result.Contains("Invalid email") == true)
-                            {
-                                operation = OnCloseOperation.NavigateToLogInPage;
-                                notificationType = Notifications.NotificationType.Error;
-                                OperationOnClose = true;
-                            }
-                            else if (response.result.Contains("Invalid log in session key") == true)
-                            {
-                                operation = OnCloseOperation.NavigateToLogInPage;
-                                notificationType = Notifications.NotificationType.Error;
-                                OperationOnClose = true;
-                            }
-                            else if (response.result.Contains("Log in session not approved") == true)
                             {
                                 operation = OnCloseOperation.NavigateToLogInPage;
                                 notificationType = Notifications.NotificationType.Error;
@@ -536,24 +534,6 @@ else
                                     notificationType = Notifications.NotificationType.Error;
                                 }
                                 else if (response.result.Contains("Invalid email") == true)
-                                {
-                                    operation = OnCloseOperation.NavigateToLogInPage;
-                                    notificationType = Notifications.NotificationType.Error;
-                                    OperationOnClose = true;
-                                }
-                                else if (response.result.Contains("Invalid log in session key") == true)
-                                {
-                                    operation = OnCloseOperation.NavigateToLogInPage;
-                                    notificationType = Notifications.NotificationType.Error;
-                                    OperationOnClose = true;
-                                }
-                                else if (response.result.Contains("Invalid log in session key") == true)
-                                {
-                                    operation = OnCloseOperation.NavigateToLogInPage;
-                                    notificationType = Notifications.NotificationType.Error;
-                                    OperationOnClose = true;
-                                }
-                                else if (response.result.Contains("Log in session not approved") == true)
                                 {
                                     operation = OnCloseOperation.NavigateToLogInPage;
                                     notificationType = Notifications.NotificationType.Error;

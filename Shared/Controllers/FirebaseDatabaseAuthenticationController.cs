@@ -478,8 +478,6 @@ namespace ThetaFTP.Shared.Controllers
                                         if (Shared.sha512 != null)
                                         {
                                             string base64_email = await Base64Formatter.FromUtf8ToBase64(value.email);
-                                            string hashed_key = await Shared.sha512.Hash(value.log_in_session_key);
-                                            string base64_hashed_key = await Base64Formatter.FromUtf8ToBase64(hashed_key);
 
                                             if (Shared.configurations?.twoStepAuth == true)
                                             {
@@ -510,26 +508,7 @@ namespace ThetaFTP.Shared.Controllers
                                             }
                                             else
                                             {
-                                                string extracted_credentials = await client.Child("Credentials").OrderBy("email").EqualTo(base64_email).OnceAsJsonAsync();
-                                                Dictionary<string, FirebaseCredentialModel>? deserialised_credentials = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseCredentialModel>?>(extracted_credentials);
-
-                                                if (deserialised_credentials?.Keys.Count() == 1)
-                                                {
-                                                    string hashed_password = await Shared.sha512.Hash(value.new_password);
-                                                    string base64_password = await Base64Formatter.FromUtf8ToBase64(hashed_password);
-
-                                                    FirebaseCredentialModel credentials = deserialised_credentials.Values.ElementAt(0);
-                                                    credentials.password = base64_password;
-
-                                                    await client.Child("Credentials").Child(deserialised_credentials?.Keys.ElementAt(0)).PutAsync(credentials);
-
-                                                    payloadModel.result = "Password update successful";
-                                                    payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
-                                                }
-                                                else
-                                                {
-                                                    payloadModel.result = "Account does not exist";
-                                                }
+                                                payloadModel.result = "Internal server error";
                                             }
                                         }
                                         else

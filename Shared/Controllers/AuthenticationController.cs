@@ -132,23 +132,14 @@ namespace ThetaFTP.Shared.Controllers
             if (value != null && Shared.configurations != null)
             {
                 if (!Shared.configurations.use_firebase)
-                    payloadModel = await Shared.database_validation.ValidateLogInSessionKey(value.log_in_session_key);
-                else
-                    payloadModel = await Shared.firebase_database_validation.ValidateLogInSessionKey(value.log_in_session_key);
-
-                if (payloadModel?.StatusCode == System.Net.HttpStatusCode.OK)
                 {
-                    if (!Shared.configurations.use_firebase)
-                    {
-                        payloadModel = await Shared.database_auth.Update(value);
-                    }
-                    else
-                    {
-                        payloadModel = await Shared.firebase_database_auth.Update(value);
-                    }
+                    payloadModel = await Shared.database_auth.Update(value);
+                }
+                else
+                {
+                    payloadModel = await Shared.firebase_database_auth.Update(value);
                 }
             }
-
 
             if (payloadModel?.StatusCode == System.Net.HttpStatusCode.OK)
             {
