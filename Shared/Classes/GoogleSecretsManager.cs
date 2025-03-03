@@ -74,7 +74,10 @@ namespace ThetaFTP.Shared.Classes
                 }
             }
             catch 
-            { 
+            {
+                Console.Clear();
+                Console.WriteLine("\n\n Invalid Google Cloud credentials. Use the command:\n 'gcloud auth application-default login'");
+                throw new Exception(" Invalid Google Cloud credentials. Use the command:\n 'gcloud auth application-default login'");
             }
 
             return secrets;
