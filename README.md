@@ -32,19 +32,23 @@
 # 🗂️ Ftp features
 
 ## 🔼 Upload: Upload files securely.
-![UploadFiles-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/e004908c-f866-4b2e-baed-8caf790b9bbb)
+![Upload-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/634600b7-9ab9-436c-b561-46f0270cda46)
 
 ## 🔽 Download: Download files from your server.
-![DownloadFiles-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/03a876b4-4418-40ae-a636-25de83af6615)
+![Download-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/9ac751f8-4dd6-484e-87b0-710d9ff1b0fb)
 
 ## 📦  Move: Move files within your directories.
-![MoveFiles-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/6835f5b8-ce18-4b41-bebb-abfabf230dfe)
+![Move-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/75251690-b595-4958-a6d1-a1d87037a11c)
 
 ## ✏️ Rename: Rename files or directories.
-![Rename-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/016c41a7-9145-45eb-80b5-e6c283924f43)
+![Rename-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/95a02480-a167-4ea8-a63b-00a8af8f368f)
+
+## 🗂️ Create: Create directories
+![CreateDirectory-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/3c91788b-9d32-4dca-be09-54bfb01e02b4)
 
 ## 🗑️ Delete: Delete files or directories securely.
-![DeleteFiles-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/d9ec2f1a-e0dc-4f11-b204-bd7478c8a138)
+![Delete-ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/8c3c4951-89a5-40eb-a318-7ad6ee00ee14)
+
 
 <br/>
 <br/>
@@ -55,8 +59,27 @@
 ## 🔐 Connection encryption
 The application uses SSL/TLS encryption to secure the client-server connection, preventing unauthorized access. You can configure it with either self-signed certificates or trusted publisher certificates.
 
-<br/>
-<br/>
+## 🔐 File encryption
+The application uses state of the art AES 256 (Advanced Encryption Standard) encryption algorithm to encrypt files.
+
+## 🔐 Path traversal attack prevention
+
+* Each user has a dedicated directory.
+* The server validates any file path to ensure it is within the user’s directory.
+* Invalid paths are rejected to prevent unauthorized file access.
+
+## 🔐 SQL injection prevention
+
+* The application uses parameterized queries to prevent SQL injection attacks.
+* Special characters are escaped to ensure safe SQL command execution.
+
+## 🧂➕#️⃣ Salting and hashing
+
+All sensitive information stored in the database is hashed using the **SHA-512** algorithm and salted, for added security. This ensures that even if the database is compromised, the data remains unreadable
+
+## 🪪 Log in session validation
+
+For every operation requested by the user, such as uploading or downloading a file, the server will request for the client its **log in session key**. If the **log in session key** is expired or the **log in session key** is invalid, the server will log out the user. If the **log in session key** is valid, the server will only process request and information for the account associated with the **log in session key**, thus preventing mallicious attacks.
 
 ## 🪪 Two-step registration
 
@@ -124,39 +147,8 @@ The application uses SSL/TLS encryption to secure the client-server connection, 
 
 * The login code expires after 2 minutes.
 * If the user doesn't enter the correct code within this time frame, both the session key and login code are deleted from the database, and the user must start the login process again.
-
 <br/>
 <br/>
-
-## 🪪 Log in session validation
-
-For every operation requested by the user, such as uploading or downloading a file, the server will request for the client its **log in session key**. If the **log in session key** is expired or the **log in session key** is invalid, the server will log out the user. If the **log in session key** is valid, the server will only process request and information for the account associated with the **log in session key**, thus preventing mallicious attacks.
-
-<br/>
-<br/>
-
-## 🧂➕#️⃣ Salting and hashing
-
-All sensitive information stored in the database is hashed using the **SHA-512** algorithm and salted for added security. This ensures that even if the database is compromised, the data remains unreadable
-
-<br/>
-<br/>
-
-## 🔐 Path traversal attack prevention
-
-* Each user has a dedicated directory.
-* The server validates any file path to ensure it is within the user’s directory.
-* Invalid paths are rejected to prevent unauthorized file access.
-
-<br/>
-<br/>
-
-## 🔐 SQL injection prevention
-
-* The application uses parameterized queries to prevent SQL injection attacks.
-* Special characters are escaped to ensure safe SQL command execution.
-
-![SQL command C#](https://github.com/user-attachments/assets/9b6d7a8b-76b8-474e-bbba-8ff9e62c2a83)
 
 
 

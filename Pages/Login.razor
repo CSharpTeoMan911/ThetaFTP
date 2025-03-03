@@ -11,6 +11,10 @@
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 @inject ProtectedLocalStorage protectedLocalStorage;
 
+@if (ShowProfilePanel == true)
+{
+    <ProfilePanel style="z-index:10" closePanel="new ProfilePanel.ClosePanel(CloseProfilePanel)" Email="@Email" use_key_validation = "false"/>
+}
 <PanelComponent Id="auth_panel" style="padding:calc(40px + 0.5vw) calc(20px + 0.3vw) calc(40px + 0.5vw) calc(20px + 0.3vw);">
     <Component>
         @if (ShowAccountsApprovalPanel == true)
@@ -31,10 +35,16 @@
 
         <InputSection inputSectionTitle="Password" placeholder="Password" inputValue="new InputSection.InputValue(OnPasswordValue)" isPassword="true" input_with_button="false" />
 
-        <div style="display:flex;flex-direction:column;margin-top:40px;">
+        <div style="display:flex;flex-direction:column;margin-top:20px;">
+
+            <button style="margin-top: 0px;" class="auth_navigation" @onclick=ResetPassword>
+                Forgot your password.
+            </button>
+
             <button class="auth_action" @onclick=SignIn>
                 Sign In
             </button>
+
             <button class="auth_navigation" @onclick=NavigateToRegister>
                 Don't have an account? Click to register.
             </button>
@@ -61,8 +71,27 @@
 
     private bool NavigateToMainPageOnClose { get; set; }
     private bool Loaded { get; set; }
+    private bool ShowProfilePanel { get; set; }
 
     private readonly string validationInputTopic = "Validation code";
+
+    private void ResetPassword()
+    {
+        if (Loaded == true)
+        {
+            ShowProfilePanel = true;
+            StateHasChanged();
+        }
+    }
+
+    private void CloseProfilePanel()
+    {
+        if (Loaded == true)
+        {
+            ShowProfilePanel = false;
+            StateHasChanged();
+        }
+    }
 
     // ADD CALLBACK METHODS FOR THE 'input' SECTIONS
     private void NavigateToRegister()
