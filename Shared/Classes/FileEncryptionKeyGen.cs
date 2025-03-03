@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
+using static Mysqlx.Expect.Open.Types.Condition.Types;
 
 namespace ThetaFTP.Shared.Classes
 {
@@ -14,6 +15,8 @@ namespace ThetaFTP.Shared.Classes
         {
             public byte[]? Key { get; set; }
             public byte[]? IV { get; set; }
+            public int KeySize { get; set; }
+            public int BlockSize { get; set; }
             public KeyGenerationResult generationResult { get; set; }
         }
 
@@ -104,8 +107,8 @@ namespace ThetaFTP.Shared.Classes
                     using (Aes aes = Aes.Create())
                     {
                         aes.Mode = CipherMode.CBC;
-                        aes.KeySize = 256;
-                        aes.BlockSize = 128;
+                        aes.KeySize = model.key_in_bits;
+                        aes.BlockSize = model.block_size;
                         aes.GenerateIV();
                         aes.GenerateIV();
 
@@ -141,6 +144,8 @@ namespace ThetaFTP.Shared.Classes
                                                     Console.WriteLine("\n\n\n [ Encryption key validation successful ] \n ");
                                                     result.Key = aes.Key;
                                                     result.IV = aes.IV;
+                                                    result.KeySize = aes.KeySize;
+                                                    result.BlockSize = aes.BlockSize;
                                                 }
                                                 else
                                                 {
@@ -175,6 +180,8 @@ namespace ThetaFTP.Shared.Classes
                 {
                     Key = key.Key,
                     IV = key.IV,
+                    KeySize = key.KeySize,
+                    BlockSize = key.BlockSize
                 });
 
                 if (serialised_key != null)

@@ -592,35 +592,7 @@ namespace ThetaFTP.Shared.Controllers
                                         }
                                         else
                                         {
-                                            if (Shared.sha512 != null)
-                                            {
-                                                string hashed_password = await Shared.sha512.Hash(value.new_password);
-
-                                                MySqlCommand password_update_command = connection.CreateCommand();
-                                                try
-                                                {
-                                                    password_update_command.CommandText = "UPDATE credentials SET Password = @Password WHERE Email = @Email";
-                                                    password_update_command.Parameters.AddWithValue("Email", value.email);
-                                                    password_update_command.Parameters.AddWithValue("Password", hashed_password);
-                                                    await password_update_command.ExecuteNonQueryAsync();
-
-                                                    payloadModel.result = "Password update successful";
-                                                    payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
-                                                }
-                                                catch (Exception e)
-                                                {
-                                                    Log.Error(e, "Password update API error");
-                                                    payloadModel.result = "Internal server error";
-                                                }
-                                                finally
-                                                {
-                                                    await password_update_command.DisposeAsync();
-                                                }
-                                            }
-                                            else
-                                            {
-                                                payloadModel.result = "Internal server error";
-                                            }
+                                            payloadModel.result = "Internal server error";
                                         }
                                     }
                                     else

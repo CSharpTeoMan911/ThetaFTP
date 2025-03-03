@@ -24,8 +24,8 @@ namespace ThetaFTP.Shared.Classes
                 using (Aes aes = Aes.Create())
                 {
                     aes.Mode = CipherMode.CBC;
-                    aes.KeySize = 256;
-                    aes.BlockSize = 128;
+                    aes.KeySize = aesKey.KeySize;
+                    aes.BlockSize = aesKey.BlockSize;
                     aes.Key = aesKey.Key;
                     aes.IV = aesKey.IV;
 
