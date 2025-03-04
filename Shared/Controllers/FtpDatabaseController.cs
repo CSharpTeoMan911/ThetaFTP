@@ -2,6 +2,7 @@
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
 using Serilog;
+using System.Text;
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -241,80 +242,76 @@ namespace ThetaFTP.Shared.Controllers
 
                                                 if (FileSystemFormatter.IsValidDiskPath(converted_path) == true)
                                                 {
-
                                                     if (FileSystemFormatter.IsValidUserDir(converted_path))
                                                     {
-                                                        string full_path = FileSystemFormatter.FullPathBuilder(converted_path, value?.file_name);
-
                                                         if (value != null)
                                                         {
-                                                            try
+                                                            bool exists = false;
+                                                            string full_path = FileSystemFormatter.GenerateValidPath(converted_path, value.file_name, out exists);
+
+                                                            if (exists == false)
                                                             {
-                                                                FileStream file_stream = File.OpenWrite(full_path);
                                                                 try
                                                                 {
-                                                                    bool file_upload_result = false;
-
-                                                                    if (Shared.configurations?.use_file_encryption == false)
+                                                                    using (FileStream file_stream = File.OpenWrite(full_path))
                                                                     {
-                                                                        await StreamOperations.ReadAsync(value.fileStream, value.size, file_stream, 102400, 3, value.operation_cancellation);
-                                                                    }
-                                                                    else
-                                                                    {
-                                                                        AesFileEncryption? fileEncryption = Shared.GetAes();
-                                                                        if (fileEncryption != null)
-                                                                            file_upload_result = await fileEncryption.EncryptFile(value.fileStream, value.size, file_stream, 102400, 3, value.operation_cancellation);
-                                                                    }
+                                                                        bool file_upload_result = false;
 
-                                                                    FileInfo uploaded_file = new FileInfo(full_path);
+                                                                        if (Shared.configurations?.use_file_encryption == false)
+                                                                        {
+                                                                            file_upload_result = await StreamOperations.ReadAsync(value.fileStream, value.size, file_stream, 102400, 3, value.operation_cancellation);
+                                                                        }
+                                                                        else
+                                                                        {
+                                                                            AesFileEncryption? fileEncryption = Shared.GetAes();
+                                                                            if (fileEncryption != null)
+                                                                                file_upload_result = await fileEncryption.EncryptFile(value.fileStream, value.size, file_stream, 102400, 3, value.operation_cancellation);
+                                                                        }
 
-                                                                    if (file_upload_result == true)
-                                                                    {
-                                                                        if (value?.operation_cancellation.IsCancellationRequested == true)
+                                                                        FileInfo uploaded_file = new FileInfo(full_path);
+
+                                                                        if (file_upload_result == true)
+                                                                        {
+                                                                            if (value?.operation_cancellation.IsCancellationRequested == true)
+                                                                            {
+                                                                                if (File.Exists(full_path) == true)
+                                                                                {
+                                                                                    uploaded_file.Delete();
+                                                                                }
+
+                                                                                serverPayload.result = "Operation cancelled";
+                                                                                serverPayload.StatusCode = System.Net.HttpStatusCode.OK;
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                serverPayload.result = "File upload successful";
+                                                                                serverPayload.StatusCode = System.Net.HttpStatusCode.OK;
+                                                                            }
+                                                                        }
+                                                                        else
                                                                         {
                                                                             if (File.Exists(full_path) == true)
                                                                             {
-                                                                                file_stream?.Dispose();
                                                                                 uploaded_file.Delete();
                                                                             }
 
                                                                             serverPayload.result = "Operation cancelled";
                                                                             serverPayload.StatusCode = System.Net.HttpStatusCode.OK;
                                                                         }
-                                                                        else
-                                                                        {
-                                                                            file_stream?.Dispose();
-                                                                            serverPayload.result = "File upload successful";
-                                                                            serverPayload.StatusCode = System.Net.HttpStatusCode.OK;
-                                                                        }
                                                                     }
-                                                                    else
-                                                                    {
-                                                                        if (File.Exists(full_path) == true)
-                                                                        {
-                                                                            file_stream?.Dispose();
-                                                                            uploaded_file.Delete();
-                                                                        }
 
-                                                                        serverPayload.result = "Operation cancelled";
-                                                                        serverPayload.StatusCode = System.Net.HttpStatusCode.OK;
-                                                                    }
                                                                 }
                                                                 catch (Exception e)
                                                                 {
                                                                     Log.Error(e, "File FTP controller upload error");
                                                                     serverPayload.result = "Internal server error";
                                                                 }
-                                                                finally
-                                                                {
-                                                                    file_stream?.Dispose();
-                                                                }
                                                             }
-                                                            catch (Exception e)
+                                                            else
                                                             {
-                                                                Log.Error(e, "File FTP controller upload error");
                                                                 serverPayload.result = "Internal server error";
                                                             }
+
                                                         }
                                                         else
                                                         {

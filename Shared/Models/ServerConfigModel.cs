@@ -44,7 +44,7 @@
         public string? smtp_server { get; set; } = "smtp.gmail.com";
         public int smtp_port { get; set; } = 587;
         public bool smtp_use_ssl { get; set; } = false;
-        public int WriteOperationsPerSecond { get; set; } = 1200;
+        public int WriteOperationsPerSecond { get; set; } = 200;
         public int ConnectionTimeoutSeconds { get; set; } = 600;
         public bool enforce_https { get; set; } = true;
         public int logs_expiration_days { get; set; } = 10;

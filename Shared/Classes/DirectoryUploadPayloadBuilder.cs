@@ -10,7 +10,7 @@ namespace ThetaFTP.Shared.Classes
         public static async Task<string?> DirectoryUpload(string? directory, string? path, string? log_in_session_key) => new StringBuilder("/directories/insert?").Append(await QueryParsing.QueryParser(new DirectoryOperationMetadata()
         {
             path = path,
-            directory_name = FileSystemFormatter.FileNameCharacterReplacement(directory),
+            directory_name = FileSystemFormatter.ItemNameCharacterReplacement(directory),
             key = log_in_session_key,
         })).ToString();
     }
