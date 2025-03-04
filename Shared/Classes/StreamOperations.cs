@@ -8,7 +8,7 @@ namespace ThetaFTP.Shared.Classes
         public static async Task<bool> ReadAsync(Stream input_stream, long file_size, Stream output_stream, int buffer_size, int buffer_count_flush, CancellationToken cancellation)
         {
             bool result = false;
-            double timeout = GetTimeout();
+            double timeout = 1000* GetTimeout();
 
             try
             {
@@ -22,11 +22,11 @@ namespace ThetaFTP.Shared.Classes
 
                         if (cancellation.IsCancellationRequested == false)
                         {
-                            if ((end - start).TotalMicroseconds >= 1000 * timeout)
+                            if ((end - start).TotalMicroseconds >= timeout)
                             {
                                 start = end;
-
                                 int bytes_read = await input_stream.ReadAsync(contingent_memory_buffer.Memory.Slice(0, buffer_size));
+
                                 if (bytes_read > 0)
                                 {
                                     await output_stream.WriteAsync(contingent_memory_buffer.Memory.Slice(0, bytes_read));
@@ -61,15 +61,9 @@ namespace ThetaFTP.Shared.Classes
                 result = false;
             }
 
-            GC.Collect();
             return result;
         }
-        
 
-        private static double GetTimeout()
-        {
-            double? timeout = 1000 / Shared.configurations?.WriteOperationsPerSecond;
-            return timeout == null ? 2500 : (double)timeout;
-        }
+        private static double GetTimeout() => Shared.configurations == null ? 4 : 1000 / Shared.configurations.WriteOperationsPerSecond;
     }
 }
