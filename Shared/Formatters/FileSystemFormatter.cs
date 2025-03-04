@@ -1,4 +1,6 @@
-﻿using System.Collections.Concurrent;
+﻿using Google.Protobuf.WellKnownTypes;
+using Newtonsoft.Json.Linq;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Text;
 using ThetaFTP.Shared.Classes;
@@ -7,7 +9,7 @@ namespace ThetaFTP.Shared.Formatters
 {
     public class FileSystemFormatter:Shared
     {
-        public static bool IsValidPath(string path_name) => path_name[0] == '/' ? path_name.All(c => char.IsLetter(c) || char.IsNumber(c) || c == '_' || c == '-' || c == ' ' || c == '/' || c == '(' || c == ')') : false;
+        public static bool IsValidPath(string path_name) => path_name[0] == '/' ? path_name.All(c => char.IsLetter(c) || char.IsNumber(c) || c == '_' || c == '-' || c == ' ' || c == '.' || c == '/' || c == '(' || c == ')') : false;
         public static bool IsValidFileName(string file_name) => file_name.All(c => char.IsLetter(c) || char.IsNumber(c) || c == '_' || c == '-' || c == ' ' || c == '.' || c == '(' || c == ')');
         public static bool IsValidDirectoryName(string file_name) => file_name.All(c => char.IsLetter(c) || char.IsNumber(c) || c == '_' || c == '-' || c == ' ' || c == '.' || c == '(' || c == ')');
         public static string? PathConverter(string? path) => OperatingSystem.IsWindows() == true ? path?.Replace('/', '\\') : path;
@@ -42,23 +44,14 @@ namespace ThetaFTP.Shared.Formatters
 
         public static void MoveDirectory(string old_path, string new_path) => new DirectoryInfo(old_path).MoveTo(new_path);
 
-        public static string DirectoryNameCharacterReplacement(string? directory_name)
+        public static string ItemNameCharacterReplacement(string? item_name)
         {
-            if (directory_name == null)
-                directory_name = String.Empty;
-            foreach (char c in directory_name)
-                if (char.IsLetter(c) == false && char.IsNumber(c) == false && c != '_' && c != '-' && c != ' ' && c != '.')
-                    directory_name = directory_name.Replace(c.ToString(), String.Empty);
-            return directory_name;
-        }
-        public static string FileNameCharacterReplacement(string? file_name)
-        {
-            if (file_name == null)
-                file_name = String.Empty;
-            foreach (char c in file_name)
-                if (char.IsLetter(c) == false && char.IsNumber(c) == false && c != '_' && c != '-' && c != ' ' && c != '.')
-                    file_name = file_name.Replace(c.ToString(), String.Empty);
-            return file_name;
+            if (item_name == null)
+                item_name = String.Empty;
+            foreach (char c in item_name)
+                if (char.IsLetter(c) == false && char.IsNumber(c) == false && c != '_' && c != '-' && c != ' ' && c != '.' && c != '(' && c != ')')
+                    item_name = item_name.Replace(c.ToString(), String.Empty);
+            return item_name;
         }
 
         public static string? GenerateFullFilePath(string? file_name, string? path) => new StringBuilder(path).Append(file_name).ToString();
@@ -149,6 +142,34 @@ namespace ThetaFTP.Shared.Formatters
                 return new StringBuilder(Path).Append("/").Append(name).ToString();
             else
                 return new StringBuilder(Path).Append(name).ToString();
+        }
+
+        public static string GenerateValidPath(string path, string item, out bool result)
+        {
+            result = true;
+
+            int iteration = 1;
+
+            string full_path = FullPathBuilder(path, item);
+
+            FileInfo info = new FileInfo(full_path);
+
+            StringBuilder file_name_builder = new StringBuilder(info.Name);
+            string file_name = file_name_builder.Remove((info.Name.Length - info.Extension.Length), info.Extension.Length).ToString();
+            file_name_builder.Clear();
+
+            while (iteration < int.MaxValue - 1 && IsFile(full_path) == true)
+            {
+                file_name_builder.Append(file_name).Append(" Copy(").Append(iteration.ToString()).Append(")").Append(info.Extension);
+                full_path = FullPathBuilder(path, file_name_builder.ToString());
+                file_name_builder.Clear();
+                iteration++;
+            }
+
+            if (iteration <= 100)
+                result = false;
+
+            return full_path;
         }
 
         public static void CreateLogsDir() => Directory.CreateDirectory(new StringBuilder(Environment.CurrentDirectory).Append(PathSeparator()).Append("ServerLogs").ToString());
