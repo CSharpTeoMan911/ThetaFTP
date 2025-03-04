@@ -68,7 +68,7 @@ namespace ThetaFTP
                                 {
                                     if (await AesKeyLoadup.LoadAesKey(aes_encryption_key_secret, false) == false)
                                     {
-                                        Console.WriteLine("Corrupt AES key. Disable file encryption or check if\nGoogle Secrets API url is valid");
+                                        Console.WriteLine("Invalid Google Cloud credentials or corrupt AES key.\nCheck if Google Secrets API url is valid\nor use the command:\n 'gcloud auth application-default login'");
                                         throw new Exception("Corrupted AES key");
                                     }
                                 }
@@ -79,7 +79,7 @@ namespace ThetaFTP
                                 {
                                     if (await AesKeyLoadup.LoadAesKey(model?.aes_encryption_key_location, false) == false)
                                     {
-                                        Console.WriteLine("Corrupt AES key. Disable file encryption or check if\nthe path to the AES key is valid");
+                                        Console.WriteLine("Invalid Google Cloud credentials or corrupt AES key.\nCheck if Google Secrets API url is valid\nor use the command:\n 'gcloud auth application-default login'");
                                         throw new Exception("Corrupted AES key");
                                     }
                                 }
