@@ -59,6 +59,9 @@
 ## 🔐 Connection encryption
 The application uses SSL/TLS encryption to secure the client-server connection, preventing unauthorized access. You can configure it with either self-signed certificates or trusted publisher certificates.
 
+## 🔐 Local storage encryption
+The application will encrypt data to be stored within the local storage on the server side to prevent mallicious actors from gaining access to session tokens.
+
 ## 🔐 File encryption
 The application uses state of the art AES 256 (Advanced Encryption Standard) encryption algorithm to encrypt files.
 
