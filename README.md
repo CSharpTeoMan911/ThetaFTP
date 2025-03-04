@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/758c76d5-1bd5-423a-a8cf-fdd0efd0f5e6"/>
+  <img src="https://github.com/user-attachments/assets/239d395b-d624-4728-a86f-a668c1b4b9db"/>
 </div>
 
 # About❓
@@ -10,14 +10,14 @@
 
 
 
-**ThetaDrive** is a cross-platform, easily configurable FTP server that works on both Windows and Linux. It comes ready to deploy with advanced features like two-step authentication via SMTP, SSL/TLS connection encryption, SSL certificate generation, and customizable security and database attributes.
+**ThetaDrive** is a cross-platform, easily configurable FTP server that works on both Windows and Linux. It comes ready to deploy with advanced features like two-step authentication via SMTP, SSL/TLS connection encryption, SSL certificate generation, and customizable security and database attributes. The website is hosted at: https://theta-drive.org 
 
 <br/>
 <br/>
 
 # 📥Download & Setup
 * ➡️ To download the application, go to the [Release](https://github.com/CSharpTeoMan911/ThetaFTP/releases/tag/ThetaFTP-v1.0.0) section and download the application binary executables. 
-* ➡️ For instructions about how the application must be configured and its behaviour please visit the [Wiki](https://github.com/CSharpTeoMan911/ThetaFTP/wiki) section of this repository.
+* ➡️ For instructions about how to use and configure the application, please visit the [Wiki](https://github.com/CSharpTeoMan911/ThetaFTP/wiki) section of this repository.
 
 <br/>
 <br/>
@@ -58,6 +58,9 @@
 
 ## 🔐 Connection encryption
 The application uses SSL/TLS encryption to secure the client-server connection, preventing unauthorized access. You can configure it with either self-signed certificates or trusted publisher certificates.
+
+## 🔐 Local storage encryption
+The application will encrypt data to be stored within the local storage on the server side to prevent mallicious actors from gaining access to session tokens.
 
 ## 🔐 File encryption
 The application uses state of the art AES 256 (Advanced Encryption Standard) encryption algorithm to encrypt files.
