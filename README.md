@@ -156,7 +156,7 @@ For every operation requested by the user, such as uploading or downloading a fi
 <br/>
 <br/>
 
-#  1️⃣0️⃣1️⃣1️⃣0️⃣ Binary manipulation mechanisms 
+#  1️⃣0️⃣1️⃣1️⃣0️⃣ Binary manipulation mechanism
 
 ## 1️⃣0️⃣1️⃣ File upload binary manipulation mechanisms
 ![Memory management for write operations](https://github.com/user-attachments/assets/d83ef538-b0ab-42a0-81f6-09f3526db7d9)
