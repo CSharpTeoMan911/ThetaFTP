@@ -11,7 +11,7 @@
             @if (input_with_button == true)
             {
                 <div style="width:100%; display:flex; flex-direction: row; align-content:center">
-                    <input class="@(smallInputFont == true ? "input_style_small" : "input_style")" style="align-self:center" autocomplete="@(autocompleteOff == true ? "new-password" : "on")" type="password" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                    <input class="@(smallInputFont == true ? "input_style_small" : "input_style")" style="align-self:center; 190px" autocomplete="@(autocompleteOff == true ? "new-password" : "on")" type="password" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
                     @InputButton
                 </div>
             }
@@ -30,11 +30,11 @@
                 <div style="width:100%; display:flex; flex-direction: row; align-content:center">
                     @if (isReadOnly == true)
                     {
-                        <input class="@(smallInputFont == true ? "input_style_small" : "input_style")" autocomplete="@(autocompleteOff == true ? "new-password" : "on")" readonly="readonly" style="align-self:center;" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                        <input class="@(smallInputFont == true ? "input_style_small" : "input_style")" autocomplete="@(autocompleteOff == true ? "new-password" : "on")" readonly="readonly" style="align-self:center; 190px" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
                     }
                     else
                     {
-                        <input class="@(smallInputFont == true ? "input_style_small" : "input_style")" autocomplete="@(autocompleteOff == true ? "new-password" : "on")" style="align-self:center;" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                        <input class="@(smallInputFont == true ? "input_style_small" : "input_style")" autocomplete="@(autocompleteOff == true ? "new-password" : "on")" style="align-self:center; 190px" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
                     }
                     @InputButton
                 </div>
