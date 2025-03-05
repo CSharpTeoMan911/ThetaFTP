@@ -10,13 +10,13 @@
 
 
 
-**ThetaDrive** is a cross-platform, easily configurable FTP server that works on both Windows and Linux. It comes ready to deploy with advanced features like two-step authentication via SMTP, SSL/TLS connection encryption, SSL certificate generation, and customizable security and database attributes. The website is hosted at: https://theta-drive.org 
+**ThetaDrive** is a cross-platform open-source **Google Drive** alternative, that is an easily configurable full-stack FTP server application that works on both Windows and Linux. It comes ready to deploy with advanced features like two-step authentication via SMTP, SSL/TLS connection encryption, SSL certificate generation, and customizable security and database attributes. The website is hosted live at: https://theta-drive.org
 
 <br/>
 <br/>
 
 # 📥Download & Setup
-* ➡️ To download the application, go to the [Release](https://github.com/CSharpTeoMan911/ThetaFTP/releases/tag/ThetaFTP-v1.0.0) section and download the application binary executables. 
+* ➡️ To download the application, go to the [Release](https://github.com/CSharpTeoMan911/ThetaFTP/releases/tag/ThetaFTP-v1.0.0) section and download the application binary executables. Alternatively, you can download the binaries and source code from [SourceForge](https://sourceforge.net/projects/thetaftp/).
 * ➡️ For instructions about how to use and configure the application, please visit the [Wiki](https://github.com/CSharpTeoMan911/ThetaFTP/wiki) section of this repository.
 
 <br/>
