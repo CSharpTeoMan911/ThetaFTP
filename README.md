@@ -150,8 +150,19 @@ For every operation requested by the user, such as uploading or downloading a fi
 
 * The login code expires after 2 minutes.
 * If the user doesn't enter the correct code within this time frame, both the session key and login code are deleted from the database, and the user must start the login process again.
+
 <br/>
 <br/>
+<br/>
+<br/>
+
+#  1️⃣0️⃣1️⃣1️⃣0️⃣ Binary manipulation mechanisms 
+
+## 1️⃣0️⃣1️⃣ File upload binary manipulation mechanisms
+![Memory management for write operations](https://github.com/user-attachments/assets/44506f1f-e9a6-4563-bf6d-ce2bee34c4c2)
+
+
+## 1️⃣1️⃣0️⃣ File upload binary manipulation mechanisms 
 
 
 
