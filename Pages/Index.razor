@@ -299,46 +299,50 @@
 
     public async void Upload(InputFileChangeEventArgs e)
     {
-        try
+        if (Loaded == true)
         {
-            if (Loaded == true)
+            bool allow_task_cancellation = true;
+
+            System.Timers.Timer timer = new System.Timers.Timer();
+            try
             {
-                System.Timers.Timer timer = new System.Timers.Timer();
-                try
+                string? log_in_session_key = null;
+
+                if (Shared.configurations?.use_secure_local_storage == true)
                 {
-                    string? log_in_session_key = null;
+                    ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
+                    log_in_session_key = log_in_session_key_result.Value;
+                }
+                else
+                {
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                    log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
+                    await module.DisposeAsync();
+                }
 
-                    if (Shared.configurations?.use_secure_local_storage == true)
+                Tuple<string, Stream, StreamContent?> payload = await FileUploadPayloadBuilder.FileUpload(e.File, Path, log_in_session_key);
+
+                if (payload.Item3 != null)
+                {
+                    CancellationTokenSource source = new CancellationTokenSource();
+                    CancellationToken token = source.Token;
+
+                    try
                     {
-                        ProtectedBrowserStorageResult<string> log_in_session_key_result = await protectedLocalStorage.GetAsync<string>("AuthCache");
-                        log_in_session_key = log_in_session_key_result.Value;
-                    }
-                    else
-                    {
-                        IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                        log_in_session_key = await module.InvokeAsync<string>("Get_Cache", "auth", "AuthCache");
-                        await module.DisposeAsync();
-                    }
+                        UploadInProgress = true;
+                        double progress = 0;
 
-                    Tuple<string, Stream, StreamContent?> payload = await FileUploadPayloadBuilder.FileUpload(e.File, Path, log_in_session_key);
-
-                    if (payload.Item3 != null)
-                    {
-                        CancellationTokenSource source = new CancellationTokenSource();
-                        CancellationToken token = source.Token;
-
-                        try
+                        using (HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig))
                         {
-                            UploadInProgress = true;
-                            double progress = 0;
+                            client.BaseAddress = new Uri(NavigationManager.BaseUri);
 
-                            using (HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig))
+                            pending_upload_progress_data.TryAdd(e.File.Name, new Tuple<string, CancellationTokenSource>("0", source));
+
+
+
+                            timer.Elapsed += async (object? sender, System.Timers.ElapsedEventArgs args) =>
                             {
-                                client.BaseAddress = new Uri(NavigationManager.BaseUri);
-
-                                pending_upload_progress_data.TryAdd(e.File.Name, new Tuple<string, CancellationTokenSource>("0", source));
-
-                                timer.Elapsed += async (object? sender, System.Timers.ElapsedEventArgs args) =>
+                                try
                                 {
                                     if (token.IsCancellationRequested == false)
                                     {
@@ -359,17 +363,19 @@
                                             pending_upload_progress_data.TryUpdate(e.File.Name, new Tuple<string, CancellationTokenSource>(progress.ToString("F2"), source), previous_value);
 
                                         await InvokeAsync(() =>
-                                        {
-                                            StateHasChanged();
-                                        });
+                                    {
+                                        StateHasChanged();
+                                    });
                                     }
                                     else
                                     {
-                                        pending_upload_progress_data.Remove(e.File.Name, out _);
-                                        pending_upload_progress_data.Remove(e.File.Name, out _);
-                                        timer.Dispose();
+                                        if (allow_task_cancellation == true)
+                                        {
+                                            pending_upload_progress_data.Remove(e.File.Name, out _);
+                                            pending_upload_progress_data.Remove(e.File.Name, out _);
+                                            timer.Dispose();
 
-                                        await InvokeAsync(() =>
+                                            await InvokeAsync(() =>
                                         {
                                             if (pending_upload_progress_data.Count == 0)
                                             {
@@ -378,106 +384,110 @@
                                             }
                                         });
 
-                                        client?.CancelPendingRequests();
+                                            client?.CancelPendingRequests();
+                                        }
                                     }
-                                };
-                                timer.Interval = 500;
-                                timer.Start();
+                                }
+                                catch { }
+                            };
+                            timer.Interval = 500;
+                            timer.Start();
 
-                                HttpResponseMessage responseMessage = await client.PostAsync(payload.Item1, payload.Item3);
-                                PayloadModel? response = await responseMessage.Content.ReadAsAsync<PayloadModel>();
 
-                                if (responseMessage.StatusCode == System.Net.HttpStatusCode.OK)
+
+                            HttpResponseMessage responseMessage = await client.PostAsync(payload.Item1, payload.Item3);
+                            allow_task_cancellation = false;
+
+                            PayloadModel? response = await responseMessage.Content.ReadAsAsync<PayloadModel>();
+                            pending_upload_progress_data.Remove(e.File.Name, out _);
+                            pending_upload_progress_data.Remove(e.File.Name, out _);
+                            timer?.Dispose();
+
+                            if (responseMessage.StatusCode == System.Net.HttpStatusCode.OK)
+                            {
+                                if (response.StatusCode == System.Net.HttpStatusCode.OK && response.result.Contains("File upload successful") == true)
                                 {
-                                    pending_upload_progress_data.Remove(e.File.Name, out _);
-                                    pending_upload_progress_data.Remove(e.File.Name, out _);
-                                    timer?.Dispose();
-
-                                    if (response.StatusCode == System.Net.HttpStatusCode.OK && response.result.Contains("File upload successful") == true)
-                                    {
-                                        if (pending_upload_progress_data.Count == 0)
-                                            UploadInProgress = false;
-                                        GetDirectoryInfo(true);
-                                        goto DoNotRenderNotification;
-                                    }
-                                    else
-                                    {
-                                        if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
-                                            InvalidLogInSessionKey = true;
-                                        notificationType = Notifications.NotificationType.Error;
-                                    }
-
-                                    notificationMessage = response.result;
+                                    if (pending_upload_progress_data.Count == 0)
+                                        UploadInProgress = false;
+                                    GetDirectoryInfo(true);
+                                    goto DoNotRenderNotification;
                                 }
                                 else
                                 {
                                     if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
                                         InvalidLogInSessionKey = true;
-
                                     notificationType = Notifications.NotificationType.Error;
-                                    if (response.result != null)
-                                        notificationMessage = response.result;
-                                    else
-                                        notificationMessage = "Internal server error";
                                 }
-                            }
 
-                        }
-                        catch (Exception E)
-                        {
-                            pending_upload_progress_data.Remove(e.File.Name, out _);
-                            pending_upload_progress_data.Remove(e.File.Name, out _);
-                            timer.Dispose();
-
-                            if (E.Message.Contains("The operation was canceled") == false)
-                            {
-                                notificationType = Notifications.NotificationType.Error;
-                                notificationMessage = "Could not upload file";
+                                notificationMessage = response.result;
                             }
                             else
                             {
-                                goto DoNotRenderNotification;
+                                if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
+                                    InvalidLogInSessionKey = true;
+
+                                notificationType = Notifications.NotificationType.Error;
+                                if (response.result != null)
+                                    notificationMessage = response.result;
+                                else
+                                    notificationMessage = "Internal server error";
                             }
                         }
-                        finally
-                        {
-                            await payload.Item2.DisposeAsync();
-                        }
+
                     }
-                    else
+                    catch (Exception E)
                     {
                         pending_upload_progress_data.Remove(e.File.Name, out _);
                         pending_upload_progress_data.Remove(e.File.Name, out _);
                         timer.Dispose();
 
-                        notificationType = Notifications.NotificationType.Error;
-                        notificationMessage = "Could not read file";
+                        if (E.Message.Contains("The operation was canceled") == false)
+                        {
+                            notificationType = Notifications.NotificationType.Error;
+                            notificationMessage = "Could not upload file";
+                        }
+                        else
+                        {
+                            goto DoNotRenderNotification;
+                        }
                     }
-
-                    if (pending_upload_progress_data.Count == 0)
-                        UploadInProgress = false;
-
-                    ShowNotification = true;
-                    StateHasChanged();
-                DoNotRenderNotification:;
+                    finally
+                    {
+                        await payload.Item2.DisposeAsync();
+                    }
                 }
-                catch
+                else
                 {
                     pending_upload_progress_data.Remove(e.File.Name, out _);
                     pending_upload_progress_data.Remove(e.File.Name, out _);
                     timer.Dispose();
 
-                    if (pending_upload_progress_data.Count == 0)
-                        UploadInProgress = false;
-
-                    StateHasChanged();
-
                     notificationType = Notifications.NotificationType.Error;
-                    notificationMessage = "Could not upload file";
+                    notificationMessage = "Could not read file";
                 }
+
+                if (pending_upload_progress_data.Count == 0)
+                    UploadInProgress = false;
+
+                ShowNotification = true;
+                StateHasChanged();
+            DoNotRenderNotification:;
+            }
+            catch
+            {
+                pending_upload_progress_data.Remove(e.File.Name, out _);
+                pending_upload_progress_data.Remove(e.File.Name, out _);
+                timer.Dispose();
+
+                if (pending_upload_progress_data.Count == 0)
+                    UploadInProgress = false;
+
+                StateHasChanged();
+
+                notificationType = Notifications.NotificationType.Error;
+                notificationMessage = "Could not upload file";
             }
         }
-        catch{}
     }
 
     public void CreateDirectory()
