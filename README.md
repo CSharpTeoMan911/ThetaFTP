@@ -159,10 +159,10 @@ For every operation requested by the user, such as uploading or downloading a fi
 #  1️⃣0️⃣1️⃣1️⃣0️⃣ Binary manipulation mechanisms 
 
 ## 1️⃣0️⃣1️⃣ File upload binary manipulation mechanisms
-![Memory management for write operations](https://github.com/user-attachments/assets/44506f1f-e9a6-4563-bf6d-ce2bee34c4c2)
+![Memory management for write operations](https://github.com/user-attachments/assets/d83ef538-b0ab-42a0-81f6-09f3526db7d9)
 
-
-## 1️⃣1️⃣0️⃣ File upload binary manipulation mechanisms 
+## 1️⃣0️⃣1️⃣ MemoryPool characteristics
+![Memory pool characteristics](https://github.com/user-attachments/assets/1ae229b5-cbfa-41e4-ba39-3dbad0f5934d)
 
 
 
