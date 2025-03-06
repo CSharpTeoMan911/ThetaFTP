@@ -376,13 +376,13 @@
                                             timer.Dispose();
 
                                             await InvokeAsync(() =>
-                                        {
-                                            if (pending_upload_progress_data.Count == 0)
                                             {
-                                                UploadInProgress = false;
-                                                StateHasChanged();
-                                            }
-                                        });
+                                                if (pending_upload_progress_data.Count == 0)
+                                                {
+                                                    UploadInProgress = false;
+                                                    StateHasChanged();
+                                                }
+                                            });
 
                                             client?.CancelPendingRequests();
                                         }
