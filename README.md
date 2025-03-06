@@ -162,7 +162,8 @@ For every operation requested by the user, such as uploading or downloading a fi
 ![Memory management for write operations](https://github.com/user-attachments/assets/d83ef538-b0ab-42a0-81f6-09f3526db7d9)
 
 ## 1️⃣0️⃣1️⃣ MemoryPool characteristics
-![Memory pool characteristics](https://github.com/user-attachments/assets/1ae229b5-cbfa-41e4-ba39-3dbad0f5934d)
+![Memory pool characteristics](https://github.com/user-attachments/assets/bacc6a3e-94c0-477a-91d1-df677e37236a)
+
 
 
 
