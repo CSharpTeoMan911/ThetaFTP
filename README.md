@@ -56,6 +56,9 @@
 
 # 🛡️ Security features
 
+## 🔐 DDos protection
+The application uses an IP based rate limiter to protect against DDos attacks, as well as ensuring a predictible CPU and RAM usage.  
+
 ## 🔐 Connection encryption
 The application uses SSL/TLS encryption to secure the client-server connection, preventing unauthorized access. You can configure it with either self-signed certificates or trusted publisher certificates.
 
@@ -162,7 +165,8 @@ For every operation requested by the user, such as uploading or downloading a fi
 ![Memory management for write operations](https://github.com/user-attachments/assets/d83ef538-b0ab-42a0-81f6-09f3526db7d9)
 
 ## 1️⃣0️⃣1️⃣ MemoryPool characteristics
-![Memory pool characteristics](https://github.com/user-attachments/assets/1ae229b5-cbfa-41e4-ba39-3dbad0f5934d)
+![Memory pool characteristics](https://github.com/user-attachments/assets/5237e2ab-647b-443e-972e-91dd96ad47dd)
+
 
 
 
