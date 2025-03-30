@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
-using Serilog;
+using ThetaFTP.Shared.Classes;
+
 
 namespace ThetaFTP.Shared.Formatters
 {
@@ -31,7 +32,7 @@ namespace ThetaFTP.Shared.Formatters
             }
             catch(Exception e)
             {
-                Log.Error(e, "Json serialisation error");
+                Logging.Message(e, "Json serialisation error", "Json serialisation error", "JsonFormatter", "JsonDeserialiser", Logging.LogType.Error);
             }
 
             return Task.FromResult((ReturnType?)return_item);
@@ -58,7 +59,7 @@ namespace ThetaFTP.Shared.Formatters
             }
             catch (Exception e)
             {
-                Log.Error(e, "Json deserialisation error");
+                Logging.Message(e, "Json deserialisation error", "Json deserialisation error", "JsonFormatter", "JsonSerialiser", Logging.LogType.Error);
             }
 
             return Task.FromResult(return_item);

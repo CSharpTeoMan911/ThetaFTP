@@ -45,6 +45,41 @@
                 Sign In
             </button>
 
+            @if(Shared.configurations.enable_google_login == true)
+            {
+                if(Loaded == true)
+                {
+                    <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+
+                    <script type="text/javascript">
+                        const module = {};
+                        function Auth(token){
+                        module.auth(token);
+                        }
+                    </script>
+
+                    <script type="module">
+                        import {GoogleSignIn} from "./js/functions.js";
+                        module.auth = GoogleSignIn;
+                    </script>
+
+
+                    <div id="g_id_onload"
+                    data-client_id="@Shared.configurations.google_oauth_client_id"
+                    data-callback="Auth">
+                    </div>
+
+                    <div class="g_id_signin"
+                    data-type="standard"
+                    data-size="large"
+                    data-theme="outline"
+                    data-text="sign_in_with"
+                    data-shape="rectangular"
+                    data-logo_alignment="left">
+                    </div>
+                }
+            }
+
             <button class="auth_navigation" @onclick=NavigateToRegister>
                 Don't have an account? Click to register.
             </button>
@@ -74,6 +109,51 @@
     private bool ShowProfilePanel { get; set; }
 
     private readonly string validationInputTopic = "Validation code";
+
+
+    [JSInvokable]
+    public async void ProcessJwtToken(string jwt)
+    {
+        if (Loaded == true)
+        {
+            try
+            {
+                using(HttpClient client = httpFactory.CreateClient("default"))
+                {
+                    client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
+                    GoogleAutheticationModel googleAuthetication = new GoogleAutheticationModel()
+                    {
+                        jwt = jwt
+                    };
+
+                    string query = await QueryParser.QueryParsing.QueryParser(googleAuthetication);
+
+                    HttpResponseMessage httpResponse = await client.PostAsync(new StringBuilder("/google-auth/auth?").Append(query).ToString(), null);
+                    System.Diagnostics.Debug.WriteLine($"Status: {httpResponse.StatusCode}");
+
+                    PayloadModel model = await httpResponse.Content.ReadAsAsync<PayloadModel>();
+
+                }
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine($"Error: {e.Message}");
+            }
+        }
+    }
+
+    private async void RegisterJwtProcessingMethod()
+    {
+        if(Loaded == true)
+        {
+            DotNetObjectReference<ThetaFTP.Pages.Login> reference = DotNetObjectReference.Create(this);
+            IJSObjectReference objectReference = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+            await objectReference.InvokeVoidAsync("GoogleSignInApiProcessing", reference);
+        }
+    }
+
+
 
     private void ResetPassword()
     {
@@ -107,6 +187,7 @@
         if(firstRender == true){
             Loaded = true;
             StateHasChanged();
+            RegisterJwtProcessingMethod();
         }
     }
 

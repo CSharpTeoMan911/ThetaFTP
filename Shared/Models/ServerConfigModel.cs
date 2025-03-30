@@ -60,5 +60,9 @@
         public long? max_response_buffer_size { get; set; } = null;
         public bool use_file_encryption { get; set; } = false;
         public string? aes_encryption_key_location { get; set; } = "!!! REPLACE WITH THE PATH TO THE SERVER FILE ENCRYPTION KEY !!!";
+        public string? google_oauth_client_id { get; set; } = "REPLACE WITH GOOGLE OAUTH CLIENT ID";
+        public bool enable_google_login { get; set; } = false;
+        public int maximum_number_of_requests_per_minute { get; set; } = 10000;
+        public int maximum_number_of_queued_requests { get; set; } = 10000;
     }
 }

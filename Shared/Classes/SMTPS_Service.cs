@@ -42,7 +42,7 @@
             }
             catch(Exception e)
             {
-                Log.Error(e, "Error sending SMTP request");
+                Logging.Message(e, "Error sending SMTP request", "Check if the credentials and SMTP server address are valid", "SMTPS_Service", "SendSMTPS", Logging.LogType.Error);
                 response = false;
             }
             finally

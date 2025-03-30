@@ -193,6 +193,7 @@ namespace ThetaFTP.Shared.Classes
             }
             catch (Exception e)
             {
+                Logging.Message(e, "X509 certificate generation error", "This may be caused by invalid data used to create the certificate", "CertGenConfig", "Create_X509_Server_Certificate", Logging.LogType.Error);
                 Log.Error(e, "X509 certificate generation error");
             }
         }
