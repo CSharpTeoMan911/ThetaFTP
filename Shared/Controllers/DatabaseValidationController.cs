@@ -1,6 +1,5 @@
 ﻿using ThetaFTP.Shared.Formatters;
 using MySql.Data.MySqlClient;
-using Serilog;
 using System.Data.Common;
 using System.Text;
 using ThetaFTP.Shared.Classes;
@@ -69,7 +68,7 @@ namespace ThetaFTP.Shared.Controllers
                                                 }
                                                 catch (Exception e)
                                                 {
-                                                    Log.Error(e, "Account validation API error");
+                                                    Logging.Message(e, "Account validation API error", "Validation error", "DatabaseValidationController", "ValidateAccount", Logging.LogType.Error);
                                                     payloadModel.result = "Internal server error";
                                                 }
                                                 finally
@@ -79,7 +78,7 @@ namespace ThetaFTP.Shared.Controllers
                                             }
                                             catch (Exception e)
                                             {
-                                                Log.Error(e, "Account validation API error");
+                                                Logging.Message(e, "Account validation API error", "Validation error", "DatabaseValidationController", "ValidateAccount", Logging.LogType.Error);
                                                 payloadModel.result = "Internal server error";
                                             }
                                             finally
@@ -99,7 +98,7 @@ namespace ThetaFTP.Shared.Controllers
                                 }
                                 catch (Exception e)
                                 {
-                                    Log.Error(e, "Account validation API error");
+                                    Logging.Message(e, "Account validation API error", "Validation error", "DatabaseValidationController", "ValidateAccount", Logging.LogType.Error);
                                     payloadModel.result = "Internal server error";
                                 }
                                 finally
@@ -109,7 +108,7 @@ namespace ThetaFTP.Shared.Controllers
                             }
                             catch (Exception e)
                             {
-                                Log.Error(e, "Account validation API error");
+                                Logging.Message(e, "Account validation API error", "Validation error", "DatabaseValidationController", "ValidateAccount", Logging.LogType.Error);
                                 payloadModel.result = "Internal server error";
                             }
                             finally
@@ -119,7 +118,7 @@ namespace ThetaFTP.Shared.Controllers
                         }
                         catch (Exception e)
                         {
-                            Log.Error(e, "Account validation API error");
+                            Logging.Message(e, "Account validation API error", "Validation error", "DatabaseValidationController", "ValidateAccount", Logging.LogType.Error);
                             payloadModel.result = "Internal server error";
                         }
                         finally
@@ -185,7 +184,7 @@ namespace ThetaFTP.Shared.Controllers
                                         }
                                         catch (Exception e)
                                         {
-                                            Log.Error(e, "Log in session validation API error");
+                                            Logging.Message(e, "Log in session validation API error", "Log in session validation API error", "DatabaseValidationController", "ValidateLogInSession", Logging.LogType.Error);
                                             payloadModel.result = "Internal server error";
                                         }
                                         finally
@@ -200,7 +199,7 @@ namespace ThetaFTP.Shared.Controllers
                                 }
                                 catch (Exception e)
                                 {
-                                    Log.Error(e, "Log in session validation API error");
+                                    Logging.Message(e, "Log in session validation API error", "Log in session validation API error", "DatabaseValidationController", "ValidateLogInSession", Logging.LogType.Error);
                                     payloadModel.result = "Internal server error";
                                 }
                                 finally
@@ -210,7 +209,7 @@ namespace ThetaFTP.Shared.Controllers
                             }
                             catch (Exception e)
                             {
-                                Log.Error(e, "Log in session validation API error");
+                                Logging.Message(e, "Log in session validation API error", "Log in session validation API error", "DatabaseValidationController", "ValidateLogInSession", Logging.LogType.Error);
                                 payloadModel.result = "Internal server error";
                             }
                             finally
@@ -220,7 +219,7 @@ namespace ThetaFTP.Shared.Controllers
                         }
                         catch (Exception e)
                         {
-                            Log.Error(e, "Log in session validation API error");
+                            Logging.Message(e, "Log in session validation API error", "Log in session validation API error", "DatabaseValidationController", "ValidateLogInSession", Logging.LogType.Error);
                             payloadModel.result = "Internal server error";
                         }
                         finally
@@ -300,7 +299,7 @@ namespace ThetaFTP.Shared.Controllers
                                                 }
                                                 catch (Exception e)
                                                 {
-                                                    Log.Error(e, "Log in session key validation API error");
+                                                    Logging.Message(e, "Log in session key validation API error", "Log in session key validation API error", "DatabaseValidationController", "ValidateLogInSessionKey", Logging.LogType.Error);
                                                     payloadModel.result = "Internal server error";
                                                 }
                                                 finally
@@ -310,7 +309,7 @@ namespace ThetaFTP.Shared.Controllers
                                             }
                                             catch (Exception e)
                                             {
-                                                Log.Error(e, "Log in session key validation API error");
+                                                Logging.Message(e, "Log in session key validation API error", "Log in session key validation API error", "DatabaseValidationController", "ValidateLogInSessionKey", Logging.LogType.Error);
                                                 payloadModel.result = "Internal server error";
                                             }
                                             finally
@@ -337,7 +336,7 @@ namespace ThetaFTP.Shared.Controllers
                             }
                             catch (Exception e)
                             {
-                                Log.Error(e, "Log in session key validation API error");
+                                Logging.Message(e, "Log in session key validation API error", "Log in session key validation API error", "DatabaseValidationController", "ValidateLogInSessionKey", Logging.LogType.Error);
                                 payloadModel.result = "Internal server error";
                             }
                             finally
@@ -347,7 +346,7 @@ namespace ThetaFTP.Shared.Controllers
                         }
                         catch (Exception e)
                         {
-                            Log.Error(e, "Log in session key validation API error");
+                            Logging.Message(e, "Log in session key validation API error", "Log in session key validation API error", "DatabaseValidationController", "ValidateLogInSessionKey", Logging.LogType.Error);
                             payloadModel.result = "Internal server error";
                         }
                         finally
@@ -357,7 +356,7 @@ namespace ThetaFTP.Shared.Controllers
                     }
                     catch (Exception e)
                     {
-                        Log.Error(e, "Log in session key validation API error");
+                        Logging.Message(e, "Log in session key validation API error", "Log in session key validation API error", "DatabaseValidationController", "ValidateLogInSessionKey", Logging.LogType.Error);
                         payloadModel.result = "Internal server error";
                     }
                     finally
@@ -403,7 +402,7 @@ namespace ThetaFTP.Shared.Controllers
                         }
                         catch (Exception e)
                         {
-                            Log.Error(e, "Account log out API error");
+                            Logging.Message(e, "Account log out API error", "Account log out API error", "DatabaseValidationController", "DeleteLogInSession", Logging.LogType.Error);
                             payloadModel.result = "Internal server error";
                         }
                         finally
@@ -413,7 +412,7 @@ namespace ThetaFTP.Shared.Controllers
                     }
                     catch (Exception e)
                     {
-                        Log.Error(e, "Account log out API error");
+                        Logging.Message(e, "Account log out API error", "Account log out API error", "DatabaseValidationController", "DeleteLogInSession", Logging.LogType.Error);
                         payloadModel.result = "Internal server error";
                     }
                     finally
@@ -485,7 +484,7 @@ namespace ThetaFTP.Shared.Controllers
                                         }
                                         catch (Exception e)
                                         {
-                                            Log.Error(e, "Account deletion validation API error");
+                                            Logging.Message(e, "Account deletion validation API error", "Account deletion validation API error", "DatabaseValidationController", "ValidateAccountDeletion", Logging.LogType.Error);
                                             payloadModel.result = "Internal server error";
                                         }
                                         finally
@@ -505,7 +504,7 @@ namespace ThetaFTP.Shared.Controllers
                             }
                             catch (Exception e)
                             {
-                                Log.Error(e, "Account deletion validation API error");
+                                Logging.Message(e, "Account deletion validation API error", "Account deletion validation API error", "DatabaseValidationController", "ValidateAccountDeletion", Logging.LogType.Error);
                                 payloadModel.result = "Internal server error";
                             }
                             finally
@@ -516,7 +515,7 @@ namespace ThetaFTP.Shared.Controllers
                         }
                         catch (Exception e)
                         {
-                            Log.Error(e, "Account deletion validation API error");
+                            Logging.Message(e, "Account deletion validation API error", "Account deletion validation API error", "DatabaseValidationController", "ValidateAccountDeletion", Logging.LogType.Error);
                             payloadModel.result = "Internal server error";
                         }
                         finally
@@ -526,7 +525,7 @@ namespace ThetaFTP.Shared.Controllers
                     }
                     catch (Exception e)
                     {
-                        Log.Error(e, "Account deletion validation API error");
+                        Logging.Message(e, "Account deletion validation API error", "Account deletion validation API error", "DatabaseValidationController", "ValidateAccountDeletion", Logging.LogType.Error);
                         payloadModel.result = "Internal server error";
                     }
                     finally
@@ -592,7 +591,7 @@ namespace ThetaFTP.Shared.Controllers
                                                     }
                                                     catch (Exception e)
                                                     {
-                                                        Log.Error(e, "Password update validation API error");
+                                                        Logging.Message(e, "Password update validation API error", "Password update validation API error", "DatabaseValidationController", "ValidateAccountUpdate", Logging.LogType.Error);
                                                         payloadModel.result = "Internal server error";
                                                     }
                                                     finally
@@ -618,7 +617,7 @@ namespace ThetaFTP.Shared.Controllers
                                                         }
                                                         catch (Exception e)
                                                         {
-                                                            Log.Error(e, "Password update validation API error");
+                                                            Logging.Message(e, "Password update validation API error", "Password update validation API error", "DatabaseValidationController", "ValidateAccountUpdate", Logging.LogType.Error);
                                                             payloadModel.result = "Internal server error";
                                                         }
                                                         finally
@@ -643,7 +642,7 @@ namespace ThetaFTP.Shared.Controllers
                                         }
                                         catch (Exception e)
                                         {
-                                            Log.Error(e, "Password update validation API error");
+                                            Logging.Message(e, "Password update validation API error", "Password update validation API error", "DatabaseValidationController", "ValidateAccountUpdate", Logging.LogType.Error);
                                             payloadModel.result = "Internal server error";
                                         }
                                         finally
@@ -653,7 +652,7 @@ namespace ThetaFTP.Shared.Controllers
                                     }
                                     catch (Exception e)
                                     {
-                                        Log.Error(e, "Password update validation API error");
+                                        Logging.Message(e, "Password update validation API error", "Password update validation API error", "DatabaseValidationController", "ValidateAccountUpdate", Logging.LogType.Error);
                                         payloadModel.result = "Internal server error";
                                     }
                                     finally
@@ -673,7 +672,7 @@ namespace ThetaFTP.Shared.Controllers
                         }
                         catch (Exception e)
                         {
-                            Log.Error(e, "Password update validation API error");
+                            Logging.Message(e, "Password update validation API error", "Password update validation API error", "DatabaseValidationController", "ValidateAccountUpdate", Logging.LogType.Error);
                             payloadModel.result = "Internal server error";
                         }
                         finally

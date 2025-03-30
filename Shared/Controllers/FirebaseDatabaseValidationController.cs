@@ -1,10 +1,6 @@
 ﻿using Firebase.Database;
 using Firebase.Database.Query;
 using ThetaFTP.Shared.Formatters;
-using MySql.Data.MySqlClient;
-using MySqlX.XDevAPI;
-using Serilog;
-using System.Data.Common;
 using System.Text;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Models;
@@ -94,7 +90,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "Account validation API error");
+                Logging.Message(e, "Log in session validation API error", "Log in session validation API error", "FirebaseDatabaseValidationController", "ValidateAccount", Logging.LogType.Error);
                 payloadModel.result = "Internal server error";
             }
 
@@ -156,7 +152,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "Log in session validation API error");
+                Logging.Message(e, "Log in session validation API error", "Log in session validation API error", "FirebaseDatabaseValidationController", "ValidateLogInSession", Logging.LogType.Error);
                 payloadModel.result = "Internal server error";
             }
 
@@ -239,7 +235,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "Log in session key validation API error");
+                Logging.Message(e, "Log in session key validation API error", "Log in session key validation API error", "FirebaseDatabaseValidationController", "ValidateLogInSessionKey", Logging.LogType.Error);
                 payloadModel.result = "Internal server error";
             }
 
@@ -298,7 +294,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "Account log out API error");
+                Logging.Message(e, "Account log out API error", "Account log out API error", "FirebaseDatabaseValidationController", "DeleteLogInSession", Logging.LogType.Error);
                 payloadModel.result = "Internal server error";
             }
 
@@ -369,7 +365,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "Account deletion validation API error");
+                Logging.Message(e, "Account deletion validation API error", "Account deletion validation API error", "FirebaseDatabaseValidationController", "ValidateAccountDeletion", Logging.LogType.Error);
                 payloadModel.result = "Internal server error";
             }
 
@@ -456,7 +452,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "Account deletion validation API error");
+                Logging.Message(e, "Account deletion validation API error", "Account deletion validation API error", "FirebaseDatabaseValidationController", "DeleteAccount", Logging.LogType.Error);
                 payloadModel.result = "Internal server error";
             }
 
@@ -554,7 +550,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "Password update validation API error");
+                Logging.Message(e, "Password update validation API error", "Password update validation API error", "FirebaseDatabaseValidationController", "ValidateAccountUpdate", Logging.LogType.Error);
                 payloadModel.result = "Internal server error";
             }
 

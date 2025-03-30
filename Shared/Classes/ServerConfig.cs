@@ -24,7 +24,7 @@ namespace ThetaFTP.Shared.Classes
             }
             catch (Exception e)
             {
-                Log.Error(e, "Error reading server configurations");
+                Logging.Message(e, "Error reading server configurations", "Json deserialisation error", "JsonFormatter", "JsonSerialiser", Logging.LogType.Error);
             }
 
             ServerConfigModel? model = await JsonFormatter.JsonDeserialiser<ServerConfigModel?>(serialised_json);
@@ -56,7 +56,7 @@ namespace ThetaFTP.Shared.Classes
             }
             catch (Exception e)
             {
-                Log.Error(e, "Error creating server configuration file");
+                Logging.Message(e, "Error creating server configurations", "Json serialisation error. Check if the app has permissions to write into the app's directory", "JsonFormatter", "JsonSerialiser", Logging.LogType.Error);
             }
         }
     }

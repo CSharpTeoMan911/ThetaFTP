@@ -1,5 +1,4 @@
 ﻿using MySql.Data.MySqlClient;
-using Serilog;
 
 namespace ThetaFTP.Shared.Classes
 {
@@ -18,7 +17,7 @@ namespace ThetaFTP.Shared.Classes
             }
             catch(Exception e)
             {
-                Log.Error(e, "MySql connection error");
+                Logging.Message(e, "MySql connection error", "Check if the credentials, IP address, port, and username are valid", "JsonFormatter", "JsonSerialiser", Logging.LogType.Error);
             }
             return connection;
         }

@@ -65,7 +65,7 @@ namespace ThetaFTP.Shared.Classes
             }
             catch(Exception e)
             {
-                Log.Error(e, "Reading and writing FTP file error");
+                Logging.Message(e, "Reading and writing FTP file error", "Check if the app has permissions to read and write into the app's directory", "StreamOperations", "ReadAsync", Logging.LogType.Error);
                 result = false;
             }
 

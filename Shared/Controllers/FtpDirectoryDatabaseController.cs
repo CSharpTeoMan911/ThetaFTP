@@ -1,7 +1,6 @@
 ﻿using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
-using Serilog;
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -35,7 +34,7 @@ namespace ThetaFTP.Shared.Controllers
                                     }
                                     catch(Exception e)
                                     {
-                                        Log.Error(e, "Directory FTP Controller delete error");
+                                        Logging.Message(e, "Directory FTP Controller delete error", "Directory could not be deleted", "FtpDirectoryDatabaseController", "Delete", Logging.LogType.Error);
                                         payloadModel.result = "Internal server error";
                                     }
                                 }
@@ -111,7 +110,7 @@ namespace ThetaFTP.Shared.Controllers
                                     }
                                     catch (Exception e)
                                     {
-                                        Log.Error(e, "Directory FTP Controller get info error");
+                                        Logging.Message(e, "Directory FTP Controller get info error", "Directory information could not be retrieved", "FtpDirectoryDatabaseController", "Get", Logging.LogType.Error);
                                         payloadModel.payload = "Internal server error";
                                     }
                                 }
@@ -178,7 +177,7 @@ namespace ThetaFTP.Shared.Controllers
                                             }
                                             catch (Exception e)
                                             {
-                                                Log.Error(e, "Directory FTP Controller upload error");
+                                                Logging.Message(e, "Directory FTP Controller insert error", "Directory could not be uploded", "FtpDirectoryDatabaseController", "Insert", Logging.LogType.Error);
                                                 payloadModel.result = "Internal server error";
                                             }
                                         }
@@ -260,7 +259,7 @@ namespace ThetaFTP.Shared.Controllers
                                                 }
                                                 catch (Exception e)
                                                 {
-                                                    Log.Error(e, "Directory FTP Controller upload error");
+                                                    Logging.Message(e, "Directory FTP Controller rename error", "Directory could not be renamed", "FtpDirectoryDatabaseController", "Rename", Logging.LogType.Error);
                                                     payloadModel.result = "Invalid directory name";
                                                 }
                                             }
@@ -351,7 +350,7 @@ namespace ThetaFTP.Shared.Controllers
                                                         }
                                                         catch (Exception e)
                                                         {
-                                                            Log.Error(e, "Directory FTP controller relocation error");
+                                                            Logging.Message(e, "Directory FTP Controller get info error", "Directory could not be uploded", "FtpDirectoryDatabaseController", "Insert", Logging.LogType.Error);
 
                                                             if (e.Message.Contains("already exists") == true)
                                                                 payloadModel.result = "File already exist";
