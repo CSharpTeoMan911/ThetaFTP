@@ -4,7 +4,6 @@ using ThetaFTP.Shared.Formatters;
 using System.Text;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Models;
-using Serilog;
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -61,7 +60,7 @@ namespace ThetaFTP.Shared.Controllers
                         }
                         catch (Exception e)
                         {
-                            Log.Error(e, "Account deletion API error");
+                            Logging.Message(e, "Account deletion API error", "Account deletion API error", "FirebaseDatabaseAuthenticationController", "Delete", Logging.LogType.Error);
                             payloadModel.result = "Internal server error";
                         }
                     }
@@ -163,7 +162,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "Account deletion API error");
+                Logging.Message(e, "Account deletion API error", "Account deletion API error", "FirebaseDatabaseAuthenticationController", "DeleteAccount", Logging.LogType.Error);
                 payloadModel.result = "Internal server error";
             }
 
@@ -298,7 +297,7 @@ namespace ThetaFTP.Shared.Controllers
                         }
                         catch (Exception e)
                         {
-                            Log.Error(e, "User log in API error");
+                            Logging.Message(e, "User log in API error", "User log in API error", "FirebaseDatabaseAuthenticationController", "Get", Logging.LogType.Error);
                             payloadModel.result = "Internal server error";
                         }
                     }
@@ -418,7 +417,7 @@ namespace ThetaFTP.Shared.Controllers
                                 }
                                 catch (Exception e)
                                 {
-                                    Log.Error(e, "User registration API error");
+                                    Logging.Message(e, "User registration API error", "User registration API error", "FirebaseDatabaseAuthenticationController", "Insert", Logging.LogType.Error);
                                     payloadModel.result = "Internal server error";
                                 }
                             }
@@ -523,7 +522,7 @@ namespace ThetaFTP.Shared.Controllers
                                 }
                                 catch (Exception e)
                                 {
-                                    Log.Error(e, "User password update API error");
+                                    Logging.Message(e, "User password update API error", "User password update API error", "FirebaseDatabaseAuthenticationController", "Update", Logging.LogType.Error);
                                     payloadModel.result = "Internal server error";
                                 }
                             }

@@ -4,7 +4,6 @@ using System.Data.Common;
 using MySql.Data.MySqlClient;
 using ThetaFTP.Shared.Formatters;
 using System.Text;
-using Serilog;
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -45,7 +44,7 @@ namespace ThetaFTP.Shared.Controllers
                                 }
                                 catch(Exception e)
                                 {
-                                    Log.Error(e, "Deletion code insertion API error");
+                                    Logging.Message(e, "Deletion code insertion API error", "Deletion code insertion API error", "DatabaseAuthenticationController", "Delete", Logging.LogType.Error);
                                     payloadModel.result = "Internal server error";
                                 }
                                 finally
@@ -85,7 +84,7 @@ namespace ThetaFTP.Shared.Controllers
                         }
                         catch (Exception e)
                         {
-                            Log.Error(e, "User account deletion API error");
+                            Logging.Message(e, "User account deletion API error", "User account deletion API error", "DatabaseAuthenticationController", "Delete", Logging.LogType.Error);
                             payloadModel.result = "Internal server error";
                         }
                         finally
@@ -96,7 +95,7 @@ namespace ThetaFTP.Shared.Controllers
                 }
                 catch (Exception e)
                 {
-                    Log.Error(e, "Account deletion API error");
+                    Logging.Message(e, "User account deletion API error", "User account deletion API error", "DatabaseAuthenticationController", "Delete", Logging.LogType.Error);
                     payloadModel.result = "Internal server error";
                 }
                 finally
@@ -167,7 +166,7 @@ namespace ThetaFTP.Shared.Controllers
                                                         }
                                                         catch (Exception e)
                                                         {
-                                                            Log.Error(e, "User account approval checkup API error");
+                                                            Logging.Message(e, "User account approval checkup API error", "User account approval checkup API error", "DatabaseAuthenticationController", "Get", Logging.LogType.Error);
                                                             payloadModel.result = "Internal server error";
                                                         }
                                                         finally
@@ -177,7 +176,7 @@ namespace ThetaFTP.Shared.Controllers
                                                     }
                                                     catch (Exception e)
                                                     {
-                                                        Log.Error(e, "User account approval checkup API error");
+                                                        Logging.Message(e, "User account approval checkup API error", "User account approval checkup API error", "DatabaseAuthenticationController", "Get", Logging.LogType.Error);
                                                         payloadModel.result = "Internal server error";
                                                     }
                                                     finally
@@ -231,7 +230,7 @@ namespace ThetaFTP.Shared.Controllers
                                                                 }
                                                                 catch (Exception e)
                                                                 {
-                                                                    Log.Error(e, "Log in session deletion API error");
+                                                                    Logging.Message(e, "User account approval checkup API error", "User account approval checkup API error", "DatabaseAuthenticationController", "Get", Logging.LogType.Error);
                                                                     payloadModel.result = "Internal server error";
                                                                 }
                                                                 finally
@@ -244,7 +243,7 @@ namespace ThetaFTP.Shared.Controllers
                                                         }
                                                         catch (Exception e)
                                                         {
-                                                            Log.Error(e, "Log in code insertion API error");
+                                                            Logging.Message(e, "User account approval checkup API error", "User account approval checkup API error", "DatabaseAuthenticationController", "Get", Logging.LogType.Error);
                                                             payloadModel.result = "Internal server error";
                                                         }
                                                         finally
@@ -261,7 +260,7 @@ namespace ThetaFTP.Shared.Controllers
                                                 }
                                                 catch (Exception e)
                                                 {
-                                                    Log.Error(e, "Log in session key insertion API error");
+                                                    Logging.Message(e, "User account approval checkup API error", "User account approval checkup API error", "DatabaseAuthenticationController", "Get", Logging.LogType.Error);
                                                     payloadModel.result = "Internal server error";
                                                 }
                                                 finally
@@ -288,7 +287,7 @@ namespace ThetaFTP.Shared.Controllers
                                 }
                                 catch (Exception e)
                                 {
-                                    Log.Error(e, "User account checkup API error");
+                                    Logging.Message(e, "User account approval checkup API error", "User account approval checkup API error", "DatabaseAuthenticationController", "Get", Logging.LogType.Error);
                                     payloadModel.result = "Internal server error";
                                 }
                                 finally
@@ -298,7 +297,7 @@ namespace ThetaFTP.Shared.Controllers
                             }
                             catch (Exception e)
                             {
-                                Log.Error(e, "User account checkup API error");
+                                Logging.Message(e, "User account approval checkup API error", "User account approval checkup API error", "DatabaseAuthenticationController", "Get", Logging.LogType.Error);
                                 payloadModel.result = "Internal server error";
                             }
                             finally
@@ -309,7 +308,7 @@ namespace ThetaFTP.Shared.Controllers
                         }
                         catch(Exception e)
                         {
-                            Log.Error(e, "User log in API error");
+                            Logging.Message(e, "User account approval checkup API error", "User account approval checkup API error", "DatabaseAuthenticationController", "Get", Logging.LogType.Error);
                             payloadModel.result = "Internal server error";
                         }
                         finally
@@ -418,7 +417,7 @@ namespace ThetaFTP.Shared.Controllers
                                                                         }
                                                                         catch (Exception e)
                                                                         {
-                                                                            Log.Error(e, "Account deletion API error");
+                                                                            Logging.Message(e, "Account deletion API error", "Account deletion API error", "DatabaseAuthenticationController", "Insert", Logging.LogType.Error);
                                                                             payloadModel.result = "Internal server error";
                                                                         }
                                                                         finally
@@ -431,7 +430,7 @@ namespace ThetaFTP.Shared.Controllers
                                                                 }
                                                                 catch (Exception e)
                                                                 {
-                                                                    Log.Error(e, "Validation code insertion API error");
+                                                                    Logging.Message(e, "Account deletion API error", "Account deletion API error", "DatabaseAuthenticationController", "Insert", Logging.LogType.Error);
                                                                     payloadModel.result = "Internal server error";
                                                                 }
                                                                 finally
@@ -447,7 +446,7 @@ namespace ThetaFTP.Shared.Controllers
                                                         }
                                                         catch (Exception e)
                                                         {
-                                                            Log.Error(e, "Account insertion API error");
+                                                            Logging.Message(e, "Account deletion API error", "Account deletion API error", "DatabaseAuthenticationController", "Insert", Logging.LogType.Error);
                                                             payloadModel.result = "Internal server error";
                                                         }
                                                         finally
@@ -463,7 +462,7 @@ namespace ThetaFTP.Shared.Controllers
                                             }
                                             catch (Exception e)
                                             {
-                                                Log.Error(e, "Account checkup API error");
+                                                Logging.Message(e, "Account deletion API error", "Account deletion API error", "DatabaseAuthenticationController", "Insert", Logging.LogType.Error);
                                                 payloadModel.result = "Internal server error";
                                             }
                                             finally
@@ -474,7 +473,7 @@ namespace ThetaFTP.Shared.Controllers
                                         }
                                         catch (Exception e)
                                         {
-                                            Log.Error(e, "Registration API error");
+                                            Logging.Message(e, "Account deletion API error", "Account deletion API error", "DatabaseAuthenticationController", "Insert", Logging.LogType.Error);
                                             payloadModel.result = "Internal server error";
                                         }
                                         finally
@@ -572,7 +571,7 @@ namespace ThetaFTP.Shared.Controllers
                                                     }
                                                     catch (Exception e)
                                                     {
-                                                        Log.Error(e, "Password change code insertion API error");
+                                                        Logging.Message(e, "Password change code insertion API error", "Password change code insertion API error", "DatabaseAuthenticationController", "Update", Logging.LogType.Error);
                                                         payloadModel.result = "Internal server error";
                                                     }
                                                     finally
@@ -602,7 +601,7 @@ namespace ThetaFTP.Shared.Controllers
                                 }
                                 catch (Exception e)
                                 {
-                                    Log.Error(e, "Password update API error");
+                                    Logging.Message(e, "Password change code insertion API error", "Password change code insertion API error", "DatabaseAuthenticationController", "Update", Logging.LogType.Error);
                                     payloadModel.result = "Internal server error";
                                 }
                                 finally

@@ -2,7 +2,7 @@
 using Firebase.Database.Query;
 using ThetaFTP.Shared.Models;
 using ThetaFTP.Shared.Formatters;
-using Serilog;
+using ThetaFTP.Shared.Classes;
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -33,7 +33,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             catch(Exception e)
             {
-                Log.Error(e, "Error deleting expired accounts");
+                Logging.Message(e, "Error deleting expired accounts", "Error deleting expired accounts", "FirebaseDatabaseServerFunctionsController", "DeleteExpiredAccountsWaitingForApproval", Logging.LogType.Error);
             }
             finally
             {
@@ -57,7 +57,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "Error deleting accounts deletion requests");
+                Logging.Message(e, "Error deleting accounts deletion requests", "Error deleting accounts deletion requests", "FirebaseDatabaseServerFunctionsController", "DeleteAccountsWaitingForDeletion", Logging.LogType.Error);
             }
             finally
             {
@@ -81,7 +81,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "Error deleting password update requests");
+                Logging.Message(e, "Error deleting password update requests", "Error deleting password update requests", "FirebaseDatabaseServerFunctionsController", "DeleteAccountsWaitingForPasswordChange", Logging.LogType.Error);
             }
             finally
             {
@@ -116,7 +116,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "Error deleting log in requests");
+                Logging.Message(e, "Error deleting log in requests", "Error deleting log in requests", "FirebaseDatabaseServerFunctionsController", "DeleteLogInSessionWaitingForApproval", Logging.LogType.Error);
             }
             finally
             {
@@ -140,7 +140,7 @@ namespace ThetaFTP.Shared.Controllers
             }
             catch (Exception e)
             {
-                Log.Error(e, "Error deleting log in sessions");
+                Logging.Message(e, "Error deleting log in sessions", "Error deleting log in sessions", "FirebaseDatabaseServerFunctionsController", "DeleteLogInSession", Logging.LogType.Error);
             }
             finally
             {

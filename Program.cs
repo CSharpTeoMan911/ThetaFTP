@@ -1,11 +1,11 @@
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
-using Serilog;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using System.Net;
 using ThetaFTP.Shared.Models;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.HttpOverrides;
+using System.Threading.RateLimiting;
 
 namespace ThetaFTP
 {
@@ -13,16 +13,12 @@ namespace ThetaFTP
     {
         public static void Main(string[] args)
         {
-            _= Main_OP(args).Result;
+            Logging.Init();
+            _ = Main_OP(args).Result;
         }
 
         private static async Task<bool> Main_OP(string[] args)
         {
-            Log.Logger = new LoggerConfiguration().WriteTo.File("ServerErrorLogs.txt",
-            rollingInterval: RollingInterval.Day,
-            rollOnFileSizeLimit: true)
-            .CreateLogger();
-
             try
             {
                 ServerConfigModel? model = await ServerConfig.GetServerConfig();
@@ -96,6 +92,31 @@ namespace ThetaFTP
 
                             var builder = WebApplication.CreateBuilder(args);
 
+                            builder.Services.AddRateLimiter((options) => {
+                                options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext => 
+                                RateLimitPartition.GetSlidingWindowLimiter(partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(),
+                                factory: partition => new SlidingWindowRateLimiterOptions
+                                {
+                                    PermitLimit = model != null ? model.maximum_number_of_requests_per_minute : 10000,
+                                    Window = TimeSpan.FromMinutes(1),
+                                    SegmentsPerWindow = 4,
+                                    QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst,
+                                    QueueLimit = model != null ? model.maximum_number_of_queued_requests : 10000,
+                                    AutoReplenishment = true
+                                }));
+
+
+                                options.OnRejected = async (context, cancellationToken) =>
+                                {
+                                    Logging.Message("Rate limit exceeded", $"The API rate limit was exceeded for an IP address: {context.HttpContext.Connection.RemoteIpAddress}", "Rate limit exceeded", "Program", "Main_OP", Logging.LogType.Error);
+
+                                    context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+                                    context.HttpContext.Response.Headers["Retry-After"] = "60";
+                                    await context.HttpContext.Response.WriteAsync("Rate limit exceeded. Please try again later.", cancellationToken);
+                                };
+                            });
+
+
                             builder.Services.AddServerSideBlazor(option =>
                             {
                                 option.DisconnectedCircuitRetentionPeriod = TimeSpan.FromMinutes(2);
@@ -133,13 +154,14 @@ namespace ThetaFTP
                                             return true;
                                         else
                                         {
-                                            Log.Error($"SSL policyErrors: {policyErrors.ToString()}");
+                                            Logging.Message("SSL certificate validation failed", $"SSL policyErrors: {policyErrors.ToString()}", "The public server certificate has some SSL policy errors. Check if the DN and CN match the server's web address", "Program", "Main_OP", Logging.LogType.Error);
+
                                             if (policyErrors == System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors && certChain != null)
                                                 if (model.validate_ssl_certificate_chain == true)
                                                 {
                                                     foreach (X509ChainStatus status in certChain.ChainStatus)
                                                     {
-                                                        Log.Error($"SSL chain policyErrors: {status.Status}");
+                                                        Logging.Message("SSL certificate validation failed", $"SSL chain policyErrors: {status.Status}", "The public server certificate has some SSL policy errors. Check if the DN and CN match the server's web address", "Program", "Main_OP", Logging.LogType.Error);
                                                     }
 
                                                     return false;
@@ -238,6 +260,8 @@ namespace ThetaFTP
                                     app.UseHsts();
                             }
 
+                            app.UseRateLimiter();
+
                             app.MapControllers();
                             app.UseHttpsRedirection();
 
@@ -247,6 +271,9 @@ namespace ThetaFTP
 
                             app.MapBlazorHub();
                             app.MapFallbackToPage("/_Host");
+
+                            app.MapRazorPages().RequireRateLimiting("sliding_window");
+                            app.MapDefaultControllerRoute().RequireRateLimiting("sliding_window");
 
                             app.Run();
                         }
@@ -269,14 +296,14 @@ namespace ThetaFTP
                 }
 
             }
-            catch(Exception E)
+            catch(Exception e)
             {
-                Log.Fatal(E, "Fatal error");
+                Logging.Message(e, "Fatal error", "", "Program", "Main_OP", Logging.LogType.Fatal);
                 Environment.Exit(1);
             }
             finally
             {
-                await Log.CloseAndFlushAsync();
+                Logging.FlushLogs();
             }
 
             return true;
