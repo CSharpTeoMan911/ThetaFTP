@@ -56,6 +56,9 @@
 
 # 🛡️ Security features
 
+## 🔐 DDos protection
+The application uses an IP based rate limiter to protect against DDos attacks, as well as ensuring a predictible CPU and RAM usage.  
+
 ## 🔐 Connection encryption
 The application uses SSL/TLS encryption to secure the client-server connection, preventing unauthorized access. You can configure it with either self-signed certificates or trusted publisher certificates.
 
