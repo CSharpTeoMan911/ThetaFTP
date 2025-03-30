@@ -1,9 +1,7 @@
-﻿using Serilog;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
-using static Mysqlx.Expect.Open.Types.Condition.Types;
 
 namespace ThetaFTP.Shared.Classes
 {
@@ -48,7 +46,7 @@ namespace ThetaFTP.Shared.Classes
             }
             catch (Exception e)
             {
-                Log.Error(e, "Error reading encryption key configurations");
+                Logging.Message(e, "Error reading encryption key configurations", "The key configuration file either does not exist or either the app does not have permissions to read it", "FileEncryptionKeyGen", "KeyGen", Logging.LogType.Error);
             }
 
             KeyGenModel? model = await JsonFormatter.JsonDeserialiser<KeyGenModel?>(serialised_json);
@@ -166,7 +164,7 @@ namespace ThetaFTP.Shared.Classes
             catch(Exception e)
             {
                 result.generationResult = KeyGenerationResult.Unsccessful;
-                Log.Error(e, "Error creating encryption key file");
+                Logging.Message(e, "Error creating encryption key file", "Error creating encryption key file", "FileEncryptionKeyGen", "GenerateKeys", Logging.LogType.Error);
             }
 
             return result;

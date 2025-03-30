@@ -1,8 +1,7 @@
 ﻿using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
-using Serilog;
-using System.Text;
+
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -49,7 +48,7 @@ namespace ThetaFTP.Shared.Controllers
                                 }
                                 catch(Exception e)
                                 {
-                                    Log.Error(e, "File FTP Controller delete error");
+                                    Logging.Message(e, "File FTP Controller delete error", "File could not be deleted", "FtpDatabaseController", "Delete", Logging.LogType.Error);
                                     serverPayload.result = "Internal server error";
                                 }
                                 
@@ -179,7 +178,7 @@ namespace ThetaFTP.Shared.Controllers
                                     }
                                     catch (Exception e)
                                     {
-                                        Log.Error(e, "File FTP controller get info error");
+                                        Logging.Message(e, "File FTP controller get info error", "File info could not be retrieved", "FtpDatabaseController", "GetInfo", Logging.LogType.Error);
                                         serverPayload.result = "Internal server error";
                                     }
                                 }
@@ -303,7 +302,7 @@ namespace ThetaFTP.Shared.Controllers
                                                                 }
                                                                 catch (Exception e)
                                                                 {
-                                                                    Log.Error(e, "File FTP controller upload error");
+                                                                    Logging.Message(e, "File FTP controller upload error", "File could not be deleted", "FtpDatabaseController", "Delete", Logging.LogType.Error);
                                                                     serverPayload.result = "Internal server error";
                                                                 }
                                                             }
@@ -414,8 +413,8 @@ namespace ThetaFTP.Shared.Controllers
                                                     }
                                                     catch (Exception e)
                                                     {
-                                                        Log.Error(e, "File FTP controller relocation error");
-                                                        
+                                                        Logging.Message(e, "File FTP controller relocation error", "File could not be relocated", "FtpDatabaseController", "Update", Logging.LogType.Error);
+     
                                                         if(e.Message.Contains("Cannot create a file when that file already exists") == true)
                                                             serverPayload.result = "File already exist";
                                                         else
@@ -508,7 +507,7 @@ namespace ThetaFTP.Shared.Controllers
                                             }
                                             catch (Exception e)
                                             {
-                                                Log.Error(e, "File FTP controller relocation error");
+                                                Logging.Message(e, "File FTP controller rename error", "File could not be renamed", "FtpDatabaseController", "Rename", Logging.LogType.Error);
                                                 serverPayload.result = "Invalid file name";
                                             }
                                         }
