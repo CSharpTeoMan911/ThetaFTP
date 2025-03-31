@@ -22,7 +22,7 @@ namespace ThetaFTP.Shared.Classes
         public static void Message(Exception error, string message, string context, string _class, string _method, LogType type)
         {
             string log = new StringBuilder("\nDate: ")
-                .Append(DateTime.UtcNow.ToString()).Append("\n")
+                .Append(DateTime.Now.ToString()).Append("\n")
                 .Append("Error: ").Append(error.Message).Append("\n")
                 .Append("Message: ").Append(message).Append("\n")
                 .Append("Context: ").Append(context).Append("\n")
@@ -43,7 +43,7 @@ namespace ThetaFTP.Shared.Classes
         public static void Message(string error, string message, string context, string _class, string _method, LogType type)
         {
             string log = new StringBuilder("\nDate: ")
-                .Append(DateTime.UtcNow.ToString()).Append("\n")
+                .Append(DateTime.Now.ToString()).Append("\n")
                 .Append("Error: ").Append(error).Append("\n")
                 .Append("Message: ").Append(message).Append("\n")
                 .Append("Context: ").Append(context).Append("\n")
