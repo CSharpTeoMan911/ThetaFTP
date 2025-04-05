@@ -94,7 +94,7 @@
 
                 if (item?.isDirectory == false)
                 {
-                    string formated_query_content = await QueryParsing.QueryParser(new FileOperationMetadata()
+                    string formated_query_content = QueryParsing.QueryParser(new FileOperationMetadata()
                         {
                             key = log_in_session_key,
                             file_name = item.name,
@@ -105,7 +105,7 @@
                 }
                 else
                 {
-                    string formated_query_content = await QueryParsing.QueryParser(new DirectoryOperationMetadata()
+                    string formated_query_content = QueryParsing.QueryParser(new DirectoryOperationMetadata()
                         {
                             key = log_in_session_key,
                             directory_name = item?.name,
