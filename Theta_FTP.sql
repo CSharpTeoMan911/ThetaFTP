@@ -1,13 +1,13 @@
--- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
 --
--- Host: localhost    Database: Theta_FTP
+-- Host: localhost    Database: thetaftp
 -- ------------------------------------------------------
--- Server version	8.0.39
+-- Server version	8.0.41
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -118,6 +118,80 @@ LOCK TABLES `credentials` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `google_accounts_waiting_for_deletion`
+--
+
+DROP TABLE IF EXISTS `google_accounts_waiting_for_deletion`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `google_accounts_waiting_for_deletion` (
+  `Account_Deletion_Code` varchar(100) NOT NULL,
+  `Google_UID` varchar(100) NOT NULL,
+  `Expiration_Date` datetime NOT NULL,
+  PRIMARY KEY (`Account_Deletion_Code`),
+  KEY `Google_UID` (`Google_UID`),
+  CONSTRAINT `google_accounts_waiting_for_deletion_ibfk_1` FOREIGN KEY (`Google_UID`) REFERENCES `google_credentials` (`Google_UID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `google_accounts_waiting_for_deletion`
+--
+
+LOCK TABLES `google_accounts_waiting_for_deletion` WRITE;
+/*!40000 ALTER TABLE `google_accounts_waiting_for_deletion` DISABLE KEYS */;
+/*!40000 ALTER TABLE `google_accounts_waiting_for_deletion` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `google_credentials`
+--
+
+DROP TABLE IF EXISTS `google_credentials`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `google_credentials` (
+  `Google_UID` varchar(100) NOT NULL,
+  PRIMARY KEY (`Google_UID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `google_credentials`
+--
+
+LOCK TABLES `google_credentials` WRITE;
+/*!40000 ALTER TABLE `google_credentials` DISABLE KEYS */;
+/*!40000 ALTER TABLE `google_credentials` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `google_log_in_sessions`
+--
+
+DROP TABLE IF EXISTS `google_log_in_sessions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `google_log_in_sessions` (
+  `Log_In_Session_Key` varchar(100) NOT NULL,
+  `Google_UID` varchar(100) NOT NULL,
+  `Expiration_Date` datetime NOT NULL,
+  PRIMARY KEY (`Log_In_Session_Key`),
+  KEY `Google_UID` (`Google_UID`),
+  CONSTRAINT `google_log_in_sessions_ibfk_1` FOREIGN KEY (`Google_UID`) REFERENCES `google_credentials` (`Google_UID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `google_log_in_sessions`
+--
+
+LOCK TABLES `google_log_in_sessions` WRITE;
+/*!40000 ALTER TABLE `google_log_in_sessions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `google_log_in_sessions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `log_in_sessions`
 --
 
@@ -178,4 +252,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-03 23:53:29
+-- Dump completed on 2025-03-31  3:19:01

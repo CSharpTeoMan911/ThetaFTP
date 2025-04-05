@@ -37,21 +37,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BouncyCastle.Cryptography" Version="2.5.0" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.5.1" />
     <PackageReference Include="FirebaseAuthentication.net" Version="4.1.0" />
     <PackageReference Include="FirebaseDatabase.net" Version="4.2.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
     <PackageReference Include="Google.Cloud.SecretManager.V1" Version="2.5.0" />
     <PackageReference Include="LiteDB" Version="5.0.21" />
-    <PackageReference Include="MailKit" Version="4.10.0" />
+    <PackageReference Include="MailKit" Version="4.11.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="6.0.0" />
-    <PackageReference Include="MimeKit" Version="4.10.0" />
+    <PackageReference Include="MimeKit" Version="4.11.0" />
     <PackageReference Include="MySql.Data" Version="9.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="QueryParser" Version="1.0.5" />
+    <PackageReference Include="QueryParser" Version="1.0.6" />
     <PackageReference Include="Serilog" Version="4.2.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
-    <PackageReference Include="System.Text.Json" Version="9.0.1" />
+    <PackageReference Include="System.Text.Json" Version="9.0.3" />
   </ItemGroup>
 
 </Project>
