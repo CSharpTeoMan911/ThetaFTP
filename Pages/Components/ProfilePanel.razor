@@ -225,7 +225,7 @@ else
                     new_password = password
                 };
 
-                string query = await QueryParser.QueryParsing.QueryParser(passwordUpdate);
+                string query = QueryParser.QueryParsing.QueryParser(passwordUpdate);
 
 
                 using (HttpClient client = clientFactory.CreateClient(Shared.HttpClientConfig))
@@ -510,7 +510,7 @@ else
                                 new_password = password
                             };
 
-                        string? query = await QueryParser.QueryParsing.QueryParser(model);
+                        string? query = QueryParser.QueryParsing.QueryParser(model);
 
                         HttpResponseMessage responseMessage = await client.PutAsync(new StringBuilder("/validation/update-account?").Append(query).ToString(), null);
                         PayloadModel? response = await responseMessage.Content.ReadAsAsync<PayloadModel>();

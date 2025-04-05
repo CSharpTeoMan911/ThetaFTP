@@ -155,7 +155,7 @@
                         key = log_in_session_key
                     };
 
-                string? url = new StringBuilder().Append("/directories/get-directories?").Append(await QueryParsing.QueryParser(metadata)).ToString();
+                string? url = new StringBuilder().Append("/directories/get-directories?").Append(QueryParsing.QueryParser(metadata)).ToString();
 
                 using (HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig))
                 {
@@ -300,7 +300,7 @@
                             path = Path,
                             new_path = selected_path
                         };
-                    request_url.Append("/files/relocate?").Append(await QueryParsing.QueryParser(fileOperationMetadata));
+                    request_url.Append("/files/relocate?").Append(QueryParsing.QueryParser(fileOperationMetadata));
                 }
                 else
                 {
@@ -311,7 +311,7 @@
                             path = Path,
                             new_path = selected_path
                         };
-                    request_url.Append("/directories/relocate?").Append(await QueryParsing.QueryParser(directoryOperationMetadata));
+                    request_url.Append("/directories/relocate?").Append(QueryParsing.QueryParser(directoryOperationMetadata));
                 }
 
                 using (HttpClient client = httpFactory.CreateClient(Shared.HttpClientConfig))

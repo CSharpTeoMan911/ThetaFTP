@@ -86,7 +86,7 @@
                     authentication.email = Email;
                     authentication.password = Password;
 
-                    string query_parameters = await QueryParsing.QueryParser<AuthenticationModel>(authentication);
+                    string query_parameters = QueryParsing.QueryParser<AuthenticationModel>(authentication);
 
                     StringBuilder builder = new StringBuilder(NavigationManager.BaseUri);
                     builder.Append("authentication/insert?");

@@ -31,9 +31,6 @@ namespace ThetaFTP.Shared.Controllers
 
 
 
-
-            //throw new NotImplementedException();
-
             return Ok("");
         }
 

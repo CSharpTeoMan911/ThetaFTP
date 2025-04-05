@@ -28,7 +28,7 @@ namespace ThetaFTP.Shared.Classes
                     metadata.file_length = stream.Length;
 
                     StringBuilder builder = new StringBuilder("/files/insert?");
-                    builder.Append(await QueryParsing.QueryParser(metadata));
+                    builder.Append(QueryParsing.QueryParser(metadata));
                     uri = builder.ToString();
 
                     content = new StreamContent(stream);
