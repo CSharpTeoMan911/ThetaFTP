@@ -387,3 +387,5 @@ certificate_generation.json
 /encryption_key_generation_file.json
 /aes_key.json
 /ServerErrorLogs*
+/appsettings.Development.json
+/appsettings.json

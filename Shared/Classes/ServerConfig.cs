@@ -8,41 +8,49 @@ namespace ThetaFTP.Shared.Classes
 {
     public class ServerConfig:Shared
     {
-        private static string json_file = "server_settings.json";
-        public static async Task<ServerConfigModel?> GetServerConfig()
+        private static readonly string development_app_settings_json_file = "appsettings.Development.json";
+        private static readonly string app_settings_json_file = "appsettings.json";
+
+
+        public static async Task<DefaultAppSettings?> GetServerConfig(bool isDebug)
         {
             string? serialised_json = null;
 
             try
             {
-                using (FileStream fs = File.OpenRead(json_file))
+                
+                using (FileStream fs = File.OpenRead(isDebug == true ? development_app_settings_json_file : app_settings_json_file))
                 {
                     byte[] json_binary = new byte[fs.Length];
                     await fs.ReadAsync(json_binary, 0, json_binary.Length);
                     serialised_json = Encoding.UTF8.GetString(json_binary);
                 }
+                
             }
             catch (Exception e)
             {
                 Logging.Message(e, "Error reading server configurations", "Json deserialisation error", "JsonFormatter", "JsonSerialiser", Logging.LogType.Error);
             }
 
-            ServerConfigModel? model = await JsonFormatter.JsonDeserialiser<ServerConfigModel?>(serialised_json);
+            DefaultAppSettings? model = await JsonFormatter.JsonDeserialiser<DefaultAppSettings?>(serialised_json);
 
             if (model == null)
             {
-                string path = new StringBuilder(Environment.CurrentDirectory).Append(FileSystemFormatter.PathSeparator()).Append(json_file).ToString();
-                await CreateServerConfig(new ServerConfigModel(), path);
+                string path = new StringBuilder(Environment.CurrentDirectory).Append(FileSystemFormatter.PathSeparator()).Append(isDebug == true ? development_app_settings_json_file : app_settings_json_file).ToString();
+                await CreateServerConfig(new DefaultAppSettings(), path, isDebug);
                 Console.WriteLine(new StringBuilder("\n\n\n Generated app config file at: \n ").Append(path).Append("\n\n\n"));
             }
 
             return model;
         }
 
-        private static async Task CreateServerConfig(ServerConfigModel model, string path)
+        private static async Task CreateServerConfig(DefaultAppSettings model, string path, bool isDebug)
         {
             try
             {
+                model.Logging.LogLevel.Default = isDebug == false ? "None" : "Information";
+                model.Logging.LogLevel.Microsoft_AspNetCore = isDebug == false ? "None" : "Warning";
+
                 using (FileStream fileStream = File.OpenWrite(path))
                 {
                     string? serialised_model = await JsonFormatter.JsonSerialiser(model);
