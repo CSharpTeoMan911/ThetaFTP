@@ -9,7 +9,7 @@ namespace ThetaFTP.Shared.Classes
 {
     public class FileUploadPayloadBuilder
     {
-        public static async Task<Tuple<string, Stream, StreamContent?>> FileUpload(IBrowserFile file, string? path, string? log_in_session_key)
+        public static Task<Tuple<string, Stream, StreamContent?>> FileUpload(IBrowserFile file, string? path, string? log_in_session_key)
         {
             string uri = String.Empty;
             Stream stream = new MemoryStream();
@@ -39,7 +39,7 @@ namespace ThetaFTP.Shared.Classes
             {
             }
 
-            return new Tuple<string, Stream, StreamContent?>(uri, stream, content);
+            return Task.FromResult(new Tuple<string, Stream, StreamContent?>(uri, stream, content));
         }
     }
 }
