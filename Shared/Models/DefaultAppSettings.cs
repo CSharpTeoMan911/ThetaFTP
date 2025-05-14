@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using System.Diagnostics.Tracing;
+﻿using Newtonsoft.Json;
 
 namespace ThetaFTP.Shared.Models
 {
@@ -8,7 +7,7 @@ namespace ThetaFTP.Shared.Models
         public class LogLevel
         {
             public string Default { get; set; } = "None";
-            [Description("Microsoft.AspNetCore")]
+            [JsonProperty("Microsoft.AspNetCore")]
             public string Microsoft_AspNetCore = "None";
         }
 
