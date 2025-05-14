@@ -66,7 +66,7 @@
 
     private void OnChange(ChangeEventArgs e)
     {
-        _new_name = e.Value.ToString();
+        _new_name = e?.Value?.ToString();
     }
 
 

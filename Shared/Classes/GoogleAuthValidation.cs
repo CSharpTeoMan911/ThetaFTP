@@ -4,7 +4,7 @@ namespace ThetaFTP.Shared.Classes
 {
     public class GoogleAuthValidation
     {
-        public async Task<bool> ValidateJwtToken(string obj)
+        public Task<bool> ValidateJwtToken(string obj)
         {
             try
             {
@@ -12,7 +12,7 @@ namespace ThetaFTP.Shared.Classes
             }
             catch { }
 
-            return true;
+            throw new NotImplementedException();
         }
     }
 }

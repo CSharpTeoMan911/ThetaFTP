@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Google.Protobuf.WellKnownTypes;
+using System.Text;
 using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
 
@@ -7,39 +8,55 @@ namespace ThetaFTP.Shared.Classes
     public class AesKeyLoadup
     {
         private static bool Loaded = false;
-        public static async Task<bool> LoadAesKey(string? value, bool is_path)
+
+        public static async Task<bool> LoadAesKeyFromValue(string? value)
         {
             bool result = false;
+
             try
             {
                 if (Loaded == false)
                 {
                     if (value != null)
                     {
-                        AesKeyModel? model = null;
-                        if (is_path == false)
+                        AesKeyModel? model = await JsonFormatter.JsonDeserialiser<AesKeyModel>(value);
+                        if (model != null)
                         {
-                            model = await JsonFormatter.JsonDeserialiser<AesKeyModel>(value);
+                            Shared.SetAes(new AesFileEncryption(model));
+                            result = true;
+                        }
+                    }
+
+                    Loaded = true;
+                }
+            }
+            catch { }
+
+            return result;
+        }
+
+        public static async Task<bool> LoadAesKeyFromFile(string? path)
+        {
+            bool result = false;
+            try
+            {
+                if (Loaded == false)
+                {
+                    if (path != null)
+                    {
+                        using (FileStream fs = File.Open(path, FileMode.Open))
+                        {
+                            AesKeyModel? model = null;
+
+                            byte[] file_binary = new byte[fs.Length];
+                            await fs.ReadAsync(file_binary, 0, file_binary.Length);
+
+                            string aes_str = Encoding.UTF8.GetString(file_binary);
+                            model = await JsonFormatter.JsonDeserialiser<AesKeyModel>(aes_str);
                             if (model != null)
                             {
                                 Shared.SetAes(new AesFileEncryption(model));
                                 result = true;
-                            }
-                        }
-                        else
-                        {
-                            using (FileStream fs = File.Open(value, FileMode.Open))
-                            {
-                                byte[] file_binary = new byte[fs.Length];
-                                await fs.ReadAsync(file_binary);
-
-                                string aes_str = Encoding.UTF8.GetString(file_binary);
-                                model = await JsonFormatter.JsonDeserialiser<AesKeyModel>(value);
-                                if (model != null)
-                                {
-                                    Shared.SetAes(new AesFileEncryption(model));
-                                    result = true;
-                                }
                             }
                         }
                     }

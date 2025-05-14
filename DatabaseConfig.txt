@@ -1,7 +1,11 @@
-﻿# Create and import the database schema inside the Theta_FTP database using the 'mysql' command line
+﻿##############################################################################################################################
+#                                                              NOTE                                                          #
+##############################################################################################################################
+# Use '/' as path separators on both Windows and Linux                                                                       #
+#                                                                                                                            #
+# (e.g. Linux) mysql -u root -p -e "CREATE DATABASE thetadrive;USE thetadrive;SOURCE /etc/database/Theta_FTP.sql;"           #
+#                                                                                                                            #
+# (e.g. Windows) mysql -u root -p -e "CREATE DATABASE thetadrive;USE thetadrive;SOURCE C:/Users/User/Desktop/Theta_FTP.sql;" #
+##############################################################################################################################
 
-mysql -u root -p -e "CREATE DATABASE ThetaFTP;USE ThetaFTP;SOURCE C:/Users/teodo/source/repos/CSharpTeoMan911/ThetaFTP/Theta_FTP.sql;"
-
-# USE '/' AS THE PATH SEPARATOR CHARACTER WITHIN THE SOURCE QUERY ON ALL OPERATING SYSTEMS
-(e.g.) C:\Program` Files\MySQL\MySQL` Workbench` 8.0\mysql.exe -u root -p -e "CREATE DATABASE Theta_FTP;USE Theta_FTP;SOURCE C:/Users/teodo/Desktop/Theta_FTP.sql;"
-
+mysql -u root -p -e "CREATE DATABASE thetadrive;USE thetadrive;SOURCE /etc/database/Theta_FTP.sql;"
