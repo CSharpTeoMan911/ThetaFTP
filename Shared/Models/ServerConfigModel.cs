@@ -9,7 +9,6 @@
         }
 
         public bool is_reverse_proxy {  get; set; }
-        public bool DebugMode { get; set; }
         public bool use_google_secrets { get; set; }
         public string? aes_encryption_key_secret_url { get; set; } = "!!! REPLACE WITH SECRET URL !!!";
         public string? aes_encryption_key_version { get; set; } = "1";
@@ -23,8 +22,6 @@
         public string? smtp_password_secret_version { get; set; } = "1";
         public string? custom_server_certificate_password_secret_url { get; set; } = "!!! REPLACE WITH SECRET URL !!!";
         public string? custom_server_certificate_password_secret_version { get; set; } = "1";
-        public string? server_ip_address { get; set; } = "127.0.0.1";
-        public int server_port { get; set; } = 8000;
         public string? server_salt { get; set; } = "aaabbbccdddd";
         public bool use_secure_local_storage { get; set; } = true;
         public bool use_firebase { get; set; } = false;
@@ -33,7 +30,6 @@
         public string? firebase_api_key { get; set; } = "!!! REPLACE WITH THE APP'S API KEY !!!";
         public string? firebase_auth_domain { get; set; } = "!!! REPLACE WITH THE APP'S AUTH DOMAIN !!!";
         public string? mysql_server_address { get; set; } = "127.0.0.1";
-        public bool use_custom_ip_kestrel_config { get; set; }
         public int mysql_server_port { get; set; } = 3306;
         public string? mysql_user_id { get; set; } = "root";
         public string? mysql_user_password { get; set; } = "!!! REPLACE WITH MYSQL USER PASSWORD !!!";

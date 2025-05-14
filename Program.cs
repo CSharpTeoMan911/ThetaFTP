@@ -6,6 +6,8 @@ using ThetaFTP.Shared.Models;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.HttpOverrides;
 using System.Threading.RateLimiting;
+using Microsoft.Extensions.Hosting.Internal;
+using Microsoft.AspNetCore.Server.Kestrel;
 
 namespace ThetaFTP
 {
@@ -21,7 +23,9 @@ namespace ThetaFTP
         {
             try
             {
-                ServerConfigModel? model = await ServerConfig.GetServerConfig();
+                var builder = WebApplication.CreateBuilder(args);
+
+                ServerConfigModel? model = (await ServerConfig.GetServerConfig(builder.Environment.IsDevelopment()))?.ServerConfigModel;
                 CertGenConfig.Result cert_result = await CertGenConfig.CertGen();
                 FileEncryptionKeyGen.Result key_result = await FileEncryptionKeyGen.KeyGen();
 
@@ -62,7 +66,7 @@ namespace ThetaFTP
 
                                 if (model.use_file_encryption == true)
                                 {
-                                    if (await AesKeyLoadup.LoadAesKey(aes_encryption_key_secret, false) == false)
+                                    if (await AesKeyLoadup.LoadAesKeyFromValue(aes_encryption_key_secret) == false)
                                     {
                                         Console.WriteLine("Invalid Google Cloud credentials or corrupt AES key.\nCheck if Google Secrets API url is valid\nor use the command:\n 'gcloud auth application-default login'");
                                         throw new Exception("Corrupted AES key");
@@ -73,9 +77,9 @@ namespace ThetaFTP
                             {
                                 if (model.use_file_encryption == true)
                                 {
-                                    if (await AesKeyLoadup.LoadAesKey(model?.aes_encryption_key_location, false) == false)
+                                    if (await AesKeyLoadup.LoadAesKeyFromFile(model?.aes_encryption_key_location) == false)
                                     {
-                                        Console.WriteLine("Invalid Google Cloud credentials or corrupt AES key.\nCheck if Google Secrets API url is valid\nor use the command:\n 'gcloud auth application-default login'");
+                                        Console.WriteLine("Corrupt AES key. Check if the specified path to the key is valid.");
                                         throw new Exception("Corrupted AES key");
                                     }
                                 }
@@ -90,7 +94,7 @@ namespace ThetaFTP
                             server_utility_timer.Interval = 60000;
                             server_utility_timer.Start();
 
-                            var builder = WebApplication.CreateBuilder(args);
+
 
                             builder.Services.AddRateLimiter((options) => {
                                 options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext => 
@@ -129,14 +133,6 @@ namespace ThetaFTP
                                             {
                                                 options.MaximumReceiveMessageSize = 10 * 1024 * 1024; 
                                             });
-
-
-
-                            if (model?.is_reverse_proxy == true)
-                                builder.Services.Configure<ForwardedHeadersOptions>(options =>
-                                {
-                                    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-                                });
 
                             builder.Services.AddHttpClient(HttpClientConfig, client => {
                                 int timeout = 600;
@@ -212,39 +208,29 @@ namespace ThetaFTP
                                 });
 
 
-                            if (model?.DebugMode == false)
+                            builder.WebHost.ConfigureKestrel((context, serverOptions) =>
                             {
-                                builder.WebHost.ConfigureKestrel((context, serverOptions) =>
+                                if (model != null)
                                 {
-                                    if (model != null)
-                                    {
-                                        IPAddress? iPAddress = IPAddress.Loopback;
+                                    IConfigurationSection kestrel_config = context.Configuration.GetSection("Kestrel");
 
-                                        if (model.server_ip_address != null)
+                                    KestrelConfigurationLoader https = serverOptions.Configure(kestrel_config).Endpoint("Address", listenOptions => {
+                                        if (model != null && model.use_custom_ssl_certificate == true && model.custom_server_certificate_path != null)
                                         {
-                                            iPAddress = IPAddress.Parse(model.server_ip_address);
+                                            listenOptions.ListenOptions.UseHttps(model.custom_server_certificate_path, model.custom_server_certificate_password);
                                         }
 
-                                        if (model.use_custom_ip_kestrel_config == true)
-                                        {
-                                            serverOptions.Listen(iPAddress, model.server_port, listenOptions =>
-                                            {
-                                                if (model != null && model.use_custom_ssl_certificate == true && model.custom_server_certificate_path != null)
-                                                    listenOptions.UseHttps(model.custom_server_certificate_path, model.custom_server_certificate_password);
+                                        listenOptions.ListenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
+                                    });
 
-                                                listenOptions.Protocols = HttpProtocols.Http1AndHttp2AndHttp3;
-                                            });
-                                        }
-
-                                        serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(connection_timeout);
-                                        serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(connection_timeout);
-                                        serverOptions.Limits.MaxRequestBodySize = model.max_request_buffer_size;
-                                        serverOptions.Limits.MaxResponseBufferSize = model.max_response_buffer_size;
-                                        serverOptions.Limits.MaxRequestBufferSize = model.max_request_buffer_size > 10 * 1024 * 1024 * 2 ? model.max_request_buffer_size : 10 * 1024 * 1024 * 2;
-                                        serverOptions.Limits.MaxConcurrentConnections = model.max_concurent_connections;
-                                    }
-                                });
-                            }
+                                    serverOptions.Limits.KeepAliveTimeout = TimeSpan.FromSeconds(connection_timeout);
+                                    serverOptions.Limits.RequestHeadersTimeout = TimeSpan.FromSeconds(connection_timeout);
+                                    serverOptions.Limits.MaxRequestBodySize = model.max_request_buffer_size;
+                                    serverOptions.Limits.MaxResponseBufferSize = model.max_response_buffer_size;
+                                    serverOptions.Limits.MaxRequestBufferSize = model.max_request_buffer_size > 10 * 1024 * 1024 * 2 ? model.max_request_buffer_size : 10 * 1024 * 1024 * 2;
+                                    serverOptions.Limits.MaxConcurrentConnections = model.max_concurent_connections;
+                                }
+                            });
 
                             var app = builder.Build();
 

@@ -25,13 +25,13 @@ namespace ThetaFTP.Shared.Controllers
         }
 
         [HttpPost("auth")]
-        public async Task<ActionResult?> Insert(GoogleAutheticationModel? value)
+        public Task<ActionResult?> Insert(GoogleAutheticationModel? value)
         {
-            System.Diagnostics.Debug.WriteLine($"Token: {value.jwt}");
+            System.Diagnostics.Debug.WriteLine($"Token: {value?.jwt}");
 
 
 
-            return Ok("");
+            return Task.FromResult<ActionResult?>(Ok(""));
         }
 
         public Task<ActionResult?> Rename(string? value)
