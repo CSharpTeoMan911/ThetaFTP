@@ -15,6 +15,16 @@
 <br/>
 <br/>
 
+# 🔄 Changelog
+📌 Latest Version: v1.0.9
+
+* 🆕 Fixed bug regarding the load-up of the AES key
+* 🆕 Moved the server settings into the 'appconfig.json' file
+* 🆕 Updated the Wiki page
+
+<br/>
+<br/>
+
 # 📥Download & Setup
 * ➡️ To download the application, go to the [Release](https://github.com/CSharpTeoMan911/ThetaFTP/releases/tag/ThetaFTP-v1.0.0) section and download the application binary executables. Alternatively, you can download the binaries and source code from [SourceForge](https://sourceforge.net/projects/thetaftp/).
 * ➡️ For instructions about how to use and configure the application, please visit the [Wiki](https://github.com/CSharpTeoMan911/ThetaFTP/wiki) section of this repository.
