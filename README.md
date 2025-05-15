@@ -9,16 +9,17 @@
 ![ThetaFTP Server Op](https://github.com/user-attachments/assets/498e05f1-f1a1-40e0-a691-2c16eb3820b8)
 
 
-* 🚀 ThetaDrive is a cross-platform, open-source 🌐 Google Drive alternative — an easily configurable ⚙️ full-stack FTP server 💾 that works on both 🪟 Windows and 🐧 Linux.
+* 🚀 **ThetaDrive** is a **cross-platform**, **open-source** 🌐 **Google Drive** alternative — an **easily configurable** ⚙️ **full-stack FTP server** 💾 that works on both 🪟 **Windows** and 🐧 **Linux**.
   
-* It comes ready to deploy 📦 with advanced features like:
-  * 🔐 Two-step authentication via 📧 SMTP
-  * 🔒 SSL/TLS connection encryption
-  * 📜 SSL certificate generation
-  * 🛡️ Customizable security & database attributes
+* It comes **ready to deploy** 📦 with advanced features like:
+  * 🔐 **Two-step authentication via 📧 SMTP**
+  * 🔒 **SSL/TLS connection encryption**
+  * 🔒 **AES-256 based file encryption**
+  * 📜 **SSL certificate generation**
+  * 🛡️ **Customizable security & database attributes**
 
-* Perfect for power users and devs who want control and flexibility! 💡💼
-* The website is hosted live at: https://theta-drive.org
+* Perfect for **power users** and **developers** who want **control and flexibility**! 💡💼
+* **The website is hosted live at: https://theta-drive.org**
 
 <br/>
 <br/>
