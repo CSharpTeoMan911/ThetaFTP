@@ -1,0 +1,106 @@
+﻿@page "/gauth-complete"
+@using ThetaFTP.Shared;
+@using ThetaFTP.Shared.Models;
+@inject NavigationManager NavigationManager;
+@inject IHttpClientFactory httpFactory;
+
+<div class="auth-respose">
+    <div style="display:flex; flex-direction:column; align-self:center; justify-self:center; width: fit-content;">
+        <div style="align-self:center; display:flex; flex-direction:row; align-self: start">
+            <img src="./images/google.webp" style="align-self:center; height:60px; margin-right: 40px;" />
+            <p class="sign-in-text" style="align-self:center; margin-bottom:0px;">
+                Sign-In
+            </p>
+        </div>
+        <div style="align-self: start">
+            @if (authState == AuthState.Successful)
+            {
+                <p class="sign-in-text" style="height:20px; margin-top: 0px; padding-top: 0px">
+                    Successful
+                </p>
+            }
+            else
+            {
+                <p class="sign-in-text" style="height:20px; margin-top: 0px; padding-top: 0px; color:#702422">
+                    Error
+                </p>
+            }
+        </div>
+    </div>
+</div>
+
+
+@code {
+    private AuthState authState { get; set; }
+
+    private enum AuthState
+    {
+        Successful,
+        Unsucessful
+    }
+
+    private static bool Loaded { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        base.OnAfterRender(firstRender);
+
+        if (Loaded == true)
+        {
+            string page_uri = "gauth-complete";
+
+            System.Text.StringBuilder stringBuilder = new System.Text.StringBuilder(NavigationManager.BaseUri);
+            string base_response = stringBuilder.Append(page_uri).Append('#').ToString();
+
+            stringBuilder.Clear();
+
+            string query_response = stringBuilder.Append(NavigationManager.BaseUri).Append(page_uri).Append('?').ToString();
+
+            stringBuilder.Clear().Append(NavigationManager.Uri).Replace(base_response, query_response);
+
+            string query_uri = stringBuilder.ToString();
+
+            UriBuilder uri = new UriBuilder(query_uri);
+            System.Collections.Specialized.NameValueCollection? query_parameters = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            string? token = query_parameters?["access_token"];
+
+            ProcessJwtToken(token);
+        }
+
+        Loaded = true;
+    }
+
+
+    public async void ProcessJwtToken(string? jwt)
+    {
+        if (Loaded == true)
+        {
+            try
+            {
+                using (HttpClient client = httpFactory.CreateClient("default"))
+                {
+                    client.BaseAddress = new Uri(NavigationManager.BaseUri);
+
+                    GoogleAutheticationModel googleAuthetication = new GoogleAutheticationModel()
+                    {
+                        jwt = jwt
+                    };
+
+                    string query = QueryParser.QueryParsing.QueryParser(googleAuthetication);
+
+                    HttpResponseMessage httpResponse = await client.PostAsync(new System.Text.StringBuilder("/google-auth/auth?").Append(query).ToString(), null);
+                    System.Diagnostics.Debug.WriteLine($"Status: {httpResponse.StatusCode}");
+
+                    PayloadModel model = await httpResponse.Content.ReadAsAsync<PayloadModel>();
+                    
+                    System.Diagnostics.Debug.WriteLine($"Status: {httpResponse.StatusCode}");
+
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error: {e.Message}");
+            }
+        }
+    }
+}

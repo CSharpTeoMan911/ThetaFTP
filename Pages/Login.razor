@@ -15,7 +15,7 @@
 {
     <ProfilePanel style="z-index:10" closePanel="new ProfilePanel.ClosePanel(CloseProfilePanel)" Email="@Email" use_key_validation = "false"/>
 }
-<PanelComponent Id="auth_panel" style="padding:calc(40px + 0.5vw) calc(20px + 0.3vw) calc(40px + 0.5vw) calc(20px + 0.3vw);">
+<PanelComponent Id="auth_panel" style="padding:calc(40px + 0.5vw) calc(20px + 0.3vw) calc(20px + 0.5vw) calc(20px + 0.3vw); background:linear-gradient(90deg, #D6D6D6 0%, #B0B0B0) 75%">
     <Component>
         @if (ShowAccountsApprovalPanel == true)
         {
@@ -35,54 +35,41 @@
 
         <InputSection inputSectionTitle="Password" placeholder="Password" inputValue="new InputSection.InputValue(OnPasswordValue)" isPassword="true" input_with_button="false" />
 
+
         <div style="display:flex;flex-direction:column;margin-top:20px;">
-
-            <button style="margin-top: 0px;" class="auth_navigation" @onclick=ResetPassword>
-                Forgot your password.
-            </button>
-
-            <button class="auth_action" @onclick=SignIn>
-                Sign In
-            </button>
-
-            @if(Shared.configurations.enable_google_login == true)
-            {
-                if(Loaded == true)
+            <div class="auth-buttons-container">
+                <button class="auth_action" @onclick=SignIn>
+                    Sign In
+                </button>
+                @if(Shared.configurations?.enable_google_login == true)
                 {
-                    <script src="https://accounts.google.com/gsi/client?hl=en" async defer></script>
+                    if(Loaded == true)
+                    {
+                        <script type="text/javascript">
+                            const module = {};
 
-                    <script type="text/javascript">
-                        const module = {};
-                        function Auth(token){
-                        module.auth(token);
-                        }
-                    </script>
+                            function AuthPopUp(){
+                                module.auth();
+                            }
+                        </script>
 
-                    <script type="module">
-                        import {GoogleSignIn} from "./js/functions.js";
-                        module.auth = GoogleSignIn;
-                    </script>
+                        <script type="module">
+                            import {GoogleSignIn} from "./js/functions.js";
+                            module.auth = GoogleSignIn;
+                        </script>
 
-
-                    <div id="g_id_onload"
-                    data-client_id="@Shared.configurations.google_oauth_client_id"
-                    data-callback="Auth">
-                    </div>
-
-                    <div class="g_id_signin"
-                    data-locale="en"
-                    data-type="standard"
-                    data-size="large"
-                    data-theme="outline"
-                    data-text="sign_in_with"
-                    data-shape="rectangular"
-                    data-logo_alignment="left">
-                    </div>
+                        <button onclick="AuthPopUp()">
+                        </button>
+                    }
                 }
-            }
-
-            <button class="auth_navigation" @onclick=NavigateToRegister>
+            </div>
+            
+            <button style="margin-top: 30px;" class="auth_navigation" @onclick=NavigateToRegister>
                 Don't have an account? Click to register.
+            </button>
+
+            <button style="margin-top: 10px; margin-bottom:20px;" class="auth_navigation" @onclick=ResetPassword>
+                Forgot your password.
             </button>
         </div>
     </Component>
@@ -112,45 +99,12 @@
     private readonly string validationInputTopic = "Validation code";
 
 
-    [JSInvokable]
-    public async void ProcessJwtToken(string jwt)
-    {
-        if (Loaded == true)
-        {
-            try
-            {
-                using(HttpClient client = httpFactory.CreateClient("default"))
-                {
-                    client.BaseAddress = new Uri(NavigationManager.BaseUri);
-
-                    GoogleAutheticationModel googleAuthetication = new GoogleAutheticationModel()
-                    {
-                        jwt = jwt
-                    };
-
-                    string query = QueryParser.QueryParsing.QueryParser(googleAuthetication);
-
-                    HttpResponseMessage httpResponse = await client.PostAsync(new StringBuilder("/google-auth/auth?").Append(query).ToString(), null);
-                    System.Diagnostics.Debug.WriteLine($"Status: {httpResponse.StatusCode}");
-
-                    PayloadModel model = await httpResponse.Content.ReadAsAsync<PayloadModel>();
-
-                }
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine($"Error: {e.Message}");
-            }
-        }
-    }
-
-    private async void RegisterJwtProcessingMethod()
+    private async void InitiateJwtProcessingMethod()
     {
         if(Loaded == true)
         {
-            DotNetObjectReference<ThetaFTP.Pages.Login> reference = DotNetObjectReference.Create(this);
             IJSObjectReference objectReference = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-            await objectReference.InvokeVoidAsync("GoogleSignInApiProcessing", reference);
+            await objectReference.InvokeVoidAsync("GoogleSignInApiProcessing", Shared.configurations?.google_oauth_client_id);
         }
     }
 
@@ -188,7 +142,7 @@
         if(firstRender == true){
             Loaded = true;
             StateHasChanged();
-            RegisterJwtProcessingMethod();
+            InitiateJwtProcessingMethod();
         }
     }
 

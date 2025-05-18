@@ -1,4 +1,7 @@
 ﻿let google_sign_in_callback = null;
+let client_id = null;
+const redirect_url = `${window.location.origin}/gauth-complete`;
+
 
 export function Get_Cache(option, key) {
     let return_value = "";
@@ -7,7 +10,6 @@ export function Get_Cache(option, key) {
             return_value = localStorage.getItem(key);
             break;
     }
-
     return return_value;
 }
 
@@ -35,15 +37,34 @@ export function BrowserManagedFileDownload(url, filename) {
     anchor.remove();
 }
 
-export function GoogleSignInApiProcessing(dotNetModule) {
-    google_sign_in_callback = dotNetModule;
-    console.log(dotNetModule);
+export function GoogleSignInApiProcessing(clientId) {
+    client_id = clientId;
 }
 
-export async function GoogleSignIn(google_jwt) {
-    console.log("!!! Called !!!");
-    let res = await google_sign_in_callback.invokeMethodAsync("ProcessJwtToken", JSON.stringify(google_jwt));
-    console.log(res);
+export async function GoogleSignIn() {
+    const params = new URLSearchParams({
+        client_id: client_id,
+        redirect_uri: redirect_url,
+        response_type: 'token',
+        scope: 'email profile',
+        prompt: 'select_account'
+    }).toString();
+
+    const authUrl = `${"https://accounts.google.com/o/oauth2/v2/auth?"}${params}`;
+    window.open(authUrl, 'windowName', 'height=650,width=500');
+
+    window.addEventListener("message", (e) => {
+        if (e?.origin?.includes(redirect_url) === true) {
+            if (e?.data["result"] === "Authentication Successful") {
+                console.log(`Auth result: ${e?.data['key']}`);
+                //if () { }
+            }
+        }
+    });
+}
+
+export async function SendGoogleAuthResult() {
+    window.opener.postMessage()
 }
 
 

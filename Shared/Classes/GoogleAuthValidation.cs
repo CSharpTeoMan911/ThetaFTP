@@ -4,15 +4,17 @@ namespace ThetaFTP.Shared.Classes
 {
     public class GoogleAuthValidation
     {
-        public Task<bool> ValidateJwtToken(string obj)
+        public async Task<bool> ValidateJwtToken(string jwt)
         {
             try
             {
-                //await GoogleJsonWebSignature.ValidateAsync();
+                GoogleJsonWebSignature.Payload payload = await GoogleJsonWebSignature.ValidateAsync(jwt);
+                return (payload.EmailVerified && payload.ExpirationTimeSeconds != null) ? payload.ExpirationTimeSeconds > 0 : false;
             }
-            catch { }
-
-            throw new NotImplementedException();
+            catch 
+            {
+                return false;
+            }
         }
     }
 }

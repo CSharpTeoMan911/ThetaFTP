@@ -18,7 +18,7 @@
             else
             {
                 <div style="display: flex; flex-direction: row; align-content:center">
-                    <input style="width: 100%;" class="@(smallInputFont == true ? "input_style_small" : "input_style")" autocomplete="@(autocompleteOff == true ? "new-password" : "on")" type="@(visibility == true ? "text" : "password")" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
+                    <input style="width: 100%; align-self:center;" class="@(smallInputFont == true ? "input_style_small" : "input_style")" autocomplete="@(autocompleteOff == true ? "new-password" : "on")" type="@(visibility == true ? "text" : "password")" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
                     <PasswordVisibilityButton visible=@visibility changeCallback="ChangeVisibility"/>
                 </div>
             }

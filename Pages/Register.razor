@@ -6,7 +6,7 @@
 @inject IHttpClientFactory httpFactory;
 @page "/register";
 
-<PanelComponent style="padding:calc(46px + 0.5vw) calc(26px + 0.3vw) calc(46px + 0.5vw) calc(26px + 0.3vw);">
+<PanelComponent style="padding:calc(46px + 0.5vw) calc(26px + 0.3vw) calc(46px + 0.5vw) calc(26px + 0.3vw);background:linear-gradient(90deg, #D6D6D6 0%, #B0B0B0 75%)">
     <Component>
         @if (ShowNotification == true)
         {
@@ -18,11 +18,11 @@
         <InputSection inputSectionTitle="Password" placeholder="Password" inputValue="new InputSection.InputValue(OnPasswordValue)" isPassword="true" input_with_button="false" />
         <br />
         <InputSection inputSectionTitle="Re-Password" placeholder="Repeat password" inputValue="new InputSection.InputValue(OnRePasswordValue)" isPassword="true" input_with_button="false" />
-        <div style="display:flex;flex-direction:column;margin-top:40px;">
-            <button class="auth_action" @onclick=SignUp>
+        <div style="display:flex;flex-direction:column;margin-top:40px;padding-left:20px; padding-right:20px">
+            <button class="_auth_action" @onclick=SignUp>
                 Sign Up
             </button>
-            <button class="auth_navigation" @onclick=NavigateToLogIn>
+            <button class="_auth_navigation" @onclick=NavigateToLogIn>
                 Already have an account? Click to login.
             </button>
         </div>
