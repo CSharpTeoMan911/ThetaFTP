@@ -114,9 +114,7 @@
 
                     if(httpResponse.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        PayloadModel response = await httpResponse.Content.ReadAsAsync<PayloadModel>();
-
-                        System.Diagnostics.Debug.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(response, Newtonsoft.Json.Formatting.Indented));
+                        PayloadModel response = await httpResponse.Content.ReadAsAsync<PayloadModel>();;
 
                         if (response.StatusCode == System.Net.HttpStatusCode.OK)
                         {
