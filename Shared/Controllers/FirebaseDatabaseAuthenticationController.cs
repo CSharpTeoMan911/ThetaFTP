@@ -209,6 +209,7 @@ namespace ThetaFTP.Shared.Controllers
                                                 {
                                                     payloadModel.result = "Account not approved";
                                                     payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
+                                                    goto End;
                                                 }
                                             }
                                         }
