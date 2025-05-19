@@ -70,14 +70,19 @@ namespace ThetaFTP.Shared.Classes
                         string secret_data = result.Payload.Data.ToStringUtf8();
                         secrets[secretType] = secret_data;
                     }
-                    catch { }
+                    catch (Exception e)
+                    {
+                        Logging.Message(e, "Invalid secret URLs or secret versions", "Check the secrets URLs and secrets versions in the configuration file.", "GoogleSecretsManager", "GetSecrets", Logging.LogType.Error);
+                    }
                 }
             }
-            catch 
+            catch(Exception e)
             {
+                Logging.Message(e, "Invalid Google Cloud credentials or billing is not enabled credentials.", "Invalid Google Cloud credentials or billing is not enabled credentials. To log in use the command:\n 'gcloud auth application-default login'", "GoogleSecretsManager", "GetSecrets", Logging.LogType.Error);
+
                 Console.Clear();
-                Console.WriteLine("\n\n Invalid Google Cloud credentials. Use the command:\n 'gcloud auth application-default login'");
-                throw new Exception(" Invalid Google Cloud credentials. Use the command:\n 'gcloud auth application-default login'");
+                Console.WriteLine("\n\n Invalid Google Cloud credentials or billing is not enabled. To log in use the command:\n 'gcloud auth application-default login'");
+                throw new Exception(" Invalid Google Cloud credentials or billing is not enabled credentials. To log in use the command:\n 'gcloud auth application-default login'");
             }
 
             return secrets;
