@@ -234,6 +234,13 @@ namespace ThetaFTP
 
                             var app = builder.Build();
 
+                            app.Use(async (context, next) =>
+                            {
+                                context.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin");   
+                                context.Response.Headers.Append("Cross-Origin-Embedder-Policy", "require-corp");
+                                await next.Invoke();
+                            });
+
 
                             if (model?.is_reverse_proxy == true)
                                 app.UseForwardedHeaders();
@@ -260,6 +267,8 @@ namespace ThetaFTP
 
                             app.MapRazorPages().RequireRateLimiting("sliding_window");
                             app.MapDefaultControllerRoute().RequireRateLimiting("sliding_window");
+
+                            app.UseCors();
 
                             app.Run();
                         }

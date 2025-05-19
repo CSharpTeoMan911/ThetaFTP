@@ -42,7 +42,7 @@ else
     [Parameter] public NotificationType notificationType { get; set; }
     [Parameter] public string? style { get; set; }
 
-    private System.Timers.Timer timer { get; set; }
+    private System.Timers.Timer? timer { get; set; }
     private bool Loaded { get; set; }
 
     protected override void OnAfterRender(bool firstRender)
