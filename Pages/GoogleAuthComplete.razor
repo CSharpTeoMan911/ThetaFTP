@@ -1,8 +1,12 @@
 ﻿@page "/gauth-complete"
 @using ThetaFTP.Shared;
 @using ThetaFTP.Shared.Models;
+@using ThetaFTP.Shared.Formatters;
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+@inject ProtectedSessionStorage ProtectedSessionStore;
 @inject NavigationManager NavigationManager;
 @inject IHttpClientFactory httpFactory;
+@inject IJSRuntime JS;
 
 <div class="auth-respose">
     <div style="display:flex; flex-direction:column; align-self:center; justify-self:center; width: fit-content;">
@@ -39,13 +43,20 @@
         Unsucessful
     }
 
-    private static bool Loaded { get; set; }
+    private bool Loaded { get; set; } = false;
+    private bool Inititiated { get; set; } = false;
 
     protected override void OnAfterRender(bool firstRender)
     {
         base.OnAfterRender(firstRender);
 
-        if (Loaded == true)
+        if (firstRender == true)
+        {
+            Loaded = true;
+            StateHasChanged();
+        }
+
+        if (Inititiated == false)
         {
             string page_uri = "gauth-complete";
 
@@ -62,17 +73,17 @@
 
             UriBuilder uri = new UriBuilder(query_uri);
             System.Collections.Specialized.NameValueCollection? query_parameters = System.Web.HttpUtility.ParseQueryString(uri.Query);
-            string? token = query_parameters?["access_token"];
+            string? token = query_parameters?["id_token"];
 
             ProcessJwtToken(token);
+            Inititiated = true;
         }
-
-        Loaded = true;
     }
 
 
     public async void ProcessJwtToken(string? jwt)
     {
+
         if (Loaded == true)
         {
             try
@@ -81,25 +92,57 @@
                 {
                     client.BaseAddress = new Uri(NavigationManager.BaseUri);
 
+                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+
+                    string? nonce = await module.InvokeAsync<string?>("Get_Cache", "auth", "gauth_nonce");
+
+                    await module.InvokeVoidAsync("Delete_Cache", "auth", "gauth_nonce");
+
+
+
+
+
                     GoogleAutheticationModel googleAuthetication = new GoogleAutheticationModel()
                     {
+                        nonce = nonce,
                         jwt = jwt
                     };
 
                     string query = QueryParser.QueryParsing.QueryParser(googleAuthetication);
 
                     HttpResponseMessage httpResponse = await client.PostAsync(new System.Text.StringBuilder("/google-auth/auth?").Append(query).ToString(), null);
-                    System.Diagnostics.Debug.WriteLine($"Status: {httpResponse.StatusCode}");
 
-                    PayloadModel model = await httpResponse.Content.ReadAsAsync<PayloadModel>();
-                    
-                    System.Diagnostics.Debug.WriteLine($"Status: {httpResponse.StatusCode}");
+                    if(httpResponse.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        PayloadModel response = await httpResponse.Content.ReadAsAsync<PayloadModel>();
 
+                        System.Diagnostics.Debug.WriteLine(Newtonsoft.Json.JsonConvert.SerializeObject(response, Newtonsoft.Json.Formatting.Indented));
+
+                        if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                        {
+                            if (response.payload != null)
+                            {
+                                if (Shared.configurations?.use_secure_local_storage == true)
+                                {
+                                    await ProtectedSessionStore.SetAsync("AuthCache", (string)response.payload);
+                                }
+                                else
+                                {
+                                    await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", (string)response.payload);
+                                    await module.DisposeAsync();
+                                }
+
+                                await module.InvokeVoidAsync("Insert_Cache", "auth", "GAuth", response.result);
+                            }
+                        }
+                    }
+
+                    await module.DisposeAsync();
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error: {e.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error: {e.Message}");
             }
         }
     }

@@ -19,6 +19,8 @@ namespace ThetaFTP.Shared
             }
         }
 
+        public static GoogleAuthValidation googleAuth = new GoogleAuthValidation();
+
         public static AesFileEncryption? GetAes() => aes;
 
         public const string HttpClientConfig = "Default";

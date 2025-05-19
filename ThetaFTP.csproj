@@ -50,7 +50,7 @@
     <PackageReference Include="MimeKit" Version="4.11.0" />
     <PackageReference Include="MySql.Data" Version="9.2.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="QueryParser" Version="1.0.6" />
+    <PackageReference Include="QueryParser" Version="1.0.8" />
     <PackageReference Include="Serilog" Version="4.2.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
     <PackageReference Include="System.Text.Json" Version="9.0.3" />

@@ -109,13 +109,13 @@
                                 NotificationType = Notifications.NotificationType.Error;
                             }
 
-                            NotificationMessage = response.result;
+                            NotificationMessage = response?.result;
                         }
                         else
                         {
                             NotificationType = Notifications.NotificationType.Error;
-                            if (response.result != null)
-                                NotificationMessage = response.result;
+                            if (response?.result != null)
+                                NotificationMessage = response?.result;
                             else
                                 NotificationMessage = "Internal server error";
                         }

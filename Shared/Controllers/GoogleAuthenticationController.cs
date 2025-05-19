@@ -25,13 +25,42 @@ namespace ThetaFTP.Shared.Controllers
         }
 
         [HttpPost("auth")]
-        public Task<ActionResult?> Insert(GoogleAutheticationModel? value)
+        public async Task<ActionResult?> Insert(GoogleAutheticationModel? value)
         {
-            System.Diagnostics.Debug.WriteLine($"Google Auth Token: {value?.jwt}");
+            PayloadModel payload = new PayloadModel();
+            payload.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+            payload.result = "Internal server error";
+            payload.payload = "MOCK SESSION KEY";
+
+            GAuthModel gAuthModel = await Shared.googleAuth.ValidateJwtToken(value);
 
 
+            if (gAuthModel.successful == true)
+            {
+                payload.result = "Authentication Successful";
+                payload.StatusCode = System.Net.HttpStatusCode.OK;
 
-            return Task.FromResult<ActionResult?>(Ok(""));
+                System.Diagnostics.Debug.WriteLine($"Google JWT Token Valid");
+
+                if (Shared.configurations?.use_firebase == true)
+                {
+
+                }
+                else
+                {
+
+                }
+            }
+
+
+            if (payload.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                return Ok(payload);
+            }
+            else
+            {
+                return StatusCode(500, payload);
+            }
         }
 
         public Task<ActionResult?> Rename(string? value)

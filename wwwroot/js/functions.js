@@ -1,4 +1,4 @@
-﻿let google_sign_in_callback = null;
+﻿let google_auth_completed= null;
 let client_id = null;
 const redirect_url = `${window.location.origin}/gauth-complete`;
 
@@ -41,30 +41,45 @@ export function GoogleSignInApiProcessing(clientId) {
     client_id = clientId;
 }
 
-export async function GoogleSignIn() {
+export async function GoogleSignIn() {    
+
+    const nonce = window.crypto.randomUUID();
+
     const params = new URLSearchParams({
         client_id: client_id,
         redirect_uri: redirect_url,
-        response_type: 'token',
-        scope: 'email profile',
-        prompt: 'select_account'
+        response_type: 'id_token',
+        scope: 'openid email profile',
+        prompt: 'select_account',
+        nonce: nonce
     }).toString();
+
+    localStorage.setItem("gauth_nonce", nonce);
 
     const authUrl = `${"https://accounts.google.com/o/oauth2/v2/auth?"}${params}`;
     window.open(authUrl, 'windowName', 'height=650,width=500');
 
-    window.addEventListener("message", (e) => {
-        if (e?.origin?.includes(redirect_url) === true) {
-            if (e?.data["result"] === "Authentication Successful") {
-                console.log(`Auth result: ${e?.data['key']}`);
-                //if () { }
-            }
-        }
-    });
-}
 
-export async function SendGoogleAuthResult() {
-    window.opener.postMessage()
+
+    if (google_auth_completed !== null) {
+        clearInterval(google_auth_completed);
+    }
+
+    google_auth_completed = setInterval(() => {
+        const gauth = localStorage.getItem("GAuth");
+
+        if (gauth === "Authentication Successful") {
+            clearInterval(google_auth_completed);
+            localStorage.removeItem("GAuth");
+            window.location.href = `${window.location.origin}/`;
+        }
+        else if (gauth === "Authentication Unsuccessful")
+        {
+            clearInterval(google_auth_completed);
+            localStorage.removeItem("GAuth");
+        }
+    }, 100);
+    
 }
 
 

@@ -172,61 +172,64 @@
                     {
                         if (response?.StatusCode == System.Net.HttpStatusCode.OK)
                         {
-                            if (response?.result?.Contains("Account not approved") == true)
+                            if (response.payload != null)
                             {
-                                if (Shared.configurations?.use_secure_local_storage == true)
+                                if (response?.result?.Contains("Account not approved") == true)
                                 {
-                                    await protectedLocalStorage.SetAsync("AuthCache", (string)response.payload);
+                                    if (Shared.configurations?.use_secure_local_storage == true)
+                                    {
+                                        await protectedLocalStorage.SetAsync("AuthCache", (string)response.payload);
+                                    }
+                                    else
+                                    {
+                                        IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                                        await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", (string)response.payload);
+                                        await module.DisposeAsync();
+                                    }
+
+                                    NotificationType = Notifications.NotificationType.Information;
+                                    NotificationMessage = "Account not approved. Verify the inbox of your email address used for this account.";
+                                    ShowAccountsApprovalPanelOnClose = true;
+                                }
+                                else if (response?.result?.Contains("Authentication successful") == true)
+                                {
+                                    if (Shared.configurations?.use_secure_local_storage == true)
+                                    {
+                                        await protectedLocalStorage.SetAsync("AuthCache", (string)response.payload);
+                                    }
+                                    else
+                                    {
+                                        IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                                        await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", (string)response.payload);
+                                        await module.DisposeAsync();
+                                    }
+
+                                    NotificationType = Notifications.NotificationType.Information;
+                                    NotificationMessage = response.result;
+                                    NavigateToMainPageOnClose = true;
+                                }
+                                else if (response?.result?.Contains("Check the code sent to your email address to approve your log in session") == true)
+                                {
+                                    if (Shared.configurations?.use_secure_local_storage == true)
+                                    {
+                                        await protectedLocalStorage.SetAsync("AuthCache", (string)response.payload);
+                                    }
+                                    else
+                                    {
+                                        IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                                        await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", (string)response.payload);
+                                        await module.DisposeAsync();
+                                    }
+
+                                    NotificationType = Notifications.NotificationType.Information;
+                                    NotificationMessage = response.result;
+                                    ShowLogInSessionValidationPanelOnClose = true;
                                 }
                                 else
                                 {
-                                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                                    await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", (string)response.payload);
-                                    await module.DisposeAsync();
+                                    NotificationType = Notifications.NotificationType.Error;
+                                    NotificationMessage = "Internal server error";
                                 }
-
-                                NotificationType = Notifications.NotificationType.Information;
-                                NotificationMessage = "Account not approved. Verify the inbox of your email address used for this account.";
-                                ShowAccountsApprovalPanelOnClose = true;
-                            }
-                            else if (response?.result?.Contains("Authentication successful") == true)
-                            {
-                                if (Shared.configurations?.use_secure_local_storage == true)
-                                {
-                                    await protectedLocalStorage.SetAsync("AuthCache", (string)response.payload);
-                                }
-                                else
-                                {
-                                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                                    await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", (string)response.payload);
-                                    await module.DisposeAsync();
-                                }
-
-                                NotificationType = Notifications.NotificationType.Information;
-                                NotificationMessage = response.result;
-                                NavigateToMainPageOnClose = true;
-                            }
-                            else if (response?.result?.Contains("Check the code sent to your email address to approve your log in session") == true)
-                            {
-                                if (Shared.configurations?.use_secure_local_storage == true)
-                                {
-                                    await protectedLocalStorage.SetAsync("AuthCache", (string)response.payload);
-                                }
-                                else
-                                {
-                                    IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                                    await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", (string)response.payload);
-                                    await module.DisposeAsync();
-                                }
-
-                                NotificationType = Notifications.NotificationType.Information;
-                                NotificationMessage = response.result;
-                                ShowLogInSessionValidationPanelOnClose = true;
-                            }
-                            else
-                            {
-                                NotificationType = Notifications.NotificationType.Error;
-                                NotificationMessage = "Internal server error";
                             }
                         }
                     }
@@ -329,19 +332,22 @@
                     {
                         if (response?.StatusCode == System.Net.HttpStatusCode.OK)
                         {
-                            if (response.result.Contains("Account authorised") == true || response.result.Contains("Authentication successful") == true)
+                            if (response?.result?.Contains("Account authorised") == true || response?.result?.Contains("Authentication successful") == true)
                             {
-                                if (response.result.Contains("Account authorised") == true)
+                                if (response?.result?.Contains("Account authorised") == true)
                                 {
-                                    if (Shared.configurations?.use_secure_local_storage == true)
+                                    if (response?.payload != null)
                                     {
-                                        await protectedLocalStorage.SetAsync("AuthCache", (string)response.payload);
-                                    }
-                                    else
-                                    {
-                                        IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
-                                        await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", (string)response.payload);
-                                        await module.DisposeAsync();
+                                        if (Shared.configurations?.use_secure_local_storage == true)
+                                        {
+                                            await protectedLocalStorage.SetAsync("AuthCache", (string)response.payload);
+                                        }
+                                        else
+                                        {
+                                            IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+                                            await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", (string)response.payload);
+                                            await module.DisposeAsync();
+                                        }
                                     }
                                 }
 
@@ -352,7 +358,7 @@
                             else
                             {
                                 NotificationType = Notifications.NotificationType.Error;
-                                NotificationMessage = response.result;
+                                NotificationMessage = response?.result;
                             }
                         }
                         else
@@ -364,8 +370,8 @@
                     else
                     {
                         NotificationType = Notifications.NotificationType.Error;
-                        if (response.result != null)
-                            NotificationMessage = response.result;
+                        if (response?.result != null)
+                            NotificationMessage = response?.result;
                         else
                             NotificationMessage = "Internal server error";
                     }
