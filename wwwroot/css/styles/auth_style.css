@@ -4,21 +4,66 @@
     height: 100px;*/
 }
 
+div.auth-buttons-container {
+    width: fit-content;
+    align-self: center;
+    align-content: center;
+    display: flex;
+    flex-direction: row;
+}
+
+div.auth-respose {
+    position:absolute;
+    background-color: white;
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    flex-direction: row;
+    width:100vw;
+    height:100vh;
+}
+
 button.auth_action {
+    margin-bottom: 0px;
+    width: fit-content;
+    height: calc(30px + 1vmin);
+    align-self: center;
+    font-size: calc(13px + 0.3vw);
+    border-radius: 5px;
+    background-color: #0875de;
+    border-width: 2px;
+    border-color: transparent;
+    color: white;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+button.auth_action:hover {
+    background-color: #012b58;
+    color: white;
+}
+
+button._auth_action {
     margin-bottom: 0px;
     width: fit-content;
     align-self: center;
     margin-top: 18px;
-    font-size: calc(15px + 0.5vw);
+    font-size: calc(14px + 0.3vw);
     border-radius: 5px;
-    background-color: #0052a1;
+    background-color: #0875de;
     border-width: 2px;
     border-color: transparent;
     color: white;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 3px;
+    padding-bottom: 3px;
 }
 
-button.auth_action:hover{
-    background-color: #0875de;
+button._auth_action:hover {
+    background-color: #012b58;
     color: white;
 }
 
@@ -27,8 +72,26 @@ button.auth_navigation {
     margin-bottom: 0px;
     width: fit-content;
     align-self: center;
+    margin-top: 0px;
+    font-size: calc(9px + 0.2vw);
+    background-color: transparent;
+    border-color: transparent;
+    color: #0052a1;
+    padding-left: calc(45px + 0.5vw);
+    padding-right: calc(45px + 0.5vw);
+}
+
+button.auth_navigation:hover {
+    color: #0875de;
+}
+
+button._auth_navigation {
+    padding: 0px;
+    margin-bottom: 0px;
+    width: fit-content;
+    align-self: center;
     margin-top: 30px;
-    font-size: calc(10px + 0.3vw);
+    font-size: calc(9px + 0.3vw);
     background-color: transparent;
     border-color: transparent;
     color: #0052a1;
@@ -36,6 +99,17 @@ button.auth_navigation {
     padding-right: calc(30px + 0.5vw);
 }
 
-button.auth_navigation:hover {
+button._auth_navigation:hover {
     color: #0875de;
+}
+
+button.google_signin {
+    align-self: center;
+    height:fit-content;
+    width:fit-content;
+}
+
+p.sign-in-text{
+    font-size: 60px;
+    font-weight: bold;
 }

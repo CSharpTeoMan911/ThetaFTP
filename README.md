@@ -9,8 +9,27 @@
 ![ThetaFTP Server Op](https://github.com/user-attachments/assets/498e05f1-f1a1-40e0-a691-2c16eb3820b8)
 
 
+* 🚀 **ThetaDrive** is a **cross-platform**, **open-source** 🌐 **Google Drive** alternative — an **easily configurable** ⚙️ **full-stack FTP server** 💾 that works on both 🪟 **Windows** and 🐧 **Linux**.
+  
+* It comes **ready to deploy** 📦 with advanced features like:
+  * 🔐 **Two-step authentication via 📧 SMTP**
+  * 🔒 **SSL/TLS connection encryption**
+  * 🔒 **AES-256 based file encryption**
+  * 📜 **SSL certificate generation**
+  * 🛡️ **Customizable security & database attributes**
 
-**ThetaDrive** is a cross-platform open-source **Google Drive** alternative, that is an easily configurable full-stack FTP server application that works on both Windows and Linux. It comes ready to deploy with advanced features like two-step authentication via SMTP, SSL/TLS connection encryption, SSL certificate generation, and customizable security and database attributes. The website is hosted live at: https://theta-drive.org
+* Perfect for **power users** and **developers** who want **control and flexibility**! 💡💼
+* **The website is hosted live at: https://theta-drive.org**
+
+<br/>
+<br/>
+
+# 🔄 Changelog
+📌 Latest Version: v1.0.9
+
+* 🆕 Fixed bug regarding the load-up of the AES key
+* 🆕 Moved the server settings into the 'appconfig.json' file
+* 🆕 Updated the Wiki page
 
 <br/>
 <br/>
@@ -18,6 +37,82 @@
 # 📥Download & Setup
 * ➡️ To download the application, go to the [Release](https://github.com/CSharpTeoMan911/ThetaFTP/releases/tag/ThetaFTP-v1.0.0) section and download the application binary executables. Alternatively, you can download the binaries and source code from [SourceForge](https://sourceforge.net/projects/thetaftp/).
 * ➡️ For instructions about how to use and configure the application, please visit the [Wiki](https://github.com/CSharpTeoMan911/ThetaFTP/wiki) section of this repository.
+
+```
+{
+  "Logging": {
+    "LogLevel": {
+      "Microsoft.AspNetCore": "Warning",
+      "Default": "Information"
+    }
+  },
+  "AllowedHosts": "*",
+  "Kestrel": {
+    "Endpoints": {
+      "Address": {
+        "Url": "https://localhost:8000"
+      }
+    }
+  },
+  "ForwardedHeaders": {
+    "ForwardedHeaders": "XForwardedFor, XForwardedProto"
+  },
+  "ServerConfigModel": {
+    "is_reverse_proxy": false,
+    "use_google_secrets": false,
+    "aes_encryption_key_secret_url": "!!! REPLACE WITH SECRET URL !!!",
+    "aes_encryption_key_version": "1",
+    "server_salt_secret_url": "!!! REPLACE WITH SECRET URL !!!",
+    "server_salt_secret_version": "1",
+    "firebase_admin_token_secret_url": "!!! REPLACE WITH SECRET URL !!!",
+    "firebase_admin_token_secret_version": "1",
+    "mysql_user_password_secret_url": "!!! REPLACE WITH SECRET URL !!!",
+    "mysql_user_password_secret_version": "1",
+    "smtp_password_secret_url": "!!! REPLACE WITH SECRET URL !!!",
+    "smtp_password_secret_version": "1",
+    "custom_server_certificate_password_secret_url": "!!! REPLACE WITH SECRET URL !!!",
+    "custom_server_certificate_password_secret_version": "1",
+    "server_salt": "aaabbbccdddd",
+    "use_secure_local_storage": true,
+    "use_firebase": false,
+    "firebase_admin_token": "!!! REPLACE WITH FIREBASE DATABASE ADMIN TOKEN !!!",
+    "firebase_database_url": "!!! REPLACE WITH FIREBASE DATABASE URL !!!",
+    "firebase_api_key": "!!! REPLACE WITH THE APP'S API KEY !!!",
+    "firebase_auth_domain": "!!! REPLACE WITH THE APP'S AUTH DOMAIN !!!",
+    "mysql_server_address": "127.0.0.1",
+    "mysql_server_port": 3306,
+    "mysql_user_id": "root",
+    "mysql_user_password": "!!! REPLACE WITH MYSQL USER PASSWORD !!!",
+    "mysql_database": "thetadrive",
+    "twoStepAuth": false,
+    "smtp_email": "!!! REPLACE WITH SMTPS EMAIL ADDRESS !!!",
+    "smtp_password": "!!! REPLACE WITH SMTPS EMAIL PASSWORD !!!",
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "smtp_use_ssl": false,
+    "WriteOperationsPerSecond": 200,
+    "ConnectionTimeoutSeconds": 600,
+    "enforce_https": true,
+    "logs_expiration_days": 10,
+    "validate_ssl_certificates": false,
+    "validate_ssl_certificate_chain": false,
+    "use_custom_ssl_certificate": false,
+    "ensure_host_name_and_certificate_domain_name_match": false,
+    "custom_server_certificate_path": "!!! REPLACE WITH THE PATH TO THE SERVER PRIVATE CERTIFICATE !!!",
+    "custom_server_certificate_password": "!!! REPLACE WITH SERVER PRIVATE CERTIFICATE PASSWORD !!!",
+    "hsts_max_age_days": 730,
+    "max_concurent_connections": null,
+    "max_request_buffer_size": null,
+    "max_response_buffer_size": null,
+    "use_file_encryption": false,
+    "aes_encryption_key_location": "!!! REPLACE WITH THE PATH TO THE SERVER FILE ENCRYPTION KEY !!!",
+    "google_oauth_client_id": "REPLACE WITH GOOGLE OAUTH CLIENT ID",
+    "enable_google_login": false,
+    "maximum_number_of_requests_per_minute": 10000,
+    "maximum_number_of_queued_requests": 10000
+  }
+}
+```
 
 <br/>
 <br/>

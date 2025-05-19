@@ -180,7 +180,7 @@
 
     private void OnChanged(ChangeEventArgs e)
     {
-        SearchContent = e.Value.ToString();
+        SearchContent = e.Value?.ToString();
         Search();
     }
 
@@ -224,51 +224,60 @@
 
 
                     HttpResponseMessage result = await client.GetAsync(url_builder.ToString());
-                    PayloadModel? response = await result.Content.ReadAsAsync<PayloadModel>();
+                    PayloadModel response = await result.Content.ReadAsAsync<PayloadModel>();
 
                     if (result?.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         if (response?.StatusCode == System.Net.HttpStatusCode.OK && response?.result?.Contains("Files retrieval successful") == true)
                         {
-                            List<DirectoryItem> files = ((Newtonsoft.Json.Linq.JArray)response.payload).ToObject<List<DirectoryItem>>();
-
-                            url_builder.Clear();
-                            url_builder.Append("/directories/get-directories?").Append(QueryParsing.QueryParser(metadata));
-
-                            result = await client.GetAsync(url_builder.ToString());
-                            response = await result.Content.ReadAsAsync<PayloadModel>();
-
-
-                            if (response?.StatusCode == System.Net.HttpStatusCode.OK && response?.result?.Contains("Directories retrieval successful") == true)
+                            if (response.payload != null)
                             {
-                                List<DirectoryItem> directories = ((Newtonsoft.Json.Linq.JArray)response.payload).ToObject<List<DirectoryItem>>();
+                                List<DirectoryItem>? files = ((Newtonsoft.Json.Linq.JArray)response.payload).ToObject<List<DirectoryItem>>();
 
-                                SortUtility sortUtility = new SortUtility();
+                                url_builder.Clear();
+                                url_builder.Append("/directories/get-directories?").Append(QueryParsing.QueryParser(metadata));
 
-                                files?.AddRange(directories);
-                                items = files;
+                                result = await client.GetAsync(url_builder.ToString());
+                                response = await result.Content.ReadAsAsync<PayloadModel>();
 
-                                if (SearchFilterEnabled == true)
-                                    items = await SearchFilter(items);
 
-                                if (type == FilterPanel.Type.Name)
-                                    sortUtility.MergeSortByName(items, order == FilterPanel.Order.up);
+                                if (response?.StatusCode == System.Net.HttpStatusCode.OK && response?.result?.Contains("Directories retrieval successful") == true)
+                                {
+                                    if (response.payload != null)
+                                    {
+                                        List<DirectoryItem>? directories = ((Newtonsoft.Json.Linq.JArray)response.payload).ToObject<List<DirectoryItem>>();
+
+                                        if (directories != null)
+                                        {
+                                            SortUtility sortUtility = new SortUtility();
+
+                                            files?.AddRange(directories);
+                                            items = files;
+
+                                            if (SearchFilterEnabled == true)
+                                                items = await SearchFilter(items);
+
+                                            if (type == FilterPanel.Type.Name)
+                                                sortUtility.MergeSortByName(items, order == FilterPanel.Order.up);
+                                            else
+                                                sortUtility.MergeSortBySize(items, order == FilterPanel.Order.up);
+                                        }
+                                    }
+                                }
                                 else
-                                    sortUtility.MergeSortBySize(items, order == FilterPanel.Order.up);
-                            }
-                            else
-                            {
-                                InvalidLogInSessionKey = true;
-                                ShowNotification = true;
-                                notificationMessage = response.result;
-                                notificationType = Notifications.NotificationType.Error;
+                                {
+                                    InvalidLogInSessionKey = true;
+                                    ShowNotification = true;
+                                    notificationMessage = response?.result;
+                                    notificationType = Notifications.NotificationType.Error;
+                                }
                             }
                         }
                         else
                         {
                             InvalidLogInSessionKey = true;
                             ShowNotification = true;
-                            notificationMessage = response.result;
+                            notificationMessage = response?.result;
                             notificationType = Notifications.NotificationType.Error;
                         }
                     }
@@ -277,8 +286,8 @@
                         InvalidLogInSessionKey = true;
                         ShowNotification = true;
                         notificationType = Notifications.NotificationType.Error;
-                        if (response.result != null)
-                            notificationMessage = response.result;
+                        if (response?.result != null)
+                            notificationMessage = response?.result;
                         else
                             notificationMessage = "Internal server error";
                     }
@@ -405,7 +414,7 @@
 
                             if (responseMessage.StatusCode == System.Net.HttpStatusCode.OK)
                             {
-                                if (response.StatusCode == System.Net.HttpStatusCode.OK && response.result.Contains("File upload successful") == true)
+                                if (response.StatusCode == System.Net.HttpStatusCode.OK && response?.result?.Contains("File upload successful") == true)
                                 {
                                     if (pending_upload_progress_data.Count == 0)
                                         UploadInProgress = false;
@@ -414,21 +423,21 @@
                                 }
                                 else
                                 {
-                                    if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
+                                    if (response?.result?.Contains("Log in") == true || response?.result?.Contains("log in") == true)
                                         InvalidLogInSessionKey = true;
                                     notificationType = Notifications.NotificationType.Error;
                                 }
 
-                                notificationMessage = response.result;
+                                notificationMessage = response?.result;
                             }
                             else
                             {
-                                if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
+                                if (response?.result?.Contains("Log in") == true || response?.result?.Contains("log in") == true)
                                     InvalidLogInSessionKey = true;
 
                                 notificationType = Notifications.NotificationType.Error;
-                                if (response.result != null)
-                                    notificationMessage = response.result;
+                                if (response?.result != null)
+                                    notificationMessage = response?.result;
                                 else
                                     notificationMessage = "Internal server error";
                             }
@@ -688,18 +697,18 @@
 
     private void ProcessFileManipulation(PayloadModel? response)
     {
-        if (response.StatusCode == System.Net.HttpStatusCode.OK && response.result.Contains("successful") == true)
+        if (response?.StatusCode == System.Net.HttpStatusCode.OK && response?.result?.Contains("successful") == true)
         {
             ShowFileManipulationPanel = false;
             GetDirectoryInfo(true);
         }
         else
         {
-            if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
+            if (response?.result?.Contains("Log in") == true || response?.result?.Contains("log in") == true)
                 InvalidLogInSessionKey = true;
             ShowNotification = true;
             notificationType = Notifications.NotificationType.Error;
-            notificationMessage = response.result;
+            notificationMessage = response?.result;
 
             StateHasChanged();
         }

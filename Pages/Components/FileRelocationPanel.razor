@@ -50,16 +50,16 @@
                                     <input class="display" style="width:100%" value=" @directory?.name" readonly="readonly" />
                                 </div>
                                 <div style="display:flex; flex-direction:row-reverse; width: 50%">
-                                    @if (directory.name != "/")
+                                    @if (directory?.name != "/")
                                     {
                                         <button @onclick=@(()=>Open(directory)) class="file_relocation" style="margin-left:30px; cursor: pointer">
-                                            <img height="28px" src="./images/open-directory.webp" />
+                                            <img style="height:28px" src="./images/open-directory.webp" />
                                         </button>
                                     }
                                     @if (Path != (Current_Path?[Current_Path.Length - 1] == '/' ? new StringBuilder(Current_Path).Append(directory?.name).ToString() : new StringBuilder(Current_Path).Append('/').Append(directory?.name).ToString()) && directory?.name != Path)
                                     {
                                         <button @onclick=@(()=>Select(directory)) class="file_relocation" style="cursor: pointer">
-                                            <img height="28px" src="./images/check-mark.webp" />
+                                            <img style="height:28px" src="./images/check-mark.webp" />
                                         </button>
                                     }
                                 </div>
@@ -76,7 +76,7 @@
     private bool ShowBackButton{ get; set; }
     private string? last_dir { get; set; }
 
-    private List<DirectoryItem>? directories { get; set; } = new List<DirectoryItem>();
+    private List<DirectoryItem?>? directories { get; set; } = new List<DirectoryItem?>();
 
     [Parameter] public string? Path { get; set; }
     public string? Current_Path { get; set; }
@@ -162,43 +162,49 @@
                     client.BaseAddress = new Uri(NavigationManager.BaseUri);
 
                     HttpResponseMessage result = await client.GetAsync(url);
-                    PayloadModel? response = await result.Content.ReadAsAsync<PayloadModel>();
+                    PayloadModel response = await result.Content.ReadAsAsync<PayloadModel>();
 
                     if (result?.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         if (response?.StatusCode == System.Net.HttpStatusCode.OK && response?.result?.Contains("Directories retrieval successful") == true)
                         {
-                            StringBuilder filter_builder = new StringBuilder();
-                            directories = ((Newtonsoft.Json.Linq.JArray)response.payload).ToObject<List<DirectoryItem>>();
-                            if (Current_Path == "/")
-                                directories.Add(new DirectoryItem()
+                            if (response.payload != null)
+                            {
+                                StringBuilder filter_builder = new StringBuilder();
+                                directories = ((Newtonsoft.Json.Linq.JArray)response.payload).ToObject<List<DirectoryItem?>>();
+                                if (Current_Path == "/")
+                                    directories?.Add(new DirectoryItem()
                                     {
                                         isDirectory = true,
                                         name = Current_Path
                                     });
 
-                            directories = new List<DirectoryItem>(directories);
-                            int length = directories.Count;
+                                if (directories != null)
+                                {
+                                    directories = new List<DirectoryItem?>(directories);
+                                    int length = directories.Count;
 
-                            for (int i = 0; i < length; i++)
-                            {
-                                DirectoryItem current_item = directories.ElementAt(i);
-
-                                string current_path = Current_Path?[Current_Path.Length - 1] == '/' ? filter_builder.Append(Current_Path).Append(current_item?.name).ToString() : filter_builder.Append(Current_Path).Append('/').Append(current_item?.name).ToString();
-                                filter_builder.Clear();
-
-                                string selected_path = Current_Path?[Current_Path.Length - 1] == '/' ? filter_builder.Append(Current_Path).Append(selected_item?.name).ToString() : filter_builder.Append(Current_Path).Append('/').Append(selected_item?.name).ToString();
-                                filter_builder.Clear();
-
-                                if (current_path == selected_path)
-                                    if (selected_item?.isDirectory == current_item?.isDirectory)
+                                    for (int i = 0; i < length; i++)
                                     {
-                                        directories.Remove(current_item);
-                                        length--;
-                                    }
-                            }
+                                        DirectoryItem? current_item = directories?.ElementAt(i);
 
-                            StateHasChanged();
+                                        string current_path = Current_Path?[Current_Path.Length - 1] == '/' ? filter_builder.Append(Current_Path).Append(current_item?.name).ToString() : filter_builder.Append(Current_Path).Append('/').Append(current_item?.name).ToString();
+                                        filter_builder.Clear();
+
+                                        string selected_path = Current_Path?[Current_Path.Length - 1] == '/' ? filter_builder.Append(Current_Path).Append(selected_item?.name).ToString() : filter_builder.Append(Current_Path).Append('/').Append(selected_item?.name).ToString();
+                                        filter_builder.Clear();
+
+                                        if (current_path == selected_path)
+                                            if (selected_item?.isDirectory == current_item?.isDirectory)
+                                            {
+                                                directories?.Remove(current_item);
+                                                length--;
+                                            }
+                                    }
+
+                                    StateHasChanged();
+                                }
+                            }
                         }
                         else
                         {
@@ -211,7 +217,7 @@
                             timer.Elapsed += Elapsed;
                             timer.Start();
 
-                            if (response.result != null)
+                            if (response?.result != null)
                             {
                                 if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
                                     NavigateToLogIn = true;
@@ -323,7 +329,7 @@
 
                     if (result.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        if (response.StatusCode == System.Net.HttpStatusCode.OK && response.result.Contains("relocation successful") == true)
+                        if (response.StatusCode == System.Net.HttpStatusCode.OK && response?.result?.Contains("relocation successful") == true)
                         {
                             notificationType = Notifications.NotificationType.Information;
                             refresh = true;
@@ -332,21 +338,21 @@
                         {
                             notificationType = Notifications.NotificationType.Error;
 
-                            if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
+                            if (response?.result?.Contains("Log in") == true || response?.result?.Contains("log in") == true)
                                 NavigateToLogIn = true;
                         }
 
-                        notificationMessage = response.result;
+                        notificationMessage = response?.result;
                     }
                     else
                     {
                         notificationType = Notifications.NotificationType.Error;
 
-                        if (response.result.Contains("Log in") == true || response.result.Contains("log in") == true)
+                        if (response?.result?.Contains("Log in") == true || response?.result?.Contains("log in") == true)
                             NavigateToLogIn = true;
 
-                        if (response.result != null)
-                            notificationMessage = response.result;
+                        if (response?.result != null)
+                            notificationMessage = response?.result;
                         else
                             notificationMessage = "Internal server error";
                     }

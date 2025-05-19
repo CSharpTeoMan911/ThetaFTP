@@ -74,7 +74,7 @@ h1.title {
     color: #03608f;
     font-weight: 700;
     margin-bottom: 40px;
-    font-size: calc(25px + 0.5vw);
+    font-size: calc(20px + 0.5vw);
 }
 
 h2.input_title {
@@ -83,7 +83,9 @@ h2.input_title {
     align-self: center;
     color: #03608f;
     font-weight: 400;
-    font-size: calc(11px + 0.5vw);
+    font-size: calc(10px + 0.3vw);
+    padding: 0px;
+    margin: 0px 0px 3px 0px;
 }
 
 p.label {
@@ -97,7 +99,8 @@ p.label {
 }
 
 input.input_style {
-    font-size: calc(10px + 0.5vw);
+    height: fit-content;
+    font-size: calc(8px + 0.5vw);
     border-radius: 5px;
     border-width: calc(1px);
     outline-width: 1px;
