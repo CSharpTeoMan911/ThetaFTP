@@ -205,10 +205,13 @@ namespace ThetaFTP.Shared.Controllers
                                                 string extracted_approval = await client.Child("Accounts_Waiting_For_Approval").OrderBy("email").EqualTo(base64_email).OnceAsJsonAsync();
                                                 Dictionary<string, FirebaseApprovalModel>? deserialised_approval = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseApprovalModel>?>(extracted_approval);
 
+                                                Newtonsoft.Json.JsonConvert.SerializeObject(deserialised_approval, Newtonsoft.Json.Formatting.Indented);
+
                                                 if (deserialised_approval?.Keys.Count > 0)
                                                 {
                                                     payloadModel.result = "Account not approved";
                                                     payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
+                                                    goto End;
                                                 }
                                             }
                                         }
