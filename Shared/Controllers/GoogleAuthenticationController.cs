@@ -27,7 +27,7 @@ namespace ThetaFTP.Shared.Controllers
         [HttpPost("auth")]
         public async Task<ActionResult?> Insert(GoogleAutheticationModel? value)
         {
-            PayloadModel payload = new PayloadModel();
+            PayloadModel? payload = new PayloadModel();
             payload.StatusCode = System.Net.HttpStatusCode.InternalServerError;
             payload.result = "Internal server error";
             payload.payload = "MOCK SESSION KEY";
@@ -48,12 +48,12 @@ namespace ThetaFTP.Shared.Controllers
                 }
                 else
                 {
-
+                    payload = await Shared.google_auth_database.Insert(gAuthModel);
                 }
             }
 
 
-            if (payload.StatusCode == System.Net.HttpStatusCode.OK)
+            if (payload?.StatusCode == System.Net.HttpStatusCode.OK)
             {
                 return Ok(payload);
             }

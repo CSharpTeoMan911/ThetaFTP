@@ -107,9 +107,25 @@ button.google_signin {
     align-self: center;
     height:fit-content;
     width:fit-content;
+    border: solid 0px transparent;
+    margin-left: 10px;
+    display: flex;
+    flex-direction:column;
+    padding: 8px;
+    border-radius: 5px;
+    background: #e9e9e9
 }
 
-p.sign-in-text{
+    button.google_signin:hover {
+        background: white
+    }
+
+img.gsignin{
+    height: calc(13px + 1vmin);
+    align-self: center;
+}
+
+p.sign-in-text {
     font-size: 60px;
     font-weight: bold;
 }

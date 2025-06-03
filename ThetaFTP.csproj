@@ -17,9 +17,6 @@
 
 
   <ItemGroup>
-	<None Include="Theta_FTP.sql">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
 	  
 	<None Include="Google Cloud Secrets Setup.txt">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
