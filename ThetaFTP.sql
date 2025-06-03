@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 8.0.41, for Win64 (x86_64)
 --
--- Host: localhost    Database: thetaftp
+-- Host: localhost    Database: ThetaFTP
 -- ------------------------------------------------------
 -- Server version	8.0.41
 
@@ -33,15 +33,6 @@ CREATE TABLE `accounts_waiting_for_approval` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `accounts_waiting_for_approval`
---
-
-LOCK TABLES `accounts_waiting_for_approval` WRITE;
-/*!40000 ALTER TABLE `accounts_waiting_for_approval` DISABLE KEYS */;
-/*!40000 ALTER TABLE `accounts_waiting_for_approval` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `accounts_waiting_for_deletion`
 --
 
@@ -57,15 +48,6 @@ CREATE TABLE `accounts_waiting_for_deletion` (
   CONSTRAINT `accounts_waiting_for_deletion_ibfk_1` FOREIGN KEY (`Email`) REFERENCES `credentials` (`Email`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `accounts_waiting_for_deletion`
---
-
-LOCK TABLES `accounts_waiting_for_deletion` WRITE;
-/*!40000 ALTER TABLE `accounts_waiting_for_deletion` DISABLE KEYS */;
-/*!40000 ALTER TABLE `accounts_waiting_for_deletion` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `accounts_waiting_for_password_change`
@@ -85,15 +67,6 @@ CREATE TABLE `accounts_waiting_for_password_change` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `accounts_waiting_for_password_change`
---
-
-LOCK TABLES `accounts_waiting_for_password_change` WRITE;
-/*!40000 ALTER TABLE `accounts_waiting_for_password_change` DISABLE KEYS */;
-/*!40000 ALTER TABLE `accounts_waiting_for_password_change` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `credentials`
 --
 
@@ -107,15 +80,6 @@ CREATE TABLE `credentials` (
   UNIQUE KEY `Email` (`Email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `credentials`
---
-
-LOCK TABLES `credentials` WRITE;
-/*!40000 ALTER TABLE `credentials` DISABLE KEYS */;
-/*!40000 ALTER TABLE `credentials` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `google_accounts_waiting_for_deletion`
@@ -135,15 +99,6 @@ CREATE TABLE `google_accounts_waiting_for_deletion` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `google_accounts_waiting_for_deletion`
---
-
-LOCK TABLES `google_accounts_waiting_for_deletion` WRITE;
-/*!40000 ALTER TABLE `google_accounts_waiting_for_deletion` DISABLE KEYS */;
-/*!40000 ALTER TABLE `google_accounts_waiting_for_deletion` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `google_credentials`
 --
 
@@ -152,18 +107,27 @@ DROP TABLE IF EXISTS `google_credentials`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `google_credentials` (
   `Google_UID` varchar(100) NOT NULL,
+  `Email` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`Google_UID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `google_credentials`
+-- Table structure for table `google_log_in_session_waiting_for_approval`
 --
 
-LOCK TABLES `google_credentials` WRITE;
-/*!40000 ALTER TABLE `google_credentials` DISABLE KEYS */;
-/*!40000 ALTER TABLE `google_credentials` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `google_log_in_session_waiting_for_approval`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `google_log_in_session_waiting_for_approval` (
+  `Log_In_Code` varchar(100) NOT NULL,
+  `Log_In_Session_Key` varchar(100) NOT NULL,
+  `Expiration_Date` datetime NOT NULL,
+  PRIMARY KEY (`Log_In_Code`),
+  KEY `Log_In_Session_Key` (`Log_In_Session_Key`),
+  CONSTRAINT `google_log_in_session_waiting_for_approval_ibfk_1` FOREIGN KEY (`Log_In_Session_Key`) REFERENCES `google_log_in_sessions` (`Log_In_Session_Key`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Table structure for table `google_log_in_sessions`
@@ -183,15 +147,6 @@ CREATE TABLE `google_log_in_sessions` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `google_log_in_sessions`
---
-
-LOCK TABLES `google_log_in_sessions` WRITE;
-/*!40000 ALTER TABLE `google_log_in_sessions` DISABLE KEYS */;
-/*!40000 ALTER TABLE `google_log_in_sessions` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `log_in_sessions`
 --
 
@@ -209,15 +164,6 @@ CREATE TABLE `log_in_sessions` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `log_in_sessions`
---
-
-LOCK TABLES `log_in_sessions` WRITE;
-/*!40000 ALTER TABLE `log_in_sessions` DISABLE KEYS */;
-/*!40000 ALTER TABLE `log_in_sessions` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `log_in_sessions_waiting_for_approval`
 --
 
@@ -233,15 +179,6 @@ CREATE TABLE `log_in_sessions_waiting_for_approval` (
   CONSTRAINT `log_in_sessions_waiting_for_approval_ibfk_1` FOREIGN KEY (`Log_In_Session_Key`) REFERENCES `log_in_sessions` (`Log_In_Session_Key`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `log_in_sessions_waiting_for_approval`
---
-
-LOCK TABLES `log_in_sessions_waiting_for_approval` WRITE;
-/*!40000 ALTER TABLE `log_in_sessions_waiting_for_approval` DISABLE KEYS */;
-/*!40000 ALTER TABLE `log_in_sessions_waiting_for_approval` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -252,4 +189,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-03-31  3:19:01
+-- Dump completed on 2025-06-03 23:06:22

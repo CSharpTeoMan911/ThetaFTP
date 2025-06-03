@@ -35,7 +35,9 @@ namespace ThetaFTP.Shared
         public static CRUD_Auth_Strategy<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string> firebase_database_auth = new CRUD_Auth_Strategy<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string>(new FirebaseDatabaseAuthenticationController());
         public static CRUD_Auth_Strategy<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string> database_auth = new CRUD_Auth_Strategy<AuthenticationModel, string, AuthenticationModel, PasswordUpdateModel, string, string>(new DatabaseAuthenticationController());
 
-        public static CRUD_Auth_Strategy<string, string, string, string, string, string> google_auth_database = new CRUD_Auth_Strategy<string, string, string, string, string, string>(new GoogleAuthenticationDatabaseController());
+        public static CRUD_Auth_Strategy<GAuthModel, string, string, string, string, string> google_auth_database = new CRUD_Auth_Strategy<GAuthModel, string, string, string, string, string>(new GoogleAuthenticationDatabaseController());
+
+        public static GoogleValidationDatabaseController googleValidationDatabase = new GoogleValidationDatabaseController();
 
         public static DatabaseServerFunctionsController databaseServerFunctions = new DatabaseServerFunctionsController();
         public static FirebaseDatabaseServerFunctionsController fireabseDatabaseServerFunctions = new FirebaseDatabaseServerFunctionsController();

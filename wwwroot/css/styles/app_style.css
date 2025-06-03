@@ -83,7 +83,7 @@ h2.input_title {
     align-self: center;
     color: #03608f;
     font-weight: 400;
-    font-size: calc(10px + 0.3vw);
+    font-size: calc(12px + 0.3vw);
     padding: 0px;
     margin: 0px 0px 3px 0px;
 }
@@ -142,6 +142,26 @@ input.value {
     margin: 0px 0px 0px 0px;
     padding: 0px 0px 0px 0px;
     width: 60%;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+    -webkit-text-fill-color: #3e3e3e;
+    transition: background-color 5000s ease-in-out 0s;
+    padding: 2px;
+    height: fit-content;
+    border: 1px solid rgb(151, 149, 149);
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0px 0px 0px 0px #3e3e3e;
+    color: #3e3e3e;
 }
 
 button.close_button {

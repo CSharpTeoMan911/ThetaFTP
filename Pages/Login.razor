@@ -5,6 +5,7 @@
 @using ThetaFTP.Shared.Models;
 @using System.Text;
 @inject NavigationManager NavigationManager;
+@inject ProtectedLocalStorage ProtectedLocalStorage;
 @inject IHttpClientFactory httpFactory;
 @inject IJSRuntime JS;
 
@@ -36,7 +37,7 @@
         <InputSection inputSectionTitle="Password" placeholder="Password" inputValue="new InputSection.InputValue(OnPasswordValue)" isPassword="true" input_with_button="false" />
 
 
-        <div style="display:flex;flex-direction:column;margin-top:20px;">
+        <div style="display:flex;flex-direction:column;margin-top:30px;">
             <div class="auth-buttons-container">
                 <button class="auth_action" @onclick=SignIn>
                     Sign In
@@ -58,7 +59,8 @@
                             module.auth = GoogleSignIn;
                         </script>
 
-                        <button onclick="AuthPopUp()">
+                        <button class="google_signin" onclick="AuthPopUp()">
+                            <img src="./images/google.webp" class="gsignin"/>
                         </button>
                     }
                 }
@@ -94,7 +96,10 @@
 
     private bool NavigateToMainPageOnClose { get; set; }
     private bool Loaded { get; set; }
+    private bool Initiated { get; set; }
     private bool ShowProfilePanel { get; set; }
+
+    private bool isGoogleSession { get; set; }
 
     private readonly string validationInputTopic = "Validation code";
 
@@ -139,10 +144,60 @@
     {
         base.OnAfterRender(firstRender);
 
-        if(firstRender == true){
+        if (Loaded == true)
+        {
+            if (Initiated == false)
+            {
+                Initiated = true;
+                Initiating();
+            }
+        }
+
+        if (firstRender == true)
+        {
             Loaded = true;
             StateHasChanged();
             InitiateJwtProcessingMethod();
+        }
+    }
+
+    private async void Initiating()
+    {
+        if (Initiated)
+        {
+            try
+            {
+                string? gauth_session = String.Empty;
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>("import", "./js/functions.js");
+
+                gauth_session = await module.InvokeAsync<string>("Get_Cache", "auth", "GAuthSession");
+
+                System.Diagnostics.Debug.WriteLine("Gauth: " + gauth_session);
+
+                if (!String.IsNullOrEmpty(gauth_session))
+                {
+                    NotificationType = Notifications.NotificationType.Information;
+                    NotificationMessage = gauth_session;
+
+                    if (Shared.configurations?.twoStepAuth == true)
+                    {
+                        ShowLogInSessionValidationPanelOnClose = true;
+                    }
+                    else
+                    {
+                        NavigateToMainPageOnClose = true;
+                    }
+
+                    ShowNotification = true;
+                    StateHasChanged();
+                }
+
+                await module.DisposeAsync();
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine("Gauth Error: " + e.Message);
+            }
         }
     }
 
@@ -312,7 +367,15 @@
                         validation_builder.Append("/validation/validate-account?");
                         break;
                     case ValidationPanel.ValidationType.LogInSessionAuthorisation:
-                        validation_builder.Append("/validation/validate-code?");
+                        switch (isGoogleSession)
+                        {
+                            case true:
+                                validation_builder.Append("/g_validation/validate-code?");
+                                break;
+                            case false:
+                                validation_builder.Append("/validation/validate-code?");
+                                break;
+                        }
                         break;
                 }
                 validation_builder.Append(formatted_model);

@@ -4,5 +4,6 @@
     {
         public bool successful { get; set; }
         public string? uuid { get; set; }
+        public string? email { get; set; }
     }
 }

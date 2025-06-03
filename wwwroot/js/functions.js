@@ -66,17 +66,17 @@ export async function GoogleSignIn() {
     }
 
     google_auth_completed = setInterval(() => {
-        const gauth = localStorage.getItem("GAuth");
+        const gauth = localStorage.getItem("GAuthSession");
 
-        if (gauth === "Authentication Successful") {
-            clearInterval(google_auth_completed);
-            localStorage.removeItem("GAuth");
-            window.location.href = `${window.location.origin}/`;
-        }
-        else if (gauth === "Authentication Unsuccessful")
-        {
-            clearInterval(google_auth_completed);
-            localStorage.removeItem("GAuth");
+        if (gauth !== null || gauth !== undefined) {
+            if (gauth.includes("Sign in successful") || gauth.includes("Sign up successful")) {
+                clearInterval(google_auth_completed);
+                window.location.href = `${window.location.origin}/log-in`;
+            }
+            else {
+                clearInterval(google_auth_completed);
+                localStorage.removeItem("GAuthSession");
+            }
         }
     }, 100);
     
