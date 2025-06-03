@@ -3,7 +3,7 @@
 @using ThetaFTP.Shared.Models;
 @using ThetaFTP.Shared.Formatters;
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-@inject ProtectedSessionStorage ProtectedSessionStore;
+@inject ProtectedLocalStorage ProtectedLocalStorage;
 @inject NavigationManager NavigationManager;
 @inject IHttpClientFactory httpFactory;
 @inject IJSRuntime JS;
@@ -99,9 +99,6 @@
                     await module.InvokeVoidAsync("Delete_Cache", "auth", "gauth_nonce");
 
 
-
-
-
                     GoogleAutheticationModel googleAuthetication = new GoogleAutheticationModel()
                     {
                         nonce = nonce,
@@ -114,23 +111,29 @@
 
                     if(httpResponse.StatusCode == System.Net.HttpStatusCode.OK)
                     {
-                        PayloadModel response = await httpResponse.Content.ReadAsAsync<PayloadModel>();;
-
+                        PayloadModel response = await httpResponse.Content.ReadAsAsync<PayloadModel>();
                         if (response.StatusCode == System.Net.HttpStatusCode.OK)
                         {
-                            if (response.payload != null)
+                            if (response.result != null)
                             {
-                                if (Shared.configurations?.use_secure_local_storage == true)
+                                if (response.result.Contains("Sign in successful") || response.result.Contains("Sign up successful"))
                                 {
-                                    await ProtectedSessionStore.SetAsync("AuthCache", (string)response.payload);
-                                }
-                                else
-                                {
-                                    await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", (string)response.payload);
-                                    await module.DisposeAsync();
-                                }
+                                    if (response.payload != null)
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"payload: {response.payload}");
 
-                                await module.InvokeVoidAsync("Insert_Cache", "auth", "GAuth", response.result);
+                                        if (Shared.configurations?.use_secure_local_storage == true)
+                                        {
+                                            await ProtectedLocalStorage.SetAsync("AuthCache", (string)response.payload);
+                                        }
+                                        else
+                                        {
+                                            await module.InvokeVoidAsync("Insert_Cache", "auth", "AuthCache", (string)response.payload);
+                                        }
+
+                                        await module.InvokeVoidAsync("Insert_Cache", "auth", "GAuthSession", response.result);
+                                    }
+                                }
                             }
                         }
                     }
