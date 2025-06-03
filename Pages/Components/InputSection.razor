@@ -10,7 +10,7 @@
         {
             @if (input_with_button == true)
             {
-                <div style="width:100%; display:flex; flex-direction: row; align-content:center">
+                <div style="width:100%; display:flex; flex-direction: row; align-content:center" >
                     <input class="@(smallInputFont == true ? "input_style_small" : "input_style")" style="align-self:center; width: 190px" autocomplete="@(autocompleteOff == true ? "new-password" : "on")" type="password" placeholder=@placeholder value=@defaultValue @oninput=OnInput />
                     @InputButton
                 </div>

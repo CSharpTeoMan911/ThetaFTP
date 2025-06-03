@@ -16,6 +16,7 @@ namespace ThetaFTP.Shared.Classes
 
                 gAuthModel.successful = (payload.EmailVerified && payload.ExpirationTimeSeconds != null && payload.Nonce == value?.nonce) ? payload.ExpirationTimeSeconds > 0 : false;
                 gAuthModel.uuid = payload.Subject;
+                gAuthModel.email = payload.Email;
 
                 return gAuthModel;
             }

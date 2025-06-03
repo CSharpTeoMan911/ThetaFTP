@@ -9,7 +9,7 @@
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 @inject ProtectedLocalStorage protectedLocalStorage;
 
-@if((NavigationManager.ToAbsoluteUri("gauth-complete") != new Uri(NavigationManager.Uri) && Shared.configurations?.enable_google_login == true) || (Shared.configurations?.enable_google_login == false))
+@if((NavigationManager.ToAbsoluteUri("gauth-complete") != new Uri(NavigationManager.Uri)))
 {
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid" style="display: flex">
@@ -124,7 +124,7 @@
                     StateHasChanged();
                 }
 
-                if((NavigationManager.ToAbsoluteUri("gauth-complete") != new Uri(NavigationManager.Uri) && Shared.configurations?.enable_google_login == true) || (Shared.configurations?.enable_google_login == false))
+                if((NavigationManager.ToAbsoluteUri("gauth-complete") != new Uri(NavigationManager.Uri)))
                     if (NavigationManager.ToAbsoluteUri("log-in") != new Uri(NavigationManager.Uri) || NavigationManager.ToAbsoluteUri("register") != new Uri(NavigationManager.Uri))
                         NavigationManager.NavigateTo("log-in", false);
             }
