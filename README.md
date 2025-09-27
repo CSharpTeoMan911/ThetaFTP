@@ -25,11 +25,13 @@
 <br/>
 
 # 🔄 Changelog
-📌 Latest Version: v1.0.9
+📌 Latest Version: v1.1.0
 
+* 🆕 Improved UI
 * 🆕 Fixed bug regarding the load-up of the AES key
 * 🆕 Moved the server settings into the 'appconfig.json' file
 * 🆕 Updated the Wiki page
+* 🐞 Fixed Firebase bugs
 
 <br/>
 <br/>
