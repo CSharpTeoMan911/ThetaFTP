@@ -1,6 +1,5 @@
 ﻿namespace ThetaFTP
 {
-    using System.Buffers.Text;
     using System.Security.Cryptography;
     using System.Text;
 

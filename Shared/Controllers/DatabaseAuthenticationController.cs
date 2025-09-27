@@ -1,9 +1,9 @@
-﻿using ThetaFTP.Shared.Classes;
-using ThetaFTP.Shared.Models;
+﻿using MySql.Data.MySqlClient;
 using System.Data.Common;
-using MySql.Data.MySqlClient;
-using ThetaFTP.Shared.Formatters;
 using System.Text;
+using ThetaFTP.Shared.Classes;
+using ThetaFTP.Shared.Formatters;
+using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -42,7 +42,7 @@ namespace ThetaFTP.Shared.Controllers
                                     payloadModel.result = "Check the code sent to your email to approve the account deletion";
                                     payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                 }
-                                catch(Exception e)
+                                catch (Exception e)
                                 {
                                     Logging.Message(e, "Deletion code insertion API error", "Deletion code insertion API error", "DatabaseAuthenticationController", "Delete", Logging.LogType.Error);
                                     payloadModel.result = "Internal server error";
@@ -306,7 +306,7 @@ namespace ThetaFTP.Shared.Controllers
                             }
 
                         }
-                        catch(Exception e)
+                        catch (Exception e)
                         {
                             Logging.Message(e, "User account approval checkup API error", "User account approval checkup API error", "DatabaseAuthenticationController", "Get", Logging.LogType.Error);
                             payloadModel.result = "Internal server error";

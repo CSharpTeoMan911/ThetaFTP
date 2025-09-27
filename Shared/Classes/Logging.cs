@@ -14,7 +14,7 @@ namespace ThetaFTP.Shared.Classes
         public static void Init()
         {
             Log.Logger = new LoggerConfiguration().WriteTo.File("ServerErrorLogs.txt",
-                rollingInterval: RollingInterval.Day,                rollOnFileSizeLimit: true,
+                rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true,
                 retainedFileTimeLimit: TimeSpan.FromDays((Shared.configurations == null ? 10 : Shared.configurations.logs_expiration_days)))
                 .CreateLogger();
         }
@@ -30,7 +30,7 @@ namespace ThetaFTP.Shared.Classes
                 .Append("Method: ").Append(_method).Append("\n\n\n\n")
                 .ToString();
 
-            if(type == LogType.Error)
+            if (type == LogType.Error)
             {
                 Log.Error(log);
             }

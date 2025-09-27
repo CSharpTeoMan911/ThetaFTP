@@ -7,7 +7,7 @@ namespace ThetaFTP.Shared.Controllers
 {
     [EnableRateLimiting("sliding_window")]
     [Route("/google-auth")]
-    public class GoogleAuthenticationController : Controller, CRUD_Auth_Api_Interface<GoogleAutheticationModel, string, GoogleAutheticationModel, string, string, string> 
+    public class GoogleAuthenticationController : Controller, CRUD_Auth_Api_Interface<GoogleAutheticationModel, string, GoogleAutheticationModel, string, string, string>
     {
         public Task<ActionResult?> Delete(string? value)
         {

@@ -8,7 +8,7 @@
             Firebase
         }
 
-        public bool is_reverse_proxy {  get; set; }
+        public bool is_reverse_proxy { get; set; }
         public bool use_google_secrets { get; set; }
         public string? aes_encryption_key_secret_url { get; set; } = "!!! REPLACE WITH SECRET URL !!!";
         public string? aes_encryption_key_version { get; set; } = "1";
@@ -26,7 +26,7 @@
         public bool use_secure_local_storage { get; set; } = true;
         public bool use_firebase { get; set; } = false;
         public string? firebase_admin_token { get; set; } = "!!! REPLACE WITH FIREBASE DATABASE ADMIN TOKEN !!!";
-        public string? firebase_database_url {  get; set; } = "!!! REPLACE WITH FIREBASE DATABASE URL !!!";
+        public string? firebase_database_url { get; set; } = "!!! REPLACE WITH FIREBASE DATABASE URL !!!";
         public string? firebase_api_key { get; set; } = "!!! REPLACE WITH THE APP'S API KEY !!!";
         public string? firebase_auth_domain { get; set; } = "!!! REPLACE WITH THE APP'S AUTH DOMAIN !!!";
         public string? mysql_server_address { get; set; } = "127.0.0.1";

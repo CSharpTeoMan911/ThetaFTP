@@ -1,12 +1,10 @@
-﻿using ThetaFTP.Shared.Models;
+﻿using System.Text;
 using ThetaFTP.Shared.Formatters;
-using System.IO;
-using System.Text;
-using Serilog;
+using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Classes
 {
-    public class ServerConfig:Shared
+    public class ServerConfig : Shared
     {
         private static readonly string development_app_settings_json_file = "appsettings.Development.json";
         private static readonly string app_settings_json_file = "appsettings.json";
@@ -18,14 +16,14 @@ namespace ThetaFTP.Shared.Classes
 
             try
             {
-                
+
                 using (FileStream fs = File.OpenRead(isDebug == true ? development_app_settings_json_file : app_settings_json_file))
                 {
                     byte[] json_binary = new byte[fs.Length];
                     await fs.ReadAsync(json_binary, 0, json_binary.Length);
                     serialised_json = Encoding.UTF8.GetString(json_binary);
                 }
-                
+
             }
             catch (Exception e)
             {

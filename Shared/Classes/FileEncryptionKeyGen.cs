@@ -161,7 +161,7 @@ namespace ThetaFTP.Shared.Classes
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 result.generationResult = KeyGenerationResult.Unsccessful;
                 Logging.Message(e, "Error creating encryption key file", "Error creating encryption key file", "FileEncryptionKeyGen", "GenerateKeys", Logging.LogType.Error);
@@ -171,7 +171,7 @@ namespace ThetaFTP.Shared.Classes
         }
 
         private static async Task GenerateEncryptionKeyFile(KeyGenResult key)
-        { 
+        {
             if (key?.Key != null && key?.IV != null)
             {
                 string? serialised_key = await JsonFormatter.JsonSerialiser(new AesKeyModel()

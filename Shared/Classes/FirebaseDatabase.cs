@@ -2,7 +2,7 @@
 
 namespace ThetaFTP.Shared.Classes
 {
-    public class FirebaseDatabase:Shared
+    public class FirebaseDatabase : Shared
     {
         private FirebaseClient? firebaseClient { get; set; }
 
@@ -13,10 +13,10 @@ namespace ThetaFTP.Shared.Classes
                 if (firebaseClient == null)
                     firebaseClient = new FirebaseClient(configurations.firebase_database_url, new FirebaseOptions()
                     {
-                        AuthTokenAsyncFactory = ()=> AdminAuth(),
+                        AuthTokenAsyncFactory = () => AdminAuth(),
                     });
 
-               return Task.FromResult((FirebaseClient?)firebaseClient);
+                return Task.FromResult((FirebaseClient?)firebaseClient);
             }
             else
             {

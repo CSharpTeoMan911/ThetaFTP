@@ -1,6 +1,4 @@
-﻿using Serilog;
-using Google.Api.Gax.ResourceNames;
-using Google.Cloud.SecretManager.V1;
+﻿using Google.Cloud.SecretManager.V1;
 using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Classes
@@ -76,7 +74,7 @@ namespace ThetaFTP.Shared.Classes
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Logging.Message(e, "Invalid Google Cloud credentials or billing is not enabled credentials.", "Invalid Google Cloud credentials or billing is not enabled credentials. To log in use the command:\n 'gcloud auth application-default login'", "GoogleSecretsManager", "GetSecrets", Logging.LogType.Error);
 

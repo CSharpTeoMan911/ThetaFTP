@@ -1,12 +1,7 @@
-﻿using Google.Rpc;
-using MySql.Data.MySqlClient;
+﻿using MySql.Data.MySqlClient;
 using System.Data.Common;
-using System.Diagnostics;
-using ThetaFTP.Shared;
 using ThetaFTP.Shared.Classes;
-using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
-using static Mysqlx.Expect.Open.Types.Condition.Types;
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -34,7 +29,7 @@ namespace ThetaFTP.Shared.Controllers
         public async Task<PayloadModel?> Insert(GAuthModel? value)
         {
             PayloadModel payload = new PayloadModel();
-            
+
             if (value != null)
             {
                 if (value.uuid != null)
@@ -62,7 +57,7 @@ namespace ThetaFTP.Shared.Controllers
                                             if ((await reader.ReadAsync()) == false)
                                             {
                                                 await reader.CloseAsync();
-                                                insert_command.CommandText = "INSERT INTO google_credentials VALUE(@Google_UID)";
+                                                insert_command.CommandText = "INSERT INTO google_credentials VALUES(@Google_UID)";
                                                 insert_command.Parameters.AddWithValue("Google_UID", value.uuid);
                                                 await insert_command.ExecuteNonQueryAsync();
 
@@ -110,12 +105,12 @@ namespace ThetaFTP.Shared.Controllers
                                                                 code_insertion_command.Parameters.AddWithValue("Log_In_Session_Key", log_in_session_key_hash_result);
                                                                 code_insertion_command.Parameters.AddWithValue("Expiration_Date", DateTime.Now.AddMinutes(2));
                                                                 await code_insertion_command.ExecuteNonQueryAsync();
-                                                               
+
 
                                                                 payload.payload = log_in_session_key;
                                                                 payload.StatusCode = System.Net.HttpStatusCode.OK;
                                                             }
-                                                            catch(Exception e)
+                                                            catch (Exception e)
                                                             {
                                                                 Logging.Message(e, "Error inserting session into database", "Check if the database is running and the connection is valid", "GoogleAuthenticationDatabaseController", "Insert", Logging.LogType.Error);
                                                                 payload.result = "Internal server error";

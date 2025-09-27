@@ -1,9 +1,6 @@
-﻿using LiteDB;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
+﻿using Microsoft.AspNetCore.Mvc;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Models;
-using static Google.Rpc.Context.AttributeContext.Types;
 
 
 namespace ThetaFTP.Shared.Controllers
@@ -74,7 +71,7 @@ namespace ThetaFTP.Shared.Controllers
         }
 
         [HttpGet("get-info")]
-        public async Task<ActionResult?> GetInfo([FromQuery]string? value)
+        public async Task<ActionResult?> GetInfo([FromQuery] string? value)
         {
             PayloadModel? payloadModel = new PayloadModel();
 

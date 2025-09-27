@@ -1,5 +1,5 @@
-﻿using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using ThetaFTP.Shared.Classes;
 
 
@@ -30,7 +30,7 @@ namespace ThetaFTP.Shared.Formatters
                         sr?.Dispose();
                     }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Logging.Message(e, "Json serialisation error", "Json serialisation error", "JsonFormatter", "JsonDeserialiser", Logging.LogType.Error);
             }

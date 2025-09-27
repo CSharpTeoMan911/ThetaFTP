@@ -1,13 +1,8 @@
-﻿using Google.Protobuf.WellKnownTypes;
-using Newtonsoft.Json.Linq;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Text;
-using ThetaFTP.Shared.Classes;
+﻿using System.Text;
 
 namespace ThetaFTP.Shared.Formatters
 {
-    public class FileSystemFormatter:Shared
+    public class FileSystemFormatter : Shared
     {
         public static bool IsValidPath(string path_name) => path_name[0] == '/' ? path_name.All(c => char.IsLetter(c) || char.IsNumber(c) || c == '_' || c == '-' || c == ' ' || c == '.' || c == '/' || c == '(' || c == ')') : false;
         public static bool IsValidFileName(string file_name) => file_name.All(c => char.IsLetter(c) || char.IsNumber(c) || c == '_' || c == '-' || c == ' ' || c == '.' || c == '(' || c == ')');
@@ -25,7 +20,7 @@ namespace ThetaFTP.Shared.Formatters
         public static void DeleteDirectory(string path) => Directory.Delete(path, true);
         public static bool IsFile(string path) => File.Exists(path) == true;
         public static bool IsDirectory(string path) => Directory.Exists(path) == true;
-        public static void RenameFile(string old_file, string new_file) 
+        public static void RenameFile(string old_file, string new_file)
         {
             FileInfo fileInfo = new FileInfo(old_file);
             FileInfo newFileInfo = new FileInfo(new_file);

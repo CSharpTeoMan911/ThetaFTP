@@ -1,6 +1,4 @@
-﻿using Serilog;
-
-namespace ThetaFTP.Shared.Models
+﻿namespace ThetaFTP.Shared.Models
 {
     public class CertGenModel
     {

@@ -2,9 +2,8 @@
 {
     using MailKit.Net.Smtp;
     using MimeKit;
-    using Serilog;
 
-    public class SMTPS_Service:Shared
+    public class SMTPS_Service : Shared
     {
         public static bool SendSMTPS(string? email, string? subject, string? message)
         {
@@ -40,7 +39,7 @@
                     response = false;
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Logging.Message(e, "Error sending SMTP request", "Check if the credentials and SMTP server address are valid", "SMTPS_Service", "SendSMTPS", Logging.LogType.Error);
                 response = false;

@@ -1,8 +1,8 @@
 ﻿using Firebase.Database;
 using Firebase.Database.Query;
-using ThetaFTP.Shared.Formatters;
 using System.Text;
 using ThetaFTP.Shared.Classes;
+using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Controllers
@@ -55,7 +55,7 @@ namespace ThetaFTP.Shared.Controllers
                                         await client.Child("Log_In_Sessions").PostAsync(firebaseLogInSessionModel, false);
 
                                         payloadModel.result = "Account authorised";
-                                        payloadModel.payload= log_in_session_key;
+                                        payloadModel.payload = log_in_session_key;
                                         payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                     }
                                     else

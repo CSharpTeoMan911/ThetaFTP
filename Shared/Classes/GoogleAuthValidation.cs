@@ -1,5 +1,4 @@
 ﻿using Google.Apis.Auth;
-using System;
 using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Classes
@@ -20,7 +19,7 @@ namespace ThetaFTP.Shared.Classes
 
                 return gAuthModel;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 System.Diagnostics.Debug.WriteLine(e.Message);
                 return gAuthModel;

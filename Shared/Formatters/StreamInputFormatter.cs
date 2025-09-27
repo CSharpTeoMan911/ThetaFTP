@@ -2,7 +2,7 @@
 
 namespace ThetaFTP.Shared.Formatters
 {
-    public class StreamInputFormatter:InputFormatter
+    public class StreamInputFormatter : InputFormatter
     {
         public StreamInputFormatter()
         {

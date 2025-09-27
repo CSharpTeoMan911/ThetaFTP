@@ -1,6 +1,6 @@
 ﻿using MySql.Data.MySqlClient;
-using System.Data.Common;
 using System.Data;
+using System.Data.Common;
 using ThetaFTP.Shared.Classes;
 
 namespace ThetaFTP.Shared.Controllers
@@ -90,7 +90,7 @@ namespace ThetaFTP.Shared.Controllers
                     }
 
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Logging.Message(e, "Error deleting expired accounts", "Error deleting expired accounts", "DatabaseServerFunctionsController", "DeleteExpiredAccountsWaitingForApproval", Logging.LogType.Error);
                 }

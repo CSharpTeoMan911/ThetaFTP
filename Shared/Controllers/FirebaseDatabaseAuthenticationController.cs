@@ -1,8 +1,8 @@
 ﻿using Firebase.Database;
 using Firebase.Database.Query;
-using ThetaFTP.Shared.Formatters;
 using System.Text;
 using ThetaFTP.Shared.Classes;
+using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Controllers
@@ -246,7 +246,7 @@ namespace ThetaFTP.Shared.Controllers
                                             string? log_in_code = await CodeGenerator.GenerateKey(10);
                                             string hashed_log_in_code = await Shared.sha512.Hash(log_in_code);
                                             string base64_hashed_log_in_code = await Base64Formatter.FromUtf8ToBase64(hashed_log_in_code);
-                                           
+
                                             FirebaseLogInSessionApprovalModel firebaseLogInSessionWaitingForApprovalModel = new FirebaseLogInSessionApprovalModel()
                                             {
                                                 code = base64_hashed_log_in_code,

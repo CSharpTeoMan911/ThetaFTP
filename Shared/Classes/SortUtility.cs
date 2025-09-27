@@ -1,5 +1,4 @@
-﻿using ThetaFTP.Shared.Formatters;
-using ThetaFTP.Shared.Models;
+﻿using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Classes
 {
@@ -10,7 +9,8 @@ namespace ThetaFTP.Shared.Classes
         public SortUtility()
         {
             int index = 0;
-            "abcdefghijklmnopqrstuvwxyz0123456789".ToList().ForEach(character => {
+            "abcdefghijklmnopqrstuvwxyz0123456789".ToList().ForEach(character =>
+            {
                 alphabetic_order.Add(character, index);
                 index++;
             });
@@ -35,7 +35,7 @@ namespace ThetaFTP.Shared.Classes
                 MergeSortBySize(right_l, ascending);
 
 
-                
+
                 int left_index = 0;
                 int right_index = 0;
                 int main_index = 0;

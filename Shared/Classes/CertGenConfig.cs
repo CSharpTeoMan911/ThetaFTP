@@ -1,13 +1,9 @@
-﻿using MimeKit.Cryptography;
-using Org.BouncyCastle.Asn1;
+﻿using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Pkcs;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Pkcs;
 using Serilog;
-using System.IO;
-using System.Net;
-using System.Runtime.ConstrainedExecution;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using ThetaFTP.Shared.Formatters;
@@ -151,7 +147,7 @@ namespace ThetaFTP.Shared.Classes
                             {
                                 var builder = new StringBuilder();
 
-                                using(StringWriter writer = new StringWriter(builder))
+                                using (StringWriter writer = new StringWriter(builder))
                                 {
                                     using (PemWriter pemWriter = new PemWriter(writer))
                                     {

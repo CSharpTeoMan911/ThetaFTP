@@ -1,5 +1,4 @@
 ﻿using System.Buffers;
-using Serilog;
 
 namespace ThetaFTP.Shared.Classes
 {
@@ -16,7 +15,7 @@ namespace ThetaFTP.Shared.Classes
         public static async Task<bool> ReadAsync(Stream input_stream, long file_size, Stream output_stream, int buffer_size, int buffer_count_flush, CancellationToken cancellation)
         {
             bool result = false;
-            double timeout = 1000* GetTimeout();
+            double timeout = 1000 * GetTimeout();
 
             try
             {
@@ -63,7 +62,7 @@ namespace ThetaFTP.Shared.Classes
                     result = true;
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Logging.Message(e, "Reading and writing FTP file error", "Check if the app has permissions to read and write into the app's directory", "StreamOperations", "ReadAsync", Logging.LogType.Error);
                 result = false;

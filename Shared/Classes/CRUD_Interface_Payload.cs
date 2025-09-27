@@ -1,5 +1,4 @@
-﻿using Org.BouncyCastle.Tls;
-using ThetaFTP.Shared.Models;
+﻿using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Classes
 {

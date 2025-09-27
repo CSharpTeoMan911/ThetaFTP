@@ -1,13 +1,13 @@
-﻿using ThetaFTP.Shared.Formatters;
-using MySql.Data.MySqlClient;
+﻿using MySql.Data.MySqlClient;
 using System.Data.Common;
 using System.Text;
 using ThetaFTP.Shared.Classes;
+using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class DatabaseValidationController 
+    public class DatabaseValidationController
     {
         public async Task<PayloadModel?> ValidateAccount(ValidationModel? value)
         {
@@ -511,7 +511,7 @@ namespace ThetaFTP.Shared.Controllers
                             {
                                 await reader.DisposeAsync();
                             }
-                            
+
                         }
                         catch (Exception e)
                         {
@@ -685,7 +685,7 @@ namespace ThetaFTP.Shared.Controllers
                         payloadModel.result = "Invalid password";
                     }
                 }
-                else 
+                else
                 {
                     payloadModel.result = "Invalid code";
                 }

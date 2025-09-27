@@ -1,5 +1,4 @@
-﻿using Org.BouncyCastle.Tls.Crypto;
-using System.Buffers;
+﻿using System.Buffers;
 using System.Security.Cryptography;
 using ThetaFTP.Shared.Models;
 
@@ -47,7 +46,7 @@ namespace ThetaFTP.Shared.Classes
                                         {
                                             start = end;
                                             int bytes_read = await input_stream.ReadAsync(contingent_memory_buffer.Memory.Slice(0, buffer_size));
-                                            
+
                                             if (bytes_read > 0)
                                             {
                                                 await cryptoStream.WriteAsync(contingent_memory_buffer.Memory.Slice(0, bytes_read));

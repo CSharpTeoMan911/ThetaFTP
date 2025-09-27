@@ -4,7 +4,7 @@ using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Controllers
 {
-    public class FtpDirectoryDatabaseController : CRUD_Interface_Payload<FtpDirectoryModel, Metadata,FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel>
+    public class FtpDirectoryDatabaseController : CRUD_Interface_Payload<FtpDirectoryModel, Metadata, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel, FtpDirectoryModel>
     {
         public Task<PayloadModel?> Delete(FtpDirectoryModel? value)
         {
@@ -32,7 +32,7 @@ namespace ThetaFTP.Shared.Controllers
                                         payloadModel.result = "Directory deletion successful";
                                         payloadModel.StatusCode = System.Net.HttpStatusCode.OK;
                                     }
-                                    catch(Exception e)
+                                    catch (Exception e)
                                     {
                                         Logging.Message(e, "Directory FTP Controller delete error", "Directory could not be deleted", "FtpDirectoryDatabaseController", "Delete", Logging.LogType.Error);
                                         payloadModel.result = "Internal server error";
@@ -246,7 +246,7 @@ namespace ThetaFTP.Shared.Controllers
                                 {
                                     if (FileSystemFormatter.IsValidUserDir(converted_path) == true)
                                     {
-                                        if(FileSystemFormatter.IsValidUserDir(re_path) == true)
+                                        if (FileSystemFormatter.IsValidUserDir(re_path) == true)
                                         {
                                             if (File.Exists(re_path) == false)
                                             {

@@ -1,8 +1,8 @@
 ﻿using Firebase.Database;
 using Firebase.Database.Query;
-using ThetaFTP.Shared.Models;
-using ThetaFTP.Shared.Formatters;
 using ThetaFTP.Shared.Classes;
+using ThetaFTP.Shared.Formatters;
+using ThetaFTP.Shared.Models;
 
 namespace ThetaFTP.Shared.Controllers
 {
@@ -31,7 +31,7 @@ namespace ThetaFTP.Shared.Controllers
                         await client.Child("Accounts_Waiting_For_Approval").Child(deserialised_extracted_cache.Keys.ElementAt(i)).DeleteAsync();
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Logging.Message(e, "Error deleting expired accounts", "Error deleting expired accounts", "FirebaseDatabaseServerFunctionsController", "DeleteExpiredAccountsWaitingForApproval", Logging.LogType.Error);
             }
@@ -103,7 +103,7 @@ namespace ThetaFTP.Shared.Controllers
                     {
                         FirebaseLogInSessionApprovalModel session = deserialised_extracted_cache.Values.ElementAt(i);
                         await client.Child("Log_In_Sessions_Waiting_For_Approval").Child(deserialised_extracted_cache.Keys.ElementAt(i)).DeleteAsync();
-                        
+
                         string extracted_login_cache = await client.Child("Log_In_Sessions").OrderBy("key").EqualTo(session.key).OnceAsJsonAsync();
                         Dictionary<string, FirebaseLogInSessionModel>? deserialised_login_cache = await JsonFormatter.JsonDeserialiser<Dictionary<string, FirebaseLogInSessionModel>?>(extracted_login_cache);
 

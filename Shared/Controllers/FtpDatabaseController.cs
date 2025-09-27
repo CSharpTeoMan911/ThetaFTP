@@ -12,7 +12,7 @@ namespace ThetaFTP.Shared.Controllers
         {
             PayloadModel serverPayload = new PayloadModel();
 
-            if(value != null)
+            if (value != null)
             {
                 if (value.email != null)
                 {
@@ -46,12 +46,12 @@ namespace ThetaFTP.Shared.Controllers
                                         serverPayload.result = "Invalid path";
                                     }
                                 }
-                                catch(Exception e)
+                                catch (Exception e)
                                 {
                                     Logging.Message(e, "File FTP Controller delete error", "File could not be deleted", "FtpDatabaseController", "Delete", Logging.LogType.Error);
                                     serverPayload.result = "Internal server error";
                                 }
-                                
+
                             }
                             else
                             {
@@ -414,8 +414,8 @@ namespace ThetaFTP.Shared.Controllers
                                                     catch (Exception e)
                                                     {
                                                         Logging.Message(e, "File FTP controller relocation error", "File could not be relocated", "FtpDatabaseController", "Update", Logging.LogType.Error);
-     
-                                                        if(e.Message.Contains("Cannot create a file when that file already exists") == true)
+
+                                                        if (e.Message.Contains("Cannot create a file when that file already exists") == true)
                                                             serverPayload.result = "File already exist";
                                                         else
                                                             serverPayload.result = "Internal server error";

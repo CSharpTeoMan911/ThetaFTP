@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Models;
 
@@ -10,7 +9,7 @@ namespace ThetaFTP.Shared.Controllers
     public class FileTransferDirectoryController : Controller, CRUD_Api_Interface<DirectoryOperationMetadata, string, DirectoryOperationMetadata, string, DirectoryOperationMetadata, string, DirectoryOperationMetadata, string>
     {
         [HttpDelete("delete")]
-        public async Task<ActionResult?> Delete([FromQuery]DirectoryOperationMetadata? query, [FromBody]string? body)
+        public async Task<ActionResult?> Delete([FromQuery] DirectoryOperationMetadata? query, [FromBody] string? body)
         {
             PayloadModel? serverPayload = new PayloadModel();
 
@@ -140,7 +139,7 @@ namespace ThetaFTP.Shared.Controllers
         }
 
         [HttpPut("relocate")]
-        public async Task<ActionResult?> Update([FromQuery]DirectoryOperationMetadata? query, [FromBody]string? body)
+        public async Task<ActionResult?> Update([FromQuery] DirectoryOperationMetadata? query, [FromBody] string? body)
         {
             PayloadModel? serverPayload = new PayloadModel();
 

@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-using ThetaFTP.Shared.Classes;
+﻿using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Controllers;
 using ThetaFTP.Shared.Models;
 
@@ -12,7 +11,7 @@ namespace ThetaFTP.Shared
 
         public static void SetAes(AesFileEncryption? _aes)
         {
-            if(AesLoaded == false)
+            if (AesLoaded == false)
             {
                 AesLoaded = true;
                 aes = _aes;
@@ -26,7 +25,7 @@ namespace ThetaFTP.Shared
         public const string HttpClientConfig = "Default";
         public static Sha512Hasher? sha512 { get; set; }
         public static ServerConfigModel? configurations { get; set; }
-        public static Classes.MySql mysql= new Classes.MySql();
+        public static Classes.MySql mysql = new Classes.MySql();
         public static FirebaseDatabase firebase = new FirebaseDatabase();
 
         public static CRUD_Payload_Strategy<FtpModel, Metadata, FtpModel, FtpModel, FtpModel, FtpModel> database_ftp = new CRUD_Payload_Strategy<FtpModel, Metadata, FtpModel, FtpModel, FtpModel, FtpModel>(new FtpDatabaseController());

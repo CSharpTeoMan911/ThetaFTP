@@ -1,17 +1,14 @@
+using Microsoft.AspNetCore.Server.Kestrel;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading.RateLimiting;
 using ThetaFTP.Shared.Classes;
 using ThetaFTP.Shared.Formatters;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using System.Net;
 using ThetaFTP.Shared.Models;
-using System.Security.Cryptography.X509Certificates;
-using Microsoft.AspNetCore.HttpOverrides;
-using System.Threading.RateLimiting;
-using Microsoft.Extensions.Hosting.Internal;
-using Microsoft.AspNetCore.Server.Kestrel;
 
 namespace ThetaFTP
 {
-    public class Program:Shared.Shared
+    public class Program : Shared.Shared
     {
         public static void Main(string[] args)
         {
@@ -96,8 +93,9 @@ namespace ThetaFTP
 
 
 
-                            builder.Services.AddRateLimiter((options) => {
-                                options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext => 
+                            builder.Services.AddRateLimiter((options) =>
+                            {
+                                options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
                                 RateLimitPartition.GetSlidingWindowLimiter(partitionKey: httpContext.User.Identity?.Name ?? httpContext.Request.Headers.Host.ToString(),
                                 factory: partition => new SlidingWindowRateLimiterOptions
                                 {
@@ -131,10 +129,11 @@ namespace ThetaFTP
                                             .AddInteractiveServerComponents()
                                             .AddHubOptions(options =>
                                             {
-                                                options.MaximumReceiveMessageSize = 10 * 1024 * 1024; 
+                                                options.MaximumReceiveMessageSize = 10 * 1024 * 1024;
                                             });
 
-                            builder.Services.AddHttpClient(HttpClientConfig, client => {
+                            builder.Services.AddHttpClient(HttpClientConfig, client =>
+                            {
                                 int timeout = 600;
                                 if (model != null)
                                     timeout = model.ConnectionTimeoutSeconds;
@@ -214,7 +213,8 @@ namespace ThetaFTP
                                 {
                                     IConfigurationSection kestrel_config = context.Configuration.GetSection("Kestrel");
 
-                                    KestrelConfigurationLoader https = serverOptions.Configure(kestrel_config).Endpoint("Address", listenOptions => {
+                                    KestrelConfigurationLoader https = serverOptions.Configure(kestrel_config).Endpoint("Address", listenOptions =>
+                                    {
                                         if (model != null && model.use_custom_ssl_certificate == true && model.custom_server_certificate_path != null)
                                         {
                                             listenOptions.ListenOptions.UseHttps(model.custom_server_certificate_path, model.custom_server_certificate_password);
@@ -236,7 +236,7 @@ namespace ThetaFTP
 
                             app.Use(async (context, next) =>
                             {
-                                context.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin");   
+                                context.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin");
                                 context.Response.Headers.Append("Cross-Origin-Embedder-Policy", "require-corp");
                                 await next.Invoke();
                             });
@@ -291,7 +291,7 @@ namespace ThetaFTP
                 }
 
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Logging.Message(e, "Fatal error", "", "Program", "Main_OP", Logging.LogType.Fatal);
                 Environment.Exit(1);
